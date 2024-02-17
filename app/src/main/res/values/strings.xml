@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Revision Master</string>
+    <string name="nav_drawer_menu">Menu</string>
+    <string name="goBack">Back</string>
+    <string name="dropdown">Drop-down</string>
+    <string name="home">Home</string>
+    <string name="schedule">Schedule</string>
+    <string name="create">Create</string>
+    <string name="chats">Chats</string>
+    <string name="library">Library</string>
+    <string name="flashcards">Flashcards</string>
+    <string name="studySet">Study Set</string>
+    <string name="group">Group</string>
+    <string name="morning">Good Morning!</string>
+    <string name="afternoon">Good Afternoon!</string>
+    <string name="evening">Good Evening!</string>
+</resources>
