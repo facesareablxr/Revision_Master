@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
@@ -45,6 +46,7 @@ private fun BuildNavigationGraph() {
         startDestination = Screen.Home.route
     ) {
         composable(Screen.Home.route) { HomeScreen(navController) }
+        composable(Screen.Chats.route) { ChatsScreen() }
     }
 }
 

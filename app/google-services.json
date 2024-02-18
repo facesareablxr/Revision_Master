@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202991794660",
+    "project_id": "revision-master-91910",
+    "storage_bucket": "revision-master-91910.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202991794660:android:eea6b6de32fac8ab716ff1",
+        "android_client_info": {
+          "package_name": "uk.ac.aber.dcs.cs31620.revisionmaster"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6U8ju-kL35PCJam3Zgl9S3yj4_PMLvNw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

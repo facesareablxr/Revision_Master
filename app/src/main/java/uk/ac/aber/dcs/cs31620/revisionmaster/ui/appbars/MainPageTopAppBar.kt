@@ -72,15 +72,13 @@ fun MainPageTopAppBar(
                         .padding(start = 4.dp)
                 )
                 // Streak, notification, profile) on the right
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                         StreakCounter(steakCounter)
-                        Spacer(modifier = Modifier.width(8.dp))
                         NotificationsBell(notifications)
-                        Spacer(modifier = Modifier.width(8.dp))
                         ProfileCircle(context = context)
                         Spacer(modifier = Modifier.width(4.dp))
                 }

@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    //Firebase
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -59,6 +61,8 @@ dependencies {
     implementation("androidx.test:runner:1.5.2")
     implementation("com.google.android.material:material:1.11.0")
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
+    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.0")
+    implementation("androidx.paging:paging-common-android:3.3.0-alpha03")
 
     platform("androidx.compose:compose-bom:2024.02.00")
 
@@ -96,4 +100,9 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
     implementation ("androidx.compose.runtime:runtime-livedata:1.6.1")
+
+    //Firebase Implementation
+    implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+    implementation("com.google.firebase:firebase-analytics")
+
 }
