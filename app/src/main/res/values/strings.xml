@@ -14,4 +14,5 @@
     <string name="morning">Good Morning!</string>
     <string name="afternoon">Good Afternoon!</string>
     <string name="evening">Good Evening!</string>
+    <string name="welcome">Welcome!</string>
 </resources>

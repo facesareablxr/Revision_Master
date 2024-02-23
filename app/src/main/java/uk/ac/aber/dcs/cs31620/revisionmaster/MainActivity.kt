@@ -8,53 +8,67 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 
 /**
- * Starting activity class. Entry point for the app.
- * @author Chris Loftus
+ *
  */
 class MainActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Initialize Firebase
+        FirebaseApp.initializeApp(this)
+        auth = FirebaseAuth.getInstance()
+
         setContent {
             RevisionMasterTheme(dynamicColor = false) {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    BuildNavigationGraph()
+                    val currentUser = auth.currentUser
+                    if (currentUser != null) {
+                        // User is authenticated, navigate to Home
+                        BuildNavigationGraph()
+                    } else {
+                        // User is not authenticated, show WelcomeScreen
+                        BuildNavigationGraph()
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ *
+ */
 @Composable
-private fun BuildNavigationGraph() {
+fun BuildNavigationGraph() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Welcome.route
     ) {
+        composable(Screen.Welcome.route) { WelcomeScreen(navController) }
+        composable(Screen.Login.route) { LoginTopLevel(navController) }
+        //composable(Screen.SignUp.route) { SignUpScreen(navController) }
+
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Chats.route) { ChatsScreen() }
+
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    RevisionMasterTheme(dynamicColor = false) {
-        BuildNavigationGraph()
-    }
-}
-

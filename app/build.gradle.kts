@@ -60,9 +60,14 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.2.0")
     implementation("androidx.test:runner:1.5.2")
     implementation("com.google.android.material:material:1.11.0")
+
+    //Firebase Implementation
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
     implementation("com.google.firebase:firebase-inappmessaging-display:20.4.0")
     implementation("androidx.paging:paging-common-android:3.3.0-alpha03")
+    implementation("com.google.firebase:firebase-database:20.3.0")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.10.2")
 
     platform("androidx.compose:compose-bom:2024.02.00")
 
@@ -93,8 +98,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.5")
     implementation("io.github.vanpra.compose-material-dialogs:datetime:0.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")

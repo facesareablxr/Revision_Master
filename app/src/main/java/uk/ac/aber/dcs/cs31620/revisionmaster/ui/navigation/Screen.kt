@@ -9,6 +9,9 @@ sealed class Screen(val route: String) {
     object Create: Screen("create")
     object Chats : Screen("chats")
     object Library : Screen("library")
+    object Welcome : Screen ("welcome")
+    object Login : Screen("login")
+    object SignUp : Screen("signup")
 }
 
 /**

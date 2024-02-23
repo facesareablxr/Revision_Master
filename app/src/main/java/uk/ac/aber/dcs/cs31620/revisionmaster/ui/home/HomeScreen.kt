@@ -59,7 +59,7 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Search Bar
-                    SearchBar()
+                    SearchBars()
 
                     // Two Cards in a Row
                     Row(modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp)) {
@@ -102,7 +102,7 @@ fun HomeScreen(
 
 //Only temp,actual search bar implementation to be done when firebase in place
 @Composable
-fun SearchBar() {
+fun SearchBars() {
     var searchText by remember { mutableStateOf("") }
     TextField(
         value = searchText,
