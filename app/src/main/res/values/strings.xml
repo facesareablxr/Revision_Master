@@ -14,5 +14,26 @@
     <string name="morning">Good Morning!</string>
     <string name="afternoon">Good Afternoon!</string>
     <string name="evening">Good Evening!</string>
-    <string name="welcome">Welcome!</string>
+    <string name="welcome">Welcome</string>
+    <string name="fillallfields">Please fill in all fields.</string>
+    <string name="successfulLogIn">Login successful!</string>
+    <string name="failedLogIn">Log in failed, try again!</string>
+    <string name="login">Log In</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="signup">Sign Up</string>
+    <string name="login_email">Email</string>
+    <string name="password">Password</string>
+    <string name="registrationFailed">Please ensure you have filled in all the boxes. Try again.</string>
+    <string name="fillAllFields">Please filled in all the fields.</string>
+    <string name="username">Username</string>
+    <string name="passwordsDoNotMatch">Your passwords do not match, try again.</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="weakPassword">Your password must meet the following conditions:\n- Has 1 or more upper and lowercase characters,\n- Has 1 or more digits\n- Minimum length of 8,\n- Has a special character.</string>
+    <string name="welcomeSubtitle">to Revision Master!</string>
+    <string name="signIn">Sign In</string>
+    <string name="resetLinkSent">Reset message sent.</string>
+    <string name="unableToSendResetEmail">Unable to send the reset email.</string>
+    <string name="fillEmail">Please enter your email.</string>
+    <string name="cancel">Cancel</string>
+    <string name="get_password">Reset password</string>
 </resources>

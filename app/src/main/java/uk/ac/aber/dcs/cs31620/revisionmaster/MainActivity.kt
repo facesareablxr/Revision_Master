@@ -15,7 +15,9 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.ForgotPassScreenTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
@@ -65,8 +67,8 @@ fun BuildNavigationGraph() {
     ) {
         composable(Screen.Welcome.route) { WelcomeScreen(navController) }
         composable(Screen.Login.route) { LoginTopLevel(navController) }
-        //composable(Screen.SignUp.route) { SignUpScreen(navController) }
-
+        composable(Screen.SignUp.route) { SignUpTopLevel(navController) }
+        composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController)}
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Chats.route) { ChatsScreen() }
 
