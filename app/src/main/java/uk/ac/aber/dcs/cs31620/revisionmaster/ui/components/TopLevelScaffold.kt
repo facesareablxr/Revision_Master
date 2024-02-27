@@ -19,7 +19,8 @@ fun TopLevelScaffold(
         topBar = {
             val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
             MainPageTopAppBar(
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                navController = navController
             )
         },
         bottomBar = {

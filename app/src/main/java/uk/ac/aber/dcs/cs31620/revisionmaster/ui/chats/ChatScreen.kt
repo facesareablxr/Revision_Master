@@ -16,23 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 
-
-/**
- * Represents the home screen, has individual cards for each exercise for the current day.
- * @author Lauren Davis
- */
 @Composable
-fun ChatsScreen() {
+fun ChatsScreen(navController: NavController) {
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(stringResource(R.string.chats)
-                    )
-                }
-            )
+        bottomBar = {
+            MainPageNavigationBar(navController = navController)
         }
     ) { paddingValues ->
         Column(
@@ -40,31 +32,9 @@ fun ChatsScreen() {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text("Groups") }
-                )
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text("DMs") }
-                )
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text("Discover") }
-                )
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text("Q&A") }
-                )
-            }
+            CenterAlignedTopAppBar(
+                title = { Text(stringResource(R.string.chats)) },
+            )
             Spacer(modifier = Modifier.height(16.dp))
             TextField(
                 value = "",
@@ -75,6 +45,31 @@ fun ChatsScreen() {
                     .padding(8.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                SuggestionChip(
+                    onClick = { /* Handle group chat selection */ },
+                    label = { Text("Groups") }
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                SuggestionChip(
+                    onClick = { /* Handle DM selection */ },
+                    label = { Text("DMs") }
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                SuggestionChip(
+                    onClick = { /* Handle discover chat selection */ },
+                    label = { Text("Discover") }
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                SuggestionChip(
+                    onClick = { /* Handle Q&A chat selection */ },
+                    label = { Text("Q&A") }
+                )
+            }
         }
     }
 }

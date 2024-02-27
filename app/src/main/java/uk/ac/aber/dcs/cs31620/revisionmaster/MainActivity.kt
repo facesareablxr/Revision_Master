@@ -20,6 +20,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 
 /**
@@ -44,10 +45,10 @@ class MainActivity : ComponentActivity() {
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
                         // User is authenticated, navigate to Home
-                        BuildNavigationGraph()
+                        BuildNavigationGraph(Screen.Home.route)
                     } else {
                         // User is not authenticated, show WelcomeScreen
-                        BuildNavigationGraph()
+                        BuildNavigationGraph(Screen.Welcome.route)
                     }
                 }
             }
@@ -59,18 +60,19 @@ class MainActivity : ComponentActivity() {
  *
  */
 @Composable
-fun BuildNavigationGraph() {
+fun BuildNavigationGraph(destination: String) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = destination
     ) {
         composable(Screen.Welcome.route) { WelcomeScreen(navController) }
         composable(Screen.Login.route) { LoginTopLevel(navController) }
         composable(Screen.SignUp.route) { SignUpTopLevel(navController) }
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController)}
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Chats.route) { ChatsScreen() }
+        composable(Screen.Chats.route) { ChatsScreen(navController) }
+        composable(Screen.Profile.route){ ProfileScreen(navController) }
 
     }
 }

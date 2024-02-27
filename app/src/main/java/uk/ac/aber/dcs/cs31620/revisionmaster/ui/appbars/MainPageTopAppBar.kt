@@ -3,6 +3,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -33,10 +34,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 import java.time.LocalTime
 
 /**
@@ -49,6 +49,7 @@ import java.time.LocalTime
  */
 @Composable
 fun MainPageTopAppBar(
+    navController: NavController, // Added navigation controller parameter
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val context = LocalContext.current
@@ -71,16 +72,16 @@ fun MainPageTopAppBar(
                         .weight(1f)
                         .padding(start = 4.dp)
                 )
-                // Streak, notification, profile) on the right
+                // Streak, notification, profile on the right
                 Spacer(modifier = Modifier.width(4.dp))
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                        StreakCounter(steakCounter)
-                        NotificationsBell(notifications)
-                        ProfileCircle(context = context)
-                        Spacer(modifier = Modifier.width(4.dp))
+                    StreakCounter(steakCounter)
+                    NotificationsBell(notifications)
+                    ProfileCircle(context = context, navController = navController) // Pass navController
+                    Spacer(modifier = Modifier.width(4.dp))
                 }
             }
         },
@@ -140,13 +141,16 @@ private fun getGreeting(currentTime: LocalTime): String {
 }
 
 /**
- * This is the profile circle which will show the user their profile picture unless it there isn't
- * one and will display a placeholder
+ * This is the profile circle which now triggers navigation to the profile screen on click.
  */
 @Composable
-private fun ProfileCircle(context: Context) {
+private fun ProfileCircle(context: Context, navController: NavController) {
     Box(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .clickable {
+                navController.navigate("profile")
+            },
         contentAlignment = Alignment.Center
     ) {
         val image = painterResource(id = R.drawable.profile_image_placeholder) // Placeholder image
@@ -161,10 +165,3 @@ private fun ProfileCircle(context: Context) {
     }
 }
 
-@Preview
-@Composable
-private fun MainPageTopAppBarPreview() {
-    RevisionMasterTheme(dynamicColor = false) {
-        MainPageTopAppBar()
-    }
-}
