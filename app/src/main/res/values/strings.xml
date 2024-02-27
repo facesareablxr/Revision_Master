@@ -36,4 +36,6 @@
     <string name="fillEmail">Please enter your email.</string>
     <string name="cancel">Cancel</string>
     <string name="get_password">Reset password</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
 </resources>

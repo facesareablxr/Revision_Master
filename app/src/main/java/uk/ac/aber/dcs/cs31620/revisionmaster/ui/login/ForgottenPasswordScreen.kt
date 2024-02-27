@@ -30,7 +30,9 @@ import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 
-
+/**
+ *
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ForgotPassScreenTopLevel(
@@ -85,6 +87,9 @@ fun ForgotPassScreenTopLevel(
     )
 }
 
+/**
+ *
+ */
 @Composable
 private fun ForgotPasswordContent(
     email: String,

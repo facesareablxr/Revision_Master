@@ -48,6 +48,9 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
+/**
+ *
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginTopLevel(navController: NavHostController) {

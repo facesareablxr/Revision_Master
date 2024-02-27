@@ -5,16 +5,17 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -105,7 +106,11 @@ fun SignUpTopLevel(
                                             goToHome(navController)
                                         } else {
                                             // Handle sign-in failure after successful creation
-                                            Toast.makeText(context, "Sign-in failed after registration.", Toast.LENGTH_LONG)
+                                            Toast.makeText(
+                                                context,
+                                                "Sign-in failed after registration.",
+                                                Toast.LENGTH_LONG
+                                            )
                                                 .show()
                                         }
                                     }
@@ -144,6 +149,15 @@ fun SignupScreen(
             .padding(horizontal = 8.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            FirstNameField(user = user, updateUser = updateUser)
+            Spacer(modifier = Modifier.width(8.dp))
+            LastNameField(user = user, updateUser = updateUser)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
         UsernameField(user = user, updateUser = updateUser)
         Spacer(modifier = Modifier.height(8.dp))
         EmailSignUp(user = user, updateUser = updateUser)
@@ -157,6 +171,48 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(8.dp))
         SignupButton(signupAction = signupAction)
     }
+}
+
+@Composable
+private fun FirstNameField(
+    user: User,
+    updateUser: (User) -> Unit
+) {
+    OutlinedTextField(
+        value = user.firstName,
+        label = { Text(text = stringResource(R.string.first_name)) },
+        onValueChange = { updatedFirstName ->
+            if (isValidName(updatedFirstName)) {
+                updateUser(user.copy(firstName = updatedFirstName))
+            }
+        },
+        modifier = Modifier.width(180.dp)
+    )
+}
+
+@Composable
+private fun LastNameField(
+    user: User,
+    updateUser: (User) -> Unit
+) {
+    OutlinedTextField(
+        value = user.lastName,
+        label = { Text(text = stringResource(R.string.last_name)) },
+        onValueChange = { updatedLastName ->
+            if (isValidName(updatedLastName)) {
+                updateUser(user.copy(lastName = updatedLastName))
+            }
+        },
+        modifier = Modifier.width(180.dp)
+    )
+}
+
+/**
+ * Function that checks if the user inputted name is valid
+ */
+private fun isValidName(name: String): Boolean {
+    val regex = "[a-zA-Z]+".toRegex()
+    return name.matches(regex)
 }
 
 /**
@@ -173,10 +229,21 @@ private fun UsernameField(
     OutlinedTextField(
         value = user.username,
         label = { Text(text = stringResource(R.string.username)) },
-        leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-        onValueChange = { updatedUser -> updateUser(user.copy(username = updatedUser)) },
+        onValueChange = { updatedUsername ->
+            if (isValidUsername(updatedUsername)) {
+                updateUser(user.copy(lastName = updatedUsername))
+            }
+        },
         modifier = Modifier.fillMaxWidth()
-    )
+        )
+}
+
+/**
+ * Function to check the validity of a username
+ */
+fun isValidUsername(username: String): Boolean {
+    val regex = "^[a-zA-Z0-9_]+$".toRegex()
+    return username.matches(regex) && username.length in 5..12 // Length between 5 and 12 characters
 }
 
 /**

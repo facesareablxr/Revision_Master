@@ -22,6 +22,9 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
+/**
+ *
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun WelcomeScreen(navController: NavController) {
@@ -39,6 +42,9 @@ fun WelcomeScreen(navController: NavController) {
     }
 }
 
+/**
+ *
+ */
 @Composable
 fun WelcomeContent(navController: NavController) {
     Column(
@@ -48,21 +54,21 @@ fun WelcomeContent(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Welcome text in the center, larger size
+        // Welcome text
         Text(
             text = stringResource(R.string.welcome),
             style = MaterialTheme.typography.headlineLarge,
             modifier = Modifier.padding(8.dp)
         )
 
-        // Subtitle "to revision master"
+        // Subtitle
         Text(
             text = stringResource(R.string.welcomeSubtitle),
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
-        // Buttons stacked vertically with different colors
+        // Buttons stacked vertically
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
