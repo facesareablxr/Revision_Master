@@ -226,16 +226,19 @@ private fun UsernameField(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    val usernameState = remember { mutableStateOf(user.username) }
+
     OutlinedTextField(
-        value = user.username,
+        value = usernameState.value,
         label = { Text(text = stringResource(R.string.username)) },
-        onValueChange = { updatedUsername ->
-            if (isValidUsername(updatedUsername)) {
-                updateUser(user.copy(lastName = updatedUsername))
+        onValueChange = { newUsername ->
+            if (isValidUsername(newUsername)) {
+                usernameState.value = newUsername
+                updateUser(user.copy(username = newUsername))
             }
         },
         modifier = Modifier.fillMaxWidth()
-        )
+    )
 }
 
 /**
@@ -243,7 +246,7 @@ private fun UsernameField(
  */
 fun isValidUsername(username: String): Boolean {
     val regex = "^[a-zA-Z0-9_]+$".toRegex()
-    return username.matches(regex) && username.length in 5..12 // Length between 5 and 12 characters
+    return username.matches(regex)
 }
 
 /**
