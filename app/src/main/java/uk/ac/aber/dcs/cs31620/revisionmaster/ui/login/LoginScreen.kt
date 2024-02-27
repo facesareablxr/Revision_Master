@@ -2,6 +2,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.login
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -47,76 +48,67 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
-/**
- * Top-level composable for the login screen.
- *
- * @param navController Reference to the navigation controller.
- */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginTopLevel(navController: NavHostController) {
-    var user by remember { mutableStateOf(User()) }
+    val user = remember { mutableStateOf(User()) }
     val context = LocalContext.current as Activity
-
-    // Initialize Firebase Auth instance
     val auth = FirebaseAuth.getInstance()
 
-    // String resources for displaying messages
     val fillInAllFields = stringResource(R.string.fillallfields)
     val failureMessage = stringResource(R.string.failedLogIn)
 
-    // Launched effect to check for existing logged-in user, so if for some reason it navigates
-    // here while they're logged in, it will pass this screen
     LaunchedEffect(auth.currentUser) {
         if (auth.currentUser != null) {
             goToHome(navController)
         }
     }
 
-    // Flag to control toast visibility
     var showToast by remember { mutableStateOf(false) }
 
-    // Scaffold composable for the overall layout
     Scaffold(
         topBar = {
             SmallTopAppBar(
                 navController,
-                stringResource(R.string.login), // Set title
+                stringResource(R.string.login)
             )
         }
     ) {
-        // Box composable to stack UI elements
-        Box(
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            // Background image
+        Box(modifier = Modifier.fillMaxSize()) {
             Image(
                 painter = painterResource(id = R.drawable.background),
-                contentDescription = "Login Screen Background Image",
-                contentScale = ContentScale.Crop, // Stretch to fill
+                contentDescription = "Background Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Login screen content
             LoginScreen(
-                user = user,
-                updateUser = { user = it }, // Update user state on changes
-                forgotPasswordAction = {
-                    navController.navigate(Screen.ForgotDetails.route)
-                },
-                loginAction = {
-                    showToast = true // Set flag to show toast after login attempt
+                user = user.value,
+                onUserChange = { newUser -> user.value = newUser },
+                onForgotPassword = { navController.navigate(Screen.ForgotDetails.route) },
+                onLogin = {
+                    if (user.value.email.isEmpty() || user.value.password.isEmpty()) {
+                        showToast = true
+                    } else {
+                        auth.signInWithEmailAndPassword(user.value.email, user.value.password)
+                            .addOnCompleteListener(context) { task ->
+                                if (task.isSuccessful) {
+                                    // Login successful
+                                    Toast.makeText(context, "Successfully logged in", Toast.LENGTH_LONG).show()
+                                    goToHome(navController)
+                                } else {
+                                    // Login failed
+                                    Toast.makeText(context, failureMessage, Toast.LENGTH_LONG).show()
+                                    Log.d("FB-AUTH", "Login failed. Cause: ${task.exception?.cause}")
+                                }
+                            }
+                    }
                 }
             )
 
-            // Conditional toast logic
             if (showToast) {
-                Toast.makeText(
-                    context,
-                    if (user.email.isEmpty() || user.password.isEmpty()) fillInAllFields else failureMessage,
-                    Toast.LENGTH_LONG
-                ).show()
-                showToast = false // Reset flag after showing toast
+                Toast.makeText(context, fillInAllFields, Toast.LENGTH_LONG).show()
+                showToast = false
             }
         }
     }
@@ -126,31 +118,29 @@ fun LoginTopLevel(navController: NavHostController) {
  * Composable function for the login screen layout.
  *
  * @param user Current user information.
- * @param updateUser Function to update user state.
- * @param forgotPasswordAction Function to navigate to forgot password screen.
- * @param loginAction Function to initiate login attempt.
+ * @param onUserChange Function to update user state.
+ * @param onForgotPassword Function to navigate to forgot password screen.
+ * @param onLogin Function to initiate login attempt.
  */
 @Composable
 fun LoginScreen(
     user: User,
-    updateUser: (User) -> Unit = {},
-    forgotPasswordAction: () -> Unit = {},
-    loginAction: () -> Unit = {}
+    onUserChange: (User) -> Unit = {},
+    onForgotPassword: () -> Unit = {},
+    onLogin: () -> Unit
 ) {
-    // Column for vertical layout with padding
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.Center
     ) {
-        // Input fields and buttons arranged vertically
-        EmailBox(user, updateUser)
-        Spacer(modifier = Modifier.height(8.dp)) // Spacing between fields
-        PasswordBox(user, updateUser)
-        Spacer(modifier = Modifier.height(8.dp)) // Spacing between fields
-        LoginButton(loginAction)
-        ForgotPassword(forgotPasswordAction)
+        EmailBox(user, onUserChange)
+        Spacer(modifier = Modifier.height(8.dp))
+        PasswordBox(user, onUserChange)
+        Spacer(modifier = Modifier.height(8.dp))
+        LoginButton(onLogin)
+        ForgotPassword(onForgotPassword)
     }
 }
 
