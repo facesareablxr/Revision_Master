@@ -2,6 +2,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.login
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 
@@ -47,33 +50,24 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
  * Top-level composable for the sign-up flow.
  *
  * @param navController Navigation controller to navigate between screens.
+ * @param userViewModel ViewModel for user operations.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SignUpTopLevel(
-    navController: NavHostController
-) {
-    // State variables for user information and confirm password
+fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewModel) {
+    val context = LocalContext.current as Activity
     var user by remember { mutableStateOf(User()) }
     var confirmPassword by remember { mutableStateOf("") }
 
-    // Firebase authentication instance and current activity context
-    val auth = FirebaseAuth.getInstance()
-    val context = LocalContext.current as Activity
-
-    // String resources for error messages
     val passwordsDoNotMatchMsg = stringResource(R.string.passwordsDoNotMatch)
-    val registrationFailedMsg = stringResource(R.string.registrationFailed)
     val weakPasswordMsg = stringResource(R.string.weakPassword)
 
-    // Check if user is already signed in and navigate to home if so
-    LaunchedEffect(auth.currentUser) {
-        if (auth.currentUser != null) {
+    LaunchedEffect(userViewModel) {
+        FirebaseAuth.getInstance().currentUser?.let {
             goToHome(navController)
         }
     }
 
-    // Scaffold with top bar and sign-up screen content
     Scaffold(
         modifier = Modifier.padding(8.dp),
         topBar = {
@@ -86,44 +80,36 @@ fun SignUpTopLevel(
         SignupScreen(
             user = user,
             confirmPassword = confirmPassword,
-            updateUser = { updatedUser -> user = updatedUser },
-            updateConfirmPassword = { updatedPassword -> confirmPassword = updatedPassword },
+            updateUser = { user = it },
+            updateConfirmPassword = { confirmPassword = it },
             signupAction = {
-                // Check password match and strength before registering
                 if (user.password != confirmPassword) {
-                    Toast.makeText(context, passwordsDoNotMatchMsg, Toast.LENGTH_LONG).show()
+                    showToast(context, passwordsDoNotMatchMsg)
                 } else if (!isStrongPassword(user.password)) {
-                    Toast.makeText(context, weakPasswordMsg, Toast.LENGTH_LONG).show()
+                    showToast(context, weakPasswordMsg)
                 } else {
-                    // Attempt user registration and handle success/failure
+                    val auth = FirebaseAuth.getInstance()
                     auth.createUserWithEmailAndPassword(user.email, user.password)
-                        .addOnCompleteListener(context) { task ->
+                        .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                // Sign in the new user and navigate to home
-                                auth.signInWithEmailAndPassword(user.email, user.password)
-                                    .addOnCompleteListener(context) { signInTask ->
-                                        if (signInTask.isSuccessful) {
-                                            goToHome(navController)
-                                        } else {
-                                            // Handle sign-in failure after successful creation
-                                            Toast.makeText(
-                                                context,
-                                                "Sign-in failed after registration.",
-                                                Toast.LENGTH_LONG
-                                            )
-                                                .show()
-                                        }
-                                    }
+                                userViewModel.addUserToDB(user)
+                                goToHome(navController)
                             } else {
-                                // Handle registration failure
-                                Toast.makeText(context, registrationFailedMsg, Toast.LENGTH_LONG)
-                                    .show()
+                                showToast(context, "Signup failed!")
                             }
                         }
                 }
             }
         )
     }
+}
+
+
+/**
+ * Function to display a toast message.
+ */
+private fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
 
 /**
@@ -146,13 +132,11 @@ fun SignupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp),
-        verticalArrangement = Arrangement.Center
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+        Row {
             FirstNameField(user = user, updateUser = updateUser)
             Spacer(modifier = Modifier.width(8.dp))
             LastNameField(user = user, updateUser = updateUser)
@@ -166,9 +150,9 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(8.dp))
         ConfirmPasswordField(
             confirmPassword = confirmPassword,
-            updateConfirmPassword = updateConfirmPassword
+            updateConfirmPassword = updateConfirmPassword,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         SignupButton(signupAction = signupAction)
     }
 }
@@ -207,6 +191,7 @@ private fun LastNameField(
     )
 }
 
+
 /**
  * Function that checks if the user inputted name is valid
  */
@@ -241,6 +226,7 @@ private fun UsernameField(
     )
 }
 
+
 /**
  * Function to check the validity of a username
  */
@@ -269,6 +255,7 @@ private fun EmailSignUp(
         modifier = Modifier.fillMaxWidth()
     )
 }
+
 
 /**
  * Composable function that renders a password text field with toggle visibility.
@@ -301,6 +288,7 @@ private fun PasswordSignUp(
         modifier = Modifier.fillMaxWidth()
     )
 }
+
 
 /**
  * Composable function that renders a confirm password text field with toggle visibility.

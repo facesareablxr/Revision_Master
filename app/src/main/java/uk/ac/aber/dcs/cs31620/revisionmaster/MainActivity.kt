@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.ForgotPassScreenTopLevel
@@ -45,10 +46,10 @@ class MainActivity : ComponentActivity() {
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
                         // User is authenticated, navigate to Home
-                        BuildNavigationGraph(Screen.Home.route)
+                        BuildNavigationGraph(Screen.Home.route, UserViewModel())
                     } else {
                         // User is not authenticated, show WelcomeScreen
-                        BuildNavigationGraph(Screen.Welcome.route)
+                        BuildNavigationGraph(Screen.Welcome.route, UserViewModel())
                     }
                 }
             }
@@ -60,7 +61,7 @@ class MainActivity : ComponentActivity() {
  *
  */
 @Composable
-fun BuildNavigationGraph(destination: String) {
+fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -68,7 +69,7 @@ fun BuildNavigationGraph(destination: String) {
     ) {
         composable(Screen.Welcome.route) { WelcomeScreen(navController) }
         composable(Screen.Login.route) { LoginTopLevel(navController) }
-        composable(Screen.SignUp.route) { SignUpTopLevel(navController) }
+        composable(Screen.SignUp.route) { SignUpTopLevel(navController, userViewModel) }
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController)}
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Chats.route) { ChatsScreen(navController) }

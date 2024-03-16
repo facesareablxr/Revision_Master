@@ -21,9 +21,13 @@
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": []
+        },
+        "firebase_database": {
+          "rules": "database.rules.json"
         }
       }
     }
   ],
-  "configuration_version": "1"
+  "configuration_version": "1",
+  "databaseURL": "https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app"
 }

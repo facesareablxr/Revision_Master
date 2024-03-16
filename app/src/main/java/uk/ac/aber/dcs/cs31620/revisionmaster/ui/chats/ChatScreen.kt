@@ -25,7 +25,7 @@ fun ChatsScreen(navController: NavController) {
     Scaffold(
         bottomBar = {
             MainPageNavigationBar(navController = navController)
-        }
+              }
     ) { paddingValues ->
         Column(
             modifier = Modifier

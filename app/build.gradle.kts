@@ -104,7 +104,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.1.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.1")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.3")
 
     //Firebase Implementation
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
