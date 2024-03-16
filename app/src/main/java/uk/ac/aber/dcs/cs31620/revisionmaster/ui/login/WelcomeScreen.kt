@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -33,8 +36,8 @@ fun WelcomeScreen(navController: NavController) {
     ) {
         // Image cropped to fit the screen
         Image(
-            painter = painterResource(id = R.drawable.background),
-            contentDescription = "Welcome Screen Background Image",
+            painter = painterResource(id = R.drawable.splash),
+            contentDescription = stringResource(R.string.welcome),
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
@@ -43,7 +46,7 @@ fun WelcomeScreen(navController: NavController) {
 }
 
 /**
- *
+ * This is all of the content for the welcome screen including the text and buttons
  */
 @Composable
 fun WelcomeContent(navController: NavController) {
@@ -54,19 +57,23 @@ fun WelcomeContent(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Welcome text
-        Text(
-            text = stringResource(R.string.welcome),
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(8.dp)
-        )
+        // Welcome text in black, overriding the theme of the application for readability
+        CompositionLocalProvider(LocalContentColor provides Color.Black) {
+            Text(
+                text = stringResource(R.string.welcome),
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
 
-        // Subtitle
-        Text(
-            text = stringResource(R.string.welcomeSubtitle),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // Welcome text in black, overriding the theme of the application for readability
+        CompositionLocalProvider(LocalContentColor provides Color.Black) {
+            Text(
+                text = stringResource(R.string.welcomeSubtitle),
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+        }
 
         // Buttons stacked vertically
         Column(
@@ -74,6 +81,7 @@ fun WelcomeContent(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Button for sign-in, will take you into the login route via LoginScreen.kt
             Button(
                 onClick = {
                     navController.navigate(Screen.Login.route)
@@ -83,6 +91,7 @@ fun WelcomeContent(navController: NavController) {
             ) {
                 Text(stringResource(R.string.signIn))
             }
+            // Button for sign-up, will take you into the sign-up route via SignUpScreen.kt
             Button(
                 onClick = {
                     navController.navigate(Screen.SignUp.route)

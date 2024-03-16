@@ -1,4 +1,4 @@
-package uk.ac.aber.dcs.cs31620.revisionmaster
+package uk.ac.aber.dcs.cs31620.revisionmaster.model.util
 
 sealed class Response<out T> {
     object Loading: Response<Nothing>()

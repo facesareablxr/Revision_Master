@@ -40,4 +40,9 @@
     <string name="last_name">Last Name</string>
     <string name="profile">Profile</string>
     <string name="sign_out">Sign Out</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="noUser">No user found!</string>
+    <string name="save_changes">Save Changes</string>
+    <string name="institution">Institution</string>
+    <string name="change_profile_picture">Change profile picture</string>
 </resources>

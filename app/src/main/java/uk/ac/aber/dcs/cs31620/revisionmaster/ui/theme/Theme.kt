@@ -46,7 +46,6 @@ private val lightColors = lightColorScheme(
     scrim = md_theme_light_scrim,
 )
 
-
 private val darkColors = darkColorScheme(
     primary = md_theme_dark_primary,
     onPrimary = md_theme_dark_onPrimary,
@@ -78,7 +77,6 @@ private val darkColors = darkColorScheme(
     outlineVariant = md_theme_dark_outlineVariant,
     scrim = md_theme_dark_scrim,
 )
-
 @Composable
 fun RevisionMasterTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

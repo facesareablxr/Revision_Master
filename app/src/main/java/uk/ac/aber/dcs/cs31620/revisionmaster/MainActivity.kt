@@ -21,7 +21,8 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.EditProfileTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreenTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 
 /**
@@ -73,7 +74,7 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController)}
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Chats.route) { ChatsScreen(navController) }
-        composable(Screen.Profile.route){ ProfileScreen(navController) }
-
+        composable(Screen.Profile.route){ ProfileScreenTopLevel(navController) }
+        composable(Screen.EditProfile.route){ EditProfileTopLevel(navController) }
     }
 }

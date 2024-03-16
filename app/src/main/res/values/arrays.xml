@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="universities">
+        <item>Aberystwyth University</item>
+        <item>Anglia Ruskin University</item>
+        <item>Bangor University</item>
+        <item>Bath Spa University</item>
+        <item>Birmingham City University</item>
+        <item>Bishop Grosseteste University</item>
+        <item>Bournemouth University</item>
+        <item>Brunel University</item>
+        <item>Buckinghamshire New University</item>
+        <item>Canterbury Christ Church University</item>
+        <item>Cardiff Metropolitan University</item>
+        <item>Cardiff University</item>
+        <item>Coleg Meirion-Dwyfor (FE College)</item>
+        <item>Coventry University</item>
+        <item>Cranfield University</item>
+        <item>De Montfort University</item>
+        <item>Edge Hill University</item>
+        <item>Falmouth Exeter Plus</item>
+        <item>Glyndwr University Wrexham</item>
+        <item>Goldsmiths University of London</item>
+        <item>Guildhall School of Music and Drama</item>
+        <item>Harper Adams University</item>
+        <item>Hartpury University</item>
+        <item>Imperial College London</item>
+        <item>Keele University</item>
+        <item>King\'s College London</item>
+        <item>Kingston University</item>
+        <item>Lancaster University</item>
+        <item>Leeds Trinity University</item>
+        <item>Liverpool Hope University</item>
+        <item>London School of Economics (University of London)</item>
+        <item>London South Bank University</item>
+        <item>Loughborough University</item>
+        <item>Manchester Metropolitan University</item>
+        <item>Middlesex University</item>
+        <item>Newcastle University</item>
+        <item>Newman University</item>
+        <item>Norwich University of the Arts</item>
+        <item>Oxford Brookes University</item>
+        <item>Queen Mary (University of London)</item>
+        <item>Queen\'s University, Belfast</item>
+        <item>Roehampton University</item>
+        <item>Royal Agricultural University</item>
+        <item>Royal Holloway, University of London</item>
+        <item>Sheffield Hallam University</item>
+        <item>Solent University</item>
+        <item>University of Cambridge</item>
+        <item>University of Oxford</item>
+    </string-array>
+</resources>

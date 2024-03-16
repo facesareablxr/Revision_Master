@@ -8,7 +8,10 @@ data class User(
 
     var email: String = "",
     var password: String = "",
-    val profilePictureUrl: String? = null
+    val profilePictureUrl: String? = null,
+    val institution: String? = null,
+    val following: Int = 0,
+    val followers: Int = 0
 ) {
 
 }
