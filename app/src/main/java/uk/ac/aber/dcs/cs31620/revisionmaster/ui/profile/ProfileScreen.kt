@@ -17,20 +17,23 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,37 +42,66 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImagePainter.State.Error
+import coil.compose.AsyncImagePainter.State.Loading
+import coil.compose.AsyncImagePainter.State.Success
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
+
+/**
+ * This is the profile screen where the user will be able to see all of their information, from here
+ * they will be able to either edit their details or go back to the home screen.
+ * @author Lauren Davis
+ */
+
+/**
+ * The top-level composable for the profile screen.
+ *
+ * @param navController The navigation controller used to navigate between screens.
+ */
 @Composable
 fun ProfileScreenTopLevel(navController: NavController) {
     ProfileScreen(onBackClick = { Screen.Home.route }, navController)
 }
 
+/**
+ * The main composable for the profile screen.
+ *
+ * @param onBackClick The function to call when the back button is clicked.
+ * @param navigator The navigation controller used to navigate between screens.
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     onBackClick: () -> Unit,
-    navigator: NavController // Pass navigator as a parameter
+    navigator: NavController
 ) {
+    // Create a ViewModel instance to manage the user data
     val viewModel: UserViewModel = viewModel()
+    // Observe the user data using a state variable
     val user by viewModel.user.collectAsState(initial = null)
 
+    // Load user data on screen launch
     LaunchedEffect(Unit) {
         viewModel.getUserData()
     }
 
+    // Scaffold is the layout structure for the screen
     Scaffold(
         topBar = {
+            // TopAppBar with navigation icon and actions
             TopAppBar(
                 title = {},
                 navigationIcon = {
@@ -85,7 +117,9 @@ fun ProfileScreen(
             )
         }
     ) { innerPadding ->
+        // Content of the screen will be placed inside the padding
         if (user == null) {
+            // Show a progress indicator while user data is loading
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -95,6 +129,7 @@ fun ProfileScreen(
                 CircularProgressIndicator()
             }
         } else {
+            // Display user information once data is loaded
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -105,6 +140,13 @@ fun ProfileScreen(
         }
     }
 }
+
+/**
+ * This composable displays the user's profile information.
+ *
+ * @param user The user object containing user data.
+ * @param userViewModel The user view model instance.
+ */
 @Composable
 fun ProfileContent(user: User, userViewModel: UserViewModel) {
 
@@ -115,38 +157,90 @@ fun ProfileContent(user: User, userViewModel: UserViewModel) {
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Display profile picture
             ProfilePicture(user.profilePictureUrl)
             Spacer(modifier = Modifier.width(16.dp))
+            // Display username and full name underneath, but next to the profile picture
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = user.username, style = MaterialTheme.typography.headlineMedium)
+                Text(text = user.username, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
                 Text(
                     text = "${user.firstName} ${user.lastName}",
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyLarge
                 )
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
+        // Display the email
         EmailDisplay(user)
         Spacer(modifier = Modifier.height(8.dp))
+        // Display the institution of the user
         InstitutionDisplay(user)
         Spacer(modifier = Modifier.height(8.dp))
+        // Display the following and follower count for the user
         FollowingFollowersCount(user)
         Spacer(modifier = Modifier.height(8.dp))
+
+        // Column for the display of other options such as Settings and Login, more may be added if needed
         Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.Start
         ) {
-            OutlinedButton(onClick = { /* Handle settings click */ }) {
-                Text("Settings")
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(onClick = {userViewModel.signOut() }) {
-                Text("Logout")
-            }
+            Divider()
+            // List items for Settings and Logout
+            ListItem(
+                text = "Settings",
+                icon = { Icon(Icons.Filled.Settings, contentDescription = "Settings") },
+                onClick = { /* Handle settings click */ }
+            )
+            Divider()
+            ListItem(
+                text = "Logout",
+                icon = {
+                    Icon(
+                        Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = "Logout"
+                    )
+                }, // Use ExitToApp icon for logout
+                onClick = { userViewModel.signOut() }
+            )
+            Divider()
         }
     }
 }
 
+/**
+ * Creates a clickable list item with text and an icon.
+ *
+ * @param text The text to display in the list item.
+ * @param icon The icon to display on the right side of the list item.
+ * @param onClick The function to call when the list item is clicked.
+ */
+@Composable
+private fun ListItem(text: String, icon: @Composable () -> Unit, onClick: () -> Unit) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = text, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.width(16.dp))
+            icon()
+        }
+    }
+}
+
+/**
+ * Displays the user's following and followers count.
+ *
+ * @param user The user object containing the following and followers count.
+ */
 @Composable
 private fun FollowingFollowersCount(user: User) {
     Row(
@@ -158,6 +252,12 @@ private fun FollowingFollowersCount(user: User) {
     }
 }
 
+/**
+ * Creates a box with rounded corners that displays a count.
+ *
+ * @param text The text to display above the count.
+ * @param count The numerical count to display.
+ */
 @Composable
 private fun CountBox(text: String, count: Int) {
     Surface(
@@ -171,53 +271,91 @@ private fun CountBox(text: String, count: Int) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = text, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-            Text(text = count.toString(), style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = text,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(text = count.toString(), style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
 
-
+/**
+ * Displays the user's institution.
+ *
+ * @param user The user object containing the institution information.
+ */
 @Composable
 private fun InstitutionDisplay(user: User) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Trailing icon
         Icon(Icons.Filled.School, contentDescription = "School")
         Spacer(modifier = Modifier.width(8.dp))
         Text(
+            // Will automatically set to N/A if there isn't an institution set up
             text = user.institution ?: "N/A",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyLarge
         )
     }
 }
 
+/**
+ * Displays the user's email address.
+ *
+ * @param user The user object containing the email address.
+ */
 @Composable
 private fun EmailDisplay(user: User) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // Trailing icon
         Icon(Icons.Filled.Email, contentDescription = "Email")
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = user.email, style = MaterialTheme.typography.bodyMedium)
+        Text(text = user.email, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
 @Composable
 fun ProfilePicture(profilePictureUrl: String?) {
-    val defaultProfilePicture = painterResource(id = R.drawable.profile_image_placeholder)
-    val imageModifier = Modifier
-        .size(120.dp)
-        .clip(CircleShape)
+    val painter = rememberAsyncImagePainter(
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(profilePictureUrl)
+            .size(coil.size.Size.ORIGINAL)
+            .build()
+    )
+    val state = painter.state
+    val placeholderPainter = painterResource(R.drawable.profile_image_placeholder) // Replace with your default image resource
 
     Image(
-        painter =  defaultProfilePicture,
-        contentDescription = "Profile Picture",
-        modifier = imageModifier,
-        contentScale = ContentScale.Crop
+        modifier = Modifier.size(56.dp).clip(CircleShape), // Adjust size as needed
+        painter = if (state is Success) painter else placeholderPainter,
+        contentDescription = stringResource(R.string.description)
     )
+
+    when (painter.state) {
+        is Loading -> {
+            // Show a loading indicator while image is loading
+            CircularProgressIndicator(modifier = Modifier.size(56.dp))
+        }
+        is Error -> {
+            // Show an error icon if loading fails
+            IconButton(onClick = { /* Handle reload or error */ }) {
+                Icon(Icons.Filled.Error, contentDescription = "Error loading image")
+            }
+        }
+        is Success -> {
+            // Image is loaded, do nothing here (already displayed in Image)
+        }
+        else -> {}
+    }
 }

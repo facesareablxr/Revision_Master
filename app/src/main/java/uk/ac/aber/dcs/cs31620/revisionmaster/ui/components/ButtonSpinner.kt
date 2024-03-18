@@ -1,18 +1,27 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.components
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.TextUnit
@@ -40,44 +49,55 @@ fun ButtonSpinner(
     fontSize: TextUnit = 16.sp,
     itemClick: (String) -> Unit = {}
 ) {
-    // Adds a default label, this was done after encountering issues displaying the days of the week as labels, inefficient, but it works.
     var itemText by rememberSaveable { mutableStateOf(label) }
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-    OutlinedButton(
-        modifier = modifier,
-        onClick = { expanded = !expanded }
+    val cornerRadius = 4.dp
+
+    Surface(
+        modifier = modifier
+            .clickable(onClick = { expanded = !expanded })
+            .padding(16.dp),
+        shape = RoundedCornerShape(cornerRadius),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
-        Text(
-            text = itemText,
-            fontSize = fontSize,
-            modifier = Modifier.padding(end = 8.dp)
-        )
-        // Adds the icon to the button
-        Icon(
-            imageVector = Icons.Filled.ArrowDropDown,
-            contentDescription = stringResource(R.string.dropdown)
-        )
-        // Defines the dropdown menu and its items
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        )
-        {
-            items.forEach {
-                DropdownMenuItem(
-                    text = { Text(text = it) },
-                    onClick = {
-                        // Collapse the dropdown
-                        expanded = false
-                        // Remember the name of the item selected
-                        itemText = it
-                        // Return the state to the caller
-                        itemClick(it)
-                    }
-                )
+        Row(
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Text(
+                text = itemText,
+                fontSize = fontSize,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(
+                modifier = Modifier
+                    .align(CenterVertically)
+                    .padding(8.dp),
+                imageVector = Icons.Filled.ArrowDropDown,
+                contentDescription = stringResource(id = R.string.dropdown)
+            )
+        }
+        if (expanded) {
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                items.forEach {
+                    DropdownMenuItem(
+                        text = { Text(text = it) },
+                        onClick = {
+                            expanded = false
+                            itemText = it
+                            itemClick(it)
+                        }
+                    )
+                }
             }
         }
+
     }
 }
-

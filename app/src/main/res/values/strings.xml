@@ -45,4 +45,8 @@
     <string name="save_changes">Save Changes</string>
     <string name="institution">Institution</string>
     <string name="change_profile_picture">Change profile picture</string>
+    <string name="description">profile picture</string>
+    <string name="take_photo">Camera</string>
+    <string name="choose_from_gallery">Gallery</string>
+    <string name="choose_profile_picture">Upload Image</string>
 </resources>

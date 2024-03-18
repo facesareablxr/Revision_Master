@@ -1,8 +1,6 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 //noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,33 +9,28 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.AlertDialog
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -62,6 +55,7 @@ import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 
 @Composable
 fun EditProfileTopLevel( navController: NavController) {
@@ -90,10 +84,8 @@ fun EditProfileScreen(
             CircularProgressIndicator()
         }
     } else {
-        // Inflate the layout with user data
         val firstName = mutableStateOf(user!!.firstName)
         val lastName = mutableStateOf(user!!.lastName)
-        val institution = mutableStateOf(user!!.institution ?: "")
         val profilePictureUri = mutableStateOf(user!!.profilePictureUrl)
 
         val coroutineScope = rememberCoroutineScope()
@@ -105,10 +97,9 @@ fun EditProfileScreen(
             context.resources.getStringArray(R.array.universities).toList()
         }
 
-        var showDialog by remember { mutableStateOf(false) }
-        var selectedUniversityIndex by remember { mutableStateOf(-1) }
+        // State variables for ButtonSpinner
+        var selectedUniversity by remember { mutableStateOf("") }
 
-        // Scaffold for the screen
         Scaffold(
             topBar = {
                 // Custom app bar allowing the user to navigate back
@@ -117,11 +108,11 @@ fun EditProfileScreen(
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && institution.value.isNotEmpty()) {
+                        if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && selectedUniversity.isNotEmpty()) {
                             viewModel.updateProfile(
                                 firstName = firstName.value,
                                 lastName = lastName.value,
-                                institution = institution.value,
+                                institution = selectedUniversity,
                                 profilePictureUrl = profilePictureUri.value
                             )
                             navController.navigateUp()
@@ -168,7 +159,7 @@ fun EditProfileScreen(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // First name, last name, institution fields
+                        // First name, last name fields
                         item {
                             TextInputField(
                                 value = firstName.value,
@@ -184,35 +175,13 @@ fun EditProfileScreen(
                                 onValueChange = { lastName.value = it }
                             )
                         }
-                        // Institution input box
+                        // Institution input using ButtonSpinner
                         item {
-                            OutlinedTextField(
-                                value = institution.value,
-                                onValueChange = { /* Do nothing */ },
-                                label = { Text("Institution") },
-                                trailingIcon = {
-                                    IconButton(onClick = { showDialog = true }) {
-                                        Icon(
-                                            imageVector = Icons.Default.ArrowDropDown,
-                                            contentDescription = "Select institution"
-                                        )
-                                    }
-                                },
-                                modifier = Modifier.fillMaxWidth(),
-                                enabled = false
+                            ButtonSpinner(
+                                items = universities,
+                                label = "Institution",
+                                itemClick = { selectedUniversity = it }
                             )
-                            if (showDialog) {
-                                UniversitySelectionDialog(
-                                    universities = universities,
-                                    selectedUniversityIndex = selectedUniversityIndex,
-                                    onUniversitySelected = { index ->
-                                        selectedUniversityIndex = index
-                                        institution.value = universities[index]
-                                        showDialog = false
-                                    },
-                                    onDismissRequest = { showDialog = false }
-                                )
-                            }
                         }
                     }
                     SnackbarHost(
@@ -221,65 +190,6 @@ fun EditProfileScreen(
                     )
                 }
             }
-        )
-    }
-}
-
-@Composable
-fun UniversitySelectionDialog(
-    universities: List<String>,
-    selectedUniversityIndex: Int,
-    onUniversitySelected: (Int) -> Unit,
-    onDismissRequest: () -> Unit
-) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(text = "Select Institution") },
-        text = {
-            Column {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    label = { Text("Search") },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                LazyColumn(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    itemsIndexed(universities.filter { it.contains(searchQuery, ignoreCase = true) }) { index, university ->
-                        UniversityItem(
-                            university = university,
-                            isSelected = index == selectedUniversityIndex,
-                            onClick = { onUniversitySelected(index) }
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            // Optional confirmation button if needed
-        }
-    )
-}
-
-@Composable
-fun UniversityItem(
-    university: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    TextButton(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            text = university,
-            style = MaterialTheme.typography.bodySmall.copy(
-                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground
-            )
         )
     }
 }
@@ -337,28 +247,41 @@ fun ImageSelectionDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         title = { Text("Choose Image") },
+        text = {
+            // Optionally add some text instructions here
+        },
         buttons = {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(
+                IconButton(
                     onClick = {
                         // Launch Camera Intent
                         // Handle image capture and path retrieval
                         onImageSelected("path/to/captured/image.jpg")
                     }
                 ) {
-                    Text("Camera")
+                    Icon(Icons.Filled.Camera, contentDescription = "Camera")
                 }
-                Spacer(modifier = Modifier.weight(1f))
-                Button(
+                Spacer(modifier = Modifier.size(8.dp))
+                IconButton(
                     onClick = {
                         // Launch Gallery Intent
                         // Handle image selection and path retrieval
                         onImageSelected("path/to/selected/image.jpg")
                     }
                 ) {
-                    Text("Gallery")
+                    Icon(Icons.Filled.Image, contentDescription = "Gallery")
+                }
+                Spacer(modifier = Modifier.size(8.dp))
+                IconButton(
+                    onClick = {
+                        // Launch File Picker Intent
+                        // Handle file selection and path retrieval
+                        onImageSelected("path/to/selected/file.jpg")
+                    }
+                ) {
+                    Icon(Icons.Filled.Folder, contentDescription = "Files")
                 }
             }
         }

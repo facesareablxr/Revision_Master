@@ -80,12 +80,12 @@ fun LoginTopLevel(navController: NavHostController) {
                 onUserChange = { newUser -> user.value = newUser },
                 onForgotPassword = { navController.navigate(Screen.ForgotDetails.route) },
                 onLogin = {
-                    if (user.value.email!!.isEmpty()  || user.value.password!!.isEmpty()) {
+                    if (user.value.email.isEmpty()  || user.value.password.isEmpty()) {
                         showToast = true
                     } else {
                         user.value.email.let { it1 ->
                             user.value.password.let { it2 ->
-                                auth.signInWithEmailAndPassword(it1!!, it2!!)
+                                auth.signInWithEmailAndPassword(it1, it2)
                                     .addOnCompleteListener(context) { task ->
                                         if (task.isSuccessful) {
                                             // Login successful
@@ -153,7 +153,7 @@ fun EmailBox(
     updateUser: (User) -> Unit
 ) {
     OutlinedTextField(
-        value = user.email!!,
+        value = user.email,
         leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) }, // Leading email icon
         label = { Text(text = stringResource(R.string.login_email)) }, // Email label
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), // Email keyboard
@@ -179,7 +179,7 @@ private fun PasswordBox(
     var passwordVisible by remember { mutableStateOf(false) }
 
     OutlinedTextField(
-        value = user.password!!,
+        value = user.password,
         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }, // Leading lock icon
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) { // Toggle visibility button

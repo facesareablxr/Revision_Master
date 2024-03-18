@@ -67,4 +67,32 @@ class UserViewModel: ViewModel() {
         userRepository.updateUser(updatedUser)
     }
 
+    private val _followingList = mutableStateOf<List<String>>(emptyList())
+    val followingList = _followingList
+
+    fun getFollowingList(username: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val following = userRepository.getFollowingList(username)
+                _followingList.value = following
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private val _followerList = mutableStateOf<List<String>>(emptyList())
+    val followerList = _followerList
+
+    fun getFollowerList(username: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val follower = userRepository.getFollowers(username)
+                _followerList.value = follower
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }

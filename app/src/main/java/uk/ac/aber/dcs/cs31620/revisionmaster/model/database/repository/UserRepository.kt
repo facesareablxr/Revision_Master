@@ -2,6 +2,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
@@ -46,6 +47,39 @@ object UserRepository {
         }
     }
 
+    suspend fun getFollowingList(username: String): List<String> {
+        val followingList = mutableListOf<String>()
+        return try {
+            val querySnapshot = usersReference.orderByChild("username").equalTo(username).get().await()
+
+            if (querySnapshot.exists()) {
+                val userSnapshot = querySnapshot.children.first()
+                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                followingList.addAll(following.orEmpty())
+            }
+            followingList
+        } catch (e: Exception) {
+            // Error occurred during the operation
+            emptyList()
+        }
+    }
+
+    suspend fun getFollowers(username: String): List<String> {
+        val followingList = mutableListOf<String>()
+        return try {
+            val querySnapshot = usersReference.orderByChild("username").equalTo(username).get().await()
+
+            if (querySnapshot.exists()) {
+                val userSnapshot = querySnapshot.children.first()
+                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                followingList.addAll(following.orEmpty())
+            }
+            followingList
+        } catch (e: Exception) {
+            // Error occurred during the operation
+            emptyList()
+        }
+    }
 
 }
 
