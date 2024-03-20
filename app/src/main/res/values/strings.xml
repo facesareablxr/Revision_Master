@@ -49,4 +49,6 @@
     <string name="take_photo">Camera</string>
     <string name="choose_from_gallery">Gallery</string>
     <string name="choose_profile_picture">Upload Image</string>
+    <string name="explore">Explore</string>
+    <string name="addData">No revision material yet. Add some to get started!</string>
 </resources>

@@ -6,9 +6,11 @@ import com.google.firebase.database.GenericTypeIndicator
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
+import java.util.Calendar
+import java.util.Date
 
 object UserRepository {
-    private val rootNode = FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app") // Replace with your actual Database URL
+    private val rootNode = FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
     private val usersReference = rootNode.getReference("users")
     private val auth = FirebaseAuth.getInstance()
 
@@ -81,5 +83,40 @@ object UserRepository {
         }
     }
 
+    suspend fun updateUserStreak(userId: String) {
+        val userRef = usersReference.child(userId)
+        try {
+            val today = Date() // Get today's date
+
+            val updatedUser = userRef.get().await().getValue(User::class.java)?.apply {
+                val lastLogin = lastLoginDate // Assuming there's a lastLoginDate property in User
+
+                // Check if user logged in yesterday to maintain the streak
+                val loggedInYesterday = isYesterday(lastLogin, today)
+                if (loggedInYesterday) {
+                    currentStreak += 1 // Increase streak if logged in yesterday
+                } else {
+                    currentStreak = 0 // Reset streak if not logged in yesterday
+                }
+                lastLoginDate = today // Update last login date
+            }
+            updatedUser?.let { userRef.setValue(it).await() }
+        } catch (e: Exception) {
+            // Handle error updating streak (e.g., log the error)
+        }
+    }
+
+    // Helper function to check if date is yesterday
+    private fun isYesterday(date: Date?, today: Date): Boolean {
+        if (date == null) {
+            return false
+        }
+        val calendar = Calendar.getInstance()
+        calendar.time = today
+        calendar.add(Calendar.DAY_OF_YEAR, -1) // Subtract one day
+        return calendar.time.date == date.date &&
+                calendar.time.month == date.month &&
+                calendar.time.year == date.year
+    }
 }
 

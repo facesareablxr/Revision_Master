@@ -50,4 +50,70 @@
         <item>University of Cambridge</item>
         <item>University of Oxford</item>
     </string-array>
+    <string-array name="subjects">
+        <item>Accounting</item>
+        <item>Aerospace Engineering</item>
+        <item>Agriculture</item>
+        <item>Anthropology</item>
+        <item>Architecture</item>
+        <item>Astronomy</item>
+        <item>Biomedical Engineering</item>
+        <item>Biotechnology</item>
+        <item>Biology</item>
+        <item>Business Administration</item>
+        <item>Chemistry</item>
+        <item>Civil Engineering</item>
+        <item>Computer Science</item>
+        <item>Criminal Justice</item>
+        <item>Dance</item>
+        <item>Dentistry</item>
+        <item>Economics</item>
+        <item>Education</item>
+        <item>Electrical Engineering</item>
+        <item>Engineering</item>
+        <item>English Language and Literature</item>
+        <item>Environmental Science</item>
+        <item>Finance</item>
+        <item>Foreign Languages</item>
+        <item>Gender Studies</item>
+        <item>Geography</item>
+        <item>Geology</item>
+        <item>History</item>
+        <item>Horticulture</item>
+        <item>Human Rights</item>
+        <item>Information Technology</item>
+        <item>International Business</item>
+        <item>International Law</item>
+        <item>Journalism</item>
+        <item>Law</item>
+        <item>Legal Studies</item>
+        <item>Linguistics</item>
+        <item>Literature</item>
+        <item>Management</item>
+        <item>Marketing</item>
+        <item>Materials Science</item>
+        <item>Mathematics</item>
+        <item>Mechanical Engineering</item>
+        <item>Media Studies</item>
+        <item>Medicine</item>
+        <item>Music</item>
+        <item>Nursing</item>
+        <item>Nutrition</item>
+        <item>Occupational Therapy</item>
+        <item>Philosophy</item>
+        <item>Physics</item>
+        <item>Political Science</item>
+        <item>Psychology</item>
+        <item>Public Health</item>
+        <item>Public Relations</item>
+        <item>Robotics</item>
+        <item>Software Engineering</item>
+        <item>Sociology</item>
+        <item>Sports Management</item>
+        <item>Sports Medicine</item>
+        <item>Theater</item>
+        <item>Urban Studies</item>
+        <item>Visual Arts</item>
+    </string-array>
+
 </resources>

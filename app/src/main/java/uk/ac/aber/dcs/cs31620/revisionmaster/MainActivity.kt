@@ -3,10 +3,14 @@ package uk.ac.aber.dcs.cs31620.revisionmaster
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,6 +20,8 @@ import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.AddDeckScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.LibraryScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.ForgotPassScreenTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
@@ -28,9 +34,12 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 /**
  *
  */
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var auth: FirebaseAuth
+    private val viewModel: UserViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -46,10 +55,17 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
-                        // User is authenticated, navigate to Home
-                        BuildNavigationGraph(Screen.Home.route, UserViewModel())
+                        viewModel.updateUserStreaks()
+
+                        LaunchedEffect(Unit) {
+                            viewModel.getUserData()
+                        }
+
+                        val user by viewModel.user.collectAsState(initial = null)
+
+                        BuildNavigationGraph(Screen.Home.route, viewModel)
                     } else {
-                        // User is not authenticated, show WelcomeScreen
+
                         BuildNavigationGraph(Screen.Welcome.route, UserViewModel())
                     }
                 }
@@ -76,5 +92,9 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.Chats.route) { ChatsScreen(navController) }
         composable(Screen.Profile.route){ ProfileScreenTopLevel(navController) }
         composable(Screen.EditProfile.route){ EditProfileTopLevel(navController) }
+        composable(Screen.Library.route){ LibraryScreen(navController) }
+        composable(Screen.AddDeck.route){ AddDeckScreen(navController) }
     }
 }
+
+

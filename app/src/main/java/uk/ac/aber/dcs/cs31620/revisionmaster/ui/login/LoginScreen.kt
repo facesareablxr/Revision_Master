@@ -80,23 +80,25 @@ fun LoginTopLevel(navController: NavHostController) {
                 onUserChange = { newUser -> user.value = newUser },
                 onForgotPassword = { navController.navigate(Screen.ForgotDetails.route) },
                 onLogin = {
-                    if (user.value.email.isEmpty()  || user.value.password.isEmpty()) {
+                    if (user.value.email.isEmpty()  || user.value.password!!.isEmpty()) {
                         showToast = true
                     } else {
                         user.value.email.let { it1 ->
                             user.value.password.let { it2 ->
-                                auth.signInWithEmailAndPassword(it1, it2)
-                                    .addOnCompleteListener(context) { task ->
-                                        if (task.isSuccessful) {
-                                            // Login successful
-                                            Toast.makeText(context, "Successfully logged in", Toast.LENGTH_LONG).show()
-                                            goToHome(navController)
-                                        } else {
-                                            // Login failed
-                                            Toast.makeText(context, failureMessage, Toast.LENGTH_LONG).show()
-                                            Log.d("FB-AUTH", "Login failed. Cause: ${task.exception?.cause}")
+                                if (it2 != null) {
+                                    auth.signInWithEmailAndPassword(it1, it2)
+                                        .addOnCompleteListener(context) { task ->
+                                            if (task.isSuccessful) {
+                                                // Login successful
+                                                Toast.makeText(context, "Successfully logged in", Toast.LENGTH_LONG).show()
+                                                goToHome(navController)
+                                            } else {
+                                                // Login failed
+                                                Toast.makeText(context, failureMessage, Toast.LENGTH_LONG).show()
+                                                Log.d("FB-AUTH", "Login failed. Cause: ${task.exception?.cause}")
+                                            }
                                         }
-                                    }
+                                }
                             }
                         }
                     }
@@ -178,8 +180,9 @@ private fun PasswordBox(
     // State variable for password visibility
     var passwordVisible by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
-        value = user.password,
+    user.password?.let {
+        OutlinedTextField(
+        value = it,
         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }, // Leading lock icon
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) { // Toggle visibility button
@@ -197,6 +200,7 @@ private fun PasswordBox(
         },
         modifier = Modifier.fillMaxWidth() // Full width
     )
+    }
 }
 
 /**

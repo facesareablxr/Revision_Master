@@ -85,11 +85,11 @@ fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewMode
             signupAction = {
                 if (user.password != confirmPassword) {
                     showToast(context, passwordsDoNotMatchMsg)
-                } else if (!isStrongPassword(user.password)) {
+                } else if (!isStrongPassword(user.password!!)) {
                     showToast(context, weakPasswordMsg)
                 } else {
                     val auth = FirebaseAuth.getInstance()
-                    auth.createUserWithEmailAndPassword(user.email, user.password)
+                    auth.createUserWithEmailAndPassword(user.email, user.password!!)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 userViewModel.addUserToDB(user)
@@ -270,8 +270,9 @@ private fun PasswordSignUp(
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
 
-    OutlinedTextField(
-        value = user.password,
+    user.password?.let {
+        OutlinedTextField(
+        value = it,
         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -287,6 +288,7 @@ private fun PasswordSignUp(
         onValueChange = { updatedPassword -> updateUser(user.copy(password = updatedPassword)) },
         modifier = Modifier.fillMaxWidth()
     )
+    }
 }
 
 

@@ -95,4 +95,13 @@ class UserViewModel: ViewModel() {
         }
     }
 
+    fun updateUserStreaks() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser != null) {
+                userRepository.updateUserStreak(currentUser.uid)
+            }
+        }
+    }
+
 }

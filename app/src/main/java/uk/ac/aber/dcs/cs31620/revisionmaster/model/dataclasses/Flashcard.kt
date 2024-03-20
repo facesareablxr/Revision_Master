@@ -1,11 +1,14 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
 
+import java.util.UUID
+
+
 data class Flashcard(
-    val question: String?,
-    val answer : String?,
-    val subject: String?,
-    val module: String?,
-    val lecture: String?
-){
-    constructor(): this(null,null,null,null,null)
-}
+    val flashcardId: String = UUID.randomUUID().toString(), // Automatically generate a unique ID
+    val frontText: String,
+    val backText: String,
+    val classId: String?,
+    val moduleId: String?,
+    val subjectName: String?,
+    val ownerName: String
+)

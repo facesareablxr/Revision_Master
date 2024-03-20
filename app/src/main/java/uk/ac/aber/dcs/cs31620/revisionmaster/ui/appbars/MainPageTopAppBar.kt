@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,8 +36,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import java.time.LocalTime
 
 /**
@@ -49,14 +52,18 @@ import java.time.LocalTime
  */
 @Composable
 fun MainPageTopAppBar(
-    navController: NavController, // Added navigation controller parameter
+    navController: NavController,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val userViewModel: UserViewModel = viewModel()
     val context = LocalContext.current
     val currentTime = LocalTime.now()
     val greeting = getGreeting(currentTime)
-    val steakCounter = 10
-    val notifications = 1
+
+    // Get user streak from ViewModel (assuming LiveData or StateFlow exists)
+    val userStreak = userViewModel.user.collectAsState().value?.currentStreak ?: 0
+
+    val notifications = 1 // Placeholder notification count
 
     TopAppBar(
         title = {
@@ -72,23 +79,20 @@ fun MainPageTopAppBar(
                         .weight(1f)
                         .padding(start = 4.dp)
                 )
-                // Streak, notification, profile on the right
-                Spacer(modifier = Modifier.width(4.dp))
                 Row(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    StreakCounter(steakCounter)
+                    StreakCounter(userStreak) // Pass userStreak from ViewModel
                     NotificationsBell(notifications)
-                    ProfileCircle(context = context, navController = navController) // Pass navController
+                    ProfileCircle(context = context, navController = navController)
                     Spacer(modifier = Modifier.width(4.dp))
                 }
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            scrolledContainerColor = MaterialTheme.colorScheme.secondaryContainer
+            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
         ),
         scrollBehavior = scrollBehavior
     )

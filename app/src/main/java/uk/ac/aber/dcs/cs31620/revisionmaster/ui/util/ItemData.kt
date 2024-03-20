@@ -1,4 +1,4 @@
-package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
+package uk.ac.aber.dcs.cs31620.revisionmaster.ui.util
 
 import androidx.compose.ui.graphics.vector.ImageVector
 

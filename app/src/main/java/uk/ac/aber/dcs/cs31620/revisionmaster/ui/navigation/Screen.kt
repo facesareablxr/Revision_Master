@@ -15,6 +15,8 @@ sealed class Screen(val route: String) {
     object ForgotDetails : Screen ("forgot")
     object Profile : Screen("profile")
     object EditProfile : Screen("editProfile")
+    object Explore : Screen("explore")
+    object AddDeck : Screen("addDeck")
 }
 
 /**
@@ -22,8 +24,8 @@ sealed class Screen(val route: String) {
  */
 val screens = listOf(
     Screen.Home,
-    Screen.Schedule,
-    Screen.Create,
-    Screen.Chats,
-    Screen.Library
+    Screen.Library,
+    Screen.Explore,
+    Screen.Chats
+
 )

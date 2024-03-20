@@ -1,5 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
 
+import java.util.Date
+
 
 data class User(
     var username: String = "",
@@ -7,7 +9,8 @@ data class User(
     var lastName: String = "",
 
     var email: String = "",
-    var password: String = "",
+    var password: String? = "",
+
     val profilePictureUrl: String? = null,
     val institution: String? = null,
 
@@ -17,6 +20,9 @@ data class User(
     val followers: Int = 0,
 
     val followerList: List<String>? = null,
-    val followingList: List<String>? = null
+    val followingList: List<String>? = null,
+
+    var lastLoginDate: Date? = null,
+    var currentStreak: Int = 0
 
 )
