@@ -1,11 +1,16 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
 import java.util.Calendar
 import java.util.Date
 
@@ -118,5 +123,21 @@ object UserRepository {
                 calendar.time.month == date.month &&
                 calendar.time.year == date.year
     }
+
+    suspend fun downloadUserProfileImage(user: User): Bitmap? {
+        val imageUrl = user.profilePictureUrl
+        return try {
+            val url = URL(imageUrl)
+            val connection = url.openConnection() as HttpURLConnection
+            connection.doInput = true
+            connection.connect()
+            val inputStream = connection.inputStream
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            // Handle error (e.g., log the error)
+            null
+        }
+    }
+
 }
 

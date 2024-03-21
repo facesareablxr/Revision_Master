@@ -1,6 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel
 
 
+import android.graphics.Bitmap
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -104,4 +105,13 @@ class UserViewModel: ViewModel() {
         }
     }
 
+    private val _profileImage = MutableStateFlow<Bitmap?>(null)
+    val profileImage: StateFlow<Bitmap?> = _profileImage
+
+    fun downloadUserProfileImage(user: User) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val bitmap = userRepository.downloadUserProfileImage(user)
+            _profileImage.value = bitmap
+        }
+    }
 }

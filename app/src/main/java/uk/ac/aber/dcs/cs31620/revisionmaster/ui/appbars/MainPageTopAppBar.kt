@@ -1,13 +1,14 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
 import android.content.Context
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
+import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -26,20 +27,24 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import java.time.LocalTime
 
 /**
@@ -53,49 +58,55 @@ import java.time.LocalTime
 @Composable
 fun MainPageTopAppBar(
     navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    viewModel: UserViewModel = viewModel()
 ) {
-    val userViewModel: UserViewModel = viewModel()
     val context = LocalContext.current
     val currentTime = LocalTime.now()
     val greeting = getGreeting(currentTime)
 
-    // Get user streak from ViewModel (assuming LiveData or StateFlow exists)
-    val userStreak = userViewModel.user.collectAsState().value?.currentStreak ?: 0
+    val user by viewModel.user.collectAsState(initial = null)
+
+    LaunchedEffect(Unit) {
+        viewModel.getUserData()
+    }
 
     val notifications = 1 // Placeholder notification count
 
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                // Greeting on the left
-                Text(
-                    text = greeting,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 4.dp)
-                )
+    if (user != null) {
+        val userStreak = user!!.currentStreak
+        TopAppBar(
+            title = {
                 Row(
-                    horizontalArrangement = Arrangement.End,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    StreakCounter(userStreak) // Pass userStreak from ViewModel
-                    NotificationsBell(notifications)
-                    ProfileCircle(context = context, navController = navController)
-                    Spacer(modifier = Modifier.width(4.dp))
+                    // Greeting on the left
+                    Text(
+                        text = greeting,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 4.dp)
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        StreakCounter(userStreak) // Pass userStreak from ViewModel
+                        NotificationsBell(notifications)
+                        ProfileCircle(context = context, navController = navController, user!!)
+                        Spacer(modifier = Modifier.width(4.dp))
+                    }
                 }
-            }
-        },
-        colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        scrollBehavior = scrollBehavior
-    )
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ),
+            scrollBehavior = scrollBehavior
+        )
+    }
 }
 
 /**
@@ -147,25 +158,34 @@ private fun getGreeting(currentTime: LocalTime): String {
 /**
  * This is the profile circle which now triggers navigation to the profile screen on click.
  */
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-private fun ProfileCircle(context: Context, navController: NavController) {
+fun ProfileCircle(
+    context: Context,
+    navController: NavController,
+    user: User
+) {
+    val profilePictureUrl = user.profilePictureUrl
+
+    val defaultImageRes = R.drawable.profile_image_placeholder
+
     Box(
         modifier = Modifier
+            .size(48.dp)
             .padding(8.dp)
+            .clip(CircleShape)
+            .background(Color.Gray)
             .clickable {
                 navController.navigate("profile")
             },
         contentAlignment = Alignment.Center
     ) {
-        val image = painterResource(id = R.drawable.profile_image_placeholder) // Placeholder image
-        Image(
-            painter = image,
-            contentDescription = "Profile Picture",
+        GlideImage(
+            model = if (!profilePictureUrl.isNullOrEmpty()) Uri.parse(profilePictureUrl) else defaultImageRes,
+            contentDescription = stringResource(R.string.profilePicture),
             modifier = Modifier
-                .size(40.dp)
+                .fillMaxSize()
                 .clip(CircleShape)
-                .border(1.dp, Color.Gray, CircleShape) // Add outline
         )
     }
 }
-

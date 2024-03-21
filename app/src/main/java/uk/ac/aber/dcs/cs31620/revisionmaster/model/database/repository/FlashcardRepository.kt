@@ -9,7 +9,6 @@ import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserClasses
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserRevisionData
 
 object FlashcardRepository {
@@ -135,22 +134,6 @@ object FlashcardRepository {
         })
     }
 
-    // Get class information
-    suspend fun getClassInformation(classId: String, callback: (UserClasses?) -> Unit) {
-        dataReference.child(classId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val classInfo = snapshot.getValue(UserClasses::class.java)
-                callback(classInfo)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle database errors
-                Log.e("Flashcard Repo", "Error getting class information: $error")
-                callback(null)
-            }
-        })
-    }
-
     // Get flashcard information
     suspend fun getFlashcardInformation(
         parentId: String,
@@ -194,21 +177,6 @@ object FlashcardRepository {
         callback: (Boolean) -> Unit
     ) {
         dataReference.child(subjectId).setValue(updatedSubject)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Update class information
-    suspend fun updateClassInformation(
-        classId: String,
-        updatedClass: UserClasses,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.child(classId).setValue(updatedClass)
             .addOnSuccessListener {
                 callback(true)
             }
@@ -357,27 +325,6 @@ object FlashcardRepository {
         } catch (e: Exception) {
             emptyList()
         }
-    }
-
-    // Get User Classes
-    suspend fun getUserClasses(userId: String, callback: (List<UserClasses>) -> Unit) {
-        dataReference.orderByChild("members/$userId").equalTo(true)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userClasses = mutableListOf<UserClasses>()
-                    snapshot.children.forEach { data ->
-                        val userClass = data.getValue(UserClasses::class.java)
-                        userClass?.let { userClasses.add(it) }
-                    }
-                    callback(userClasses)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting user classes: $error")
-                    callback(emptyList())
-                }
-            })
     }
 
     // Get User Modules

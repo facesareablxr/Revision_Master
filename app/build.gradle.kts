@@ -148,7 +148,7 @@ dependencies {
     // Provides LiveData, a lifecycle-aware data holder.
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
     // Bridges LiveData with Compose for seamless observation.
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.3")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.4")
 
     //Firebase Implementation
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
@@ -156,7 +156,9 @@ dependencies {
 
     //Image implementation
     implementation ("com.github.bumptech.glide:glide:4.16.0")
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("com.github.bumptech.glide:compose:1.0.0-alpha.5")
+    implementation("com.squareup.picasso:picasso:2.5.2")
+    implementation("io.coil-kt:coil:2.6.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 }

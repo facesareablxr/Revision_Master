@@ -1,7 +1,8 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
+import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +24,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,18 +42,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImagePainter.State.Error
-import coil.compose.AsyncImagePainter.State.Loading
-import coil.compose.AsyncImagePainter.State.Success
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
@@ -73,7 +69,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
  */
 @Composable
 fun ProfileScreenTopLevel(navController: NavController) {
-    ProfileScreen(onBackClick = { Screen.Home.route }, navController)
+    ProfileScreen(navController)
 }
 
 /**
@@ -85,27 +81,21 @@ fun ProfileScreenTopLevel(navController: NavController) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
-    onBackClick: () -> Unit,
-    navigator: NavController
+    navigator: NavController,
+    viewModel: UserViewModel = viewModel() // Get ViewModel instance
 ) {
-    // Create a ViewModel instance to manage the user data
-    val viewModel: UserViewModel = viewModel()
-    // Observe the user data using a state variable
     val user by viewModel.user.collectAsState(initial = null)
 
-    // Load user data on screen launch
     LaunchedEffect(Unit) {
         viewModel.getUserData()
     }
 
-    // Scaffold is the layout structure for the screen
     Scaffold(
         topBar = {
-            // TopAppBar with navigation icon and actions
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
+                    IconButton(onClick = { navigator.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -117,9 +107,7 @@ fun ProfileScreen(
             )
         }
     ) { innerPadding ->
-        // Content of the screen will be placed inside the padding
         if (user == null) {
-            // Show a progress indicator while user data is loading
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -129,7 +117,6 @@ fun ProfileScreen(
                 CircularProgressIndicator()
             }
         } else {
-            // Display user information once data is loaded
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -158,9 +145,10 @@ fun ProfileContent(user: User, userViewModel: UserViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Display profile picture
-            ProfilePicture(user.profilePictureUrl)
+            val profilePictureUrl = user.profilePictureUrl
+            ProfilePicture(profilePictureUrl)
             Spacer(modifier = Modifier.width(16.dp))
-            // Display username and full name underneath, but next to the profile picture
+            // Display username and full name
             Column(modifier = Modifier.weight(1f)) {
                 Text(text = user.username, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
                 Text(
@@ -247,8 +235,8 @@ private fun FollowingFollowersCount(user: User) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        CountBox(text = "Following", count = user.following)
-        CountBox(text = "Followers", count = user.followers)
+        CountBox(text = "Following", count = 0)
+        CountBox(text = "Followers", count = 0)
     }
 }
 
@@ -299,7 +287,7 @@ private fun InstitutionDisplay(user: User) {
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             // Will automatically set to N/A if there isn't an institution set up
-            text = user.institution ?: "N/A",
+            text = user.institution ?: "",
             style = MaterialTheme.typography.bodyLarge
         )
     }
@@ -325,37 +313,26 @@ private fun EmailDisplay(user: User) {
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun ProfilePicture(profilePictureUrl: String?) {
-    val painter = rememberAsyncImagePainter(
-        model = ImageRequest.Builder(LocalContext.current)
-            .data(profilePictureUrl)
-            .size(coil.size.Size.ORIGINAL)
-            .build()
-    )
-    val state = painter.state
-    val placeholderPainter = painterResource(R.drawable.profile_image_placeholder) // Replace with your default image resource
+fun ProfilePicture(
+    imagePath: String?,
+) {
+    val defaultImageRes = R.drawable.profile_image_placeholder
 
-    Image(
-        modifier = Modifier.size(56.dp).clip(CircleShape), // Adjust size as needed
-        painter = if (state is Success) painter else placeholderPainter,
-        contentDescription = stringResource(R.string.description)
-    )
-
-    when (painter.state) {
-        is Loading -> {
-            // Show a loading indicator while image is loading
-            CircularProgressIndicator(modifier = Modifier.size(56.dp))
-        }
-        is Error -> {
-            // Show an error icon if loading fails
-            IconButton(onClick = { /* Handle reload or error */ }) {
-                Icon(Icons.Filled.Error, contentDescription = "Error loading image")
-            }
-        }
-        is Success -> {
-            // Image is loaded, do nothing here (already displayed in Image)
-        }
-        else -> {}
+    Box(
+        modifier = Modifier
+            .size(120.dp)
+            .clip(CircleShape)
+            .background(Color.Gray),
+        contentAlignment = Alignment.Center
+    ) {
+        GlideImage(
+            model = if (!imagePath.isNullOrEmpty()) Uri.parse(imagePath) else defaultImageRes,
+            contentDescription = stringResource(R.string.profilePicture),
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+        )
     }
 }

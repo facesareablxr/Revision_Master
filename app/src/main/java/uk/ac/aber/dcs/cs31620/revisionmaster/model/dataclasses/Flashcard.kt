@@ -7,7 +7,6 @@ data class Flashcard(
     val flashcardId: String = UUID.randomUUID().toString(), // Automatically generate a unique ID
     val frontText: String,
     val backText: String,
-    val classId: String?,
     val moduleId: String?,
     val subjectName: String?,
     val ownerName: String

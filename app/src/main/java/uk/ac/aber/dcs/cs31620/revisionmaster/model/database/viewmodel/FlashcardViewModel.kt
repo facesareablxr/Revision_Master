@@ -7,7 +7,6 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserClasses
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserRevisionData
 
 class FlashcardViewModel : ViewModel() {
@@ -54,12 +53,6 @@ class FlashcardViewModel : ViewModel() {
         }
     }
 
-    fun getClassInformation(classId: String, callback: (UserClasses?) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getClassInformation(classId, callback)
-        }
-    }
-
     fun getFlashcardInformation(
         parentId: String,
         flashcardId: String,
@@ -87,16 +80,6 @@ class FlashcardViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             FlashcardRepository.updateSubjectInformation(subjectId, updatedSubject, callback)
-        }
-    }
-
-    fun updateClassInformation(
-        classId: String,
-        updatedClass: UserClasses,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            FlashcardRepository.updateClassInformation(classId, updatedClass, callback)
         }
     }
 
@@ -160,12 +143,6 @@ class FlashcardViewModel : ViewModel() {
 
     suspend fun getAllUserFlashcards(username: String): List<Flashcard> {
         return FlashcardRepository.getAllUserFlashcards(username)
-    }
-
-    fun getUserClasses(userId: String, callback: (List<UserClasses>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getUserClasses(userId, callback)
-        }
     }
 
     fun getUserModules(userId: String, callback: (List<Module>) -> Unit) {

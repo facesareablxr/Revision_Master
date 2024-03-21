@@ -7,43 +7,48 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.NonMainTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 
 @Composable
 fun ChatsScreen(navController: NavController) {
     Scaffold(
+        topBar = { NonMainTopAppBar(navController = navController, title = stringResource(R.string.Chats)) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { /* Handle new chat creation */ },
+                modifier = Modifier.size(48.dp),
+                content = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "New Chat"
+                    )
+                }
+            )
+        },
         bottomBar = {
             MainPageNavigationBar(navController = navController)
-              }
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            CenterAlignedTopAppBar(
-                title = { Text(stringResource(R.string.chats)) },
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            TextField(
-                value = "",
-                onValueChange = {},
-                placeholder = { Text("Search") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            )
             Spacer(modifier = Modifier.height(16.dp))
             Row(
                 modifier = Modifier

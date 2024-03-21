@@ -2,6 +2,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -18,21 +19,15 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LibraryAdd
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SearchBarDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -59,7 +54,7 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Search Bar
-                    SearchBars()
+                    SearchBars(onSearchInputChanged = { /* Handle search queries */ },)
 
                     // Two Cards in a Row
                     Row(modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp)) {
@@ -102,25 +97,23 @@ fun HomeScreen(
 
 //Only temp,actual search bar implementation to be done when firebase in place
 @Composable
-fun SearchBars() {
-    var searchText by remember { mutableStateOf("") }
-    TextField(
-        value = searchText,
-        onValueChange = { searchText = it },
-        placeholder = { Text("Search") },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search Icon"
-            )
-        },
-        shape = SearchBarDefaults.inputFieldShape,
+fun SearchBars(
+   onSearchInputChanged: (String) -> Unit
+) {
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    )
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        OutlinedTextField(
+            value = "",
+            onValueChange = onSearchInputChanged,
+            label = { androidx.compose.material.Text(text = "Search") },
+            modifier = Modifier.weight(1f)
+        )
+    }
 }
-
 @Composable
 fun CardWithIcon(
     icon: ImageVector,

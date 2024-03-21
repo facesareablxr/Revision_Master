@@ -51,4 +51,13 @@
     <string name="choose_profile_picture">Upload Image</string>
     <string name="explore">Explore</string>
     <string name="addData">No revision material yet. Add some to get started!</string>
+    <string name="Chats">Chats</string>
+    <string name="photoerror">Error taking photo, try again</string>
+    <string name="imageError">An error occured while making the file.</string>
+    <string name="profilePicture">User Profile Picture</string>
+    <string name="enterImage">Add new image.</string>
+    <string name="addImage">Add image.</string>
+    <string name="takePhoto">Take Photo</string>
+    <string name="chooseFromGallery">Gallery</string>
+    <string name="selectImage">Upload an image</string>
 </resources>
