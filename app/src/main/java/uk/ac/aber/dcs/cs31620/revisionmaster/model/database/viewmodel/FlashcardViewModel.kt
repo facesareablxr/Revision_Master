@@ -2,8 +2,11 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.FlashcardRepository
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
@@ -20,18 +23,6 @@ class FlashcardViewModel : ViewModel() {
     fun addUserRevisionData(userRevisionData: UserRevisionData, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             FlashcardRepository.addUserRevisionData(userRevisionData, callback)
-        }
-    }
-
-    fun addClassFlashcard(classId: String, flashcard: Flashcard, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.addClassFlashcard(classId, flashcard, callback)
-        }
-    }
-
-    fun addModuleFlashcard(moduleId: String, flashcard: Flashcard, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.addModuleFlashcard(moduleId, flashcard, callback)
         }
     }
 
@@ -162,4 +153,34 @@ class FlashcardViewModel : ViewModel() {
             FlashcardRepository.getModulesForSubject(subjectId, callback)
         }
     }
+
+    fun addDeck(
+        name: String,
+        subject: String,
+        isPublic: Boolean,
+        description: String,
+        owner: String
+    ) {
+        val deck = Deck(
+            name = name,
+            subject = subject,
+            isPublic = isPublic,
+            description = description,
+            owner = owner
+        )
+        viewModelScope.launch {
+            FlashcardRepository.addDeck(deck)
+        }
+    }
+
+    private val _decks = MutableStateFlow<List<Deck>>(emptyList())
+    val decks: StateFlow<List<Deck>> get() = _decks
+
+    fun getUserDecks(username: String) {
+        viewModelScope.launch {
+            val decks = FlashcardRepository.getUserDecks(username)
+            _decks.value = decks
+        }
+    }
+
 }

@@ -9,8 +9,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -19,6 +17,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore.ExploreScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.AddDeckScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.LibraryScreen
@@ -61,8 +60,6 @@ class MainActivity : ComponentActivity() {
                             viewModel.getUserData()
                         }
 
-                        val user by viewModel.user.collectAsState(initial = null)
-
                         BuildNavigationGraph(Screen.Home.route, viewModel)
                     } else {
 
@@ -94,6 +91,7 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.EditProfile.route){ EditProfileTopLevel(navController) }
         composable(Screen.Library.route){ LibraryScreen(navController) }
         composable(Screen.AddDeck.route){ AddDeckScreen(navController) }
+        composable(Screen.Explore.route){ ExploreScreen(navController) }
     }
 }
 

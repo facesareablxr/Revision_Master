@@ -6,6 +6,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.tasks.await
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
@@ -16,6 +17,7 @@ object FlashcardRepository {
     private val rootNode =
         FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
     private val dataReference = rootNode.reference.child("revisionData")
+    val decksRef = rootNode.reference.child("decks")
 
     // Get all user revision data
     suspend fun getUserRevisionData(callback: (UserRevisionData) -> Unit) {
@@ -48,41 +50,10 @@ object FlashcardRepository {
             }
     }
 
-    // Add flashcard to a class
-    suspend fun addClassFlashcard(
-        classId: String,
-        flashcard: Flashcard,
-        callback: (Boolean) -> Unit
-    ) {
-        val flashcardsRef = dataReference.child(classId).child("flashcards")
-        val key = flashcardsRef.push().key ?: return // Exit if key generation fails
-
-        flashcardsRef.child(key).setValue(flashcard)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
+    suspend fun addDeck(deck: Deck) {
+        decksRef.child(deck.id).setValue(deck)
     }
 
-    // Add flashcard to a module
-    suspend fun addModuleFlashcard(
-        moduleId: String,
-        flashcard: Flashcard,
-        callback: (Boolean) -> Unit
-    ) {
-        val flashcardsRef = dataReference.child(moduleId).child("flashcards")
-        val key = flashcardsRef.push().key ?: return // Exit if key generation fails
-
-        flashcardsRef.child(key).setValue(flashcard)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
 
     // Add flashcard to a subject
     suspend fun addSubjectFlashcard(
@@ -395,5 +366,19 @@ object FlashcardRepository {
             })
     }
 
+    // Get all user decks
+    suspend fun getUserDecks(username: String): List<Deck> {
+        val snapshot = decksRef.orderByChild("owner")
+            .equalTo(username)
+            .get()
+            .await()
+
+        val decks = mutableListOf<Deck>()
+        snapshot.children.forEach { data ->
+            val deck = data.getValue(Deck::class.java)
+            deck?.let { decks.add(it) }
+        }
+        return decks
+    }
 
 }

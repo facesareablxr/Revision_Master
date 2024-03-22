@@ -2,7 +2,6 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.home
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,13 +23,13 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.TopLevelScaffold
@@ -53,8 +52,6 @@ fun HomeScreen(
                     .fillMaxSize()
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Search Bar
-                    SearchBars(onSearchInputChanged = { /* Handle search queries */ },)
 
                     // Two Cards in a Row
                     Row(modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp)) {
@@ -80,7 +77,7 @@ fun HomeScreen(
 
                         // Carousel
                         CarouselWithPager(
-                            title = "Subjects",
+                            title = "Decks",
                             icon = Icons.AutoMirrored.Filled.ArrowForward,
                             items = listOf("Hello", "Test", "World"),
                             onClick = {}
@@ -95,25 +92,6 @@ fun HomeScreen(
     )
 }
 
-//Only temp,actual search bar implementation to be done when firebase in place
-@Composable
-fun SearchBars(
-   onSearchInputChanged: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        OutlinedTextField(
-            value = "",
-            onValueChange = onSearchInputChanged,
-            label = { androidx.compose.material.Text(text = "Search") },
-            modifier = Modifier.weight(1f)
-        )
-    }
-}
 @Composable
 fun CardWithIcon(
     icon: ImageVector,
@@ -123,7 +101,7 @@ fun CardWithIcon(
 ) {
     Card(
         modifier = Modifier.padding(8.dp),
-        onClick = onClick, // Pass the onClick lambda to Card
+        onClick = onClick,
         colors = CardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -137,7 +115,7 @@ fun CardWithIcon(
         ) {
             Icon(imageVector = icon, contentDescription = "Icon")
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = text, style = MaterialTheme.typography.headlineSmall)
+            Text(text = text, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
             Text(text = subtext, style = MaterialTheme.typography.bodyMedium)
         }
     }
@@ -149,17 +127,17 @@ fun CarouselWithPager(
     title: String,
     icon: ImageVector,
     items: List<String>,
-    onClick: () -> Unit // Add optional onClick for the entire carousel
+    onClick: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clickable { onClick.invoke() } // Add onClick if provided
+                .clickable { onClick.invoke() }
         ) {
 
 
-            Text(text = title, style = MaterialTheme.typography.headlineSmall)
+            Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.padding(horizontal = 115.dp))
             Icon(imageVector = icon, contentDescription = "Next")
 
@@ -194,7 +172,6 @@ fun CardWithCarouselItem(item: String) {
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.fillMaxWidth()
             )
-            // Add additional content inside the carousel item if needed
         }
     }
 }
@@ -206,11 +183,7 @@ fun CardWithListAndButton() {
         .fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = "Group Suggestions",
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Text(text = "Group Suggestions", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 8.dp))
             // Individual items with join button
             repeat(3) { index ->
                 Row(

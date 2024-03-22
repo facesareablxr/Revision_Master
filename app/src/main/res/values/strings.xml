@@ -60,4 +60,5 @@
     <string name="takePhoto">Take Photo</string>
     <string name="chooseFromGallery">Gallery</string>
     <string name="selectImage">Upload an image</string>
+    <string name="createDeck">Create Revision Deck</string>
 </resources>

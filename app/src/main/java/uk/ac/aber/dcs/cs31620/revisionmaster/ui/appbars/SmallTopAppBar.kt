@@ -1,7 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -9,11 +7,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 /**
@@ -41,29 +36,4 @@ fun SmallTopAppBar(navController: NavController, title: String) {
             }
         }
     )
-}
-
-@Composable
-private fun HandleBackButton(navController: NavHostController) {
-    // When back button is pressed we will navigate up the Compose
-    // hierarchy. navigateUp will pop the Compose navigation back stack automatically.
-    val backCallback: OnBackPressedCallback =
-        object : OnBackPressedCallback(true /* enabled by default */) {
-            override fun handleOnBackPressed() {
-                navController.navigateUp()
-            }
-        }
-
-    val backDispatcher = checkNotNull(LocalOnBackPressedDispatcherOwner.current) {
-        "No OnBackPressedDispatcherOwner was provided via LocalOnBackPressedDispatcherOwner"
-    }.onBackPressedDispatcher
-
-    val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner, backDispatcher) {
-        backDispatcher.addCallback(lifecycleOwner, backCallback)
-        onDispose {
-            backCallback.remove()
-        }
-    }
-
 }

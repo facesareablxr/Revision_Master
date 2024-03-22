@@ -75,7 +75,6 @@ fun ProfileScreenTopLevel(navController: NavController) {
 /**
  * The main composable for the profile screen.
  *
- * @param onBackClick The function to call when the back button is clicked.
  * @param navigator The navigation controller used to navigate between screens.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
