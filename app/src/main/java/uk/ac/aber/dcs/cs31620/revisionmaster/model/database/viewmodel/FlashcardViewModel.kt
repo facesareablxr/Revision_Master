@@ -1,159 +1,28 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel
 
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.FlashcardRepository
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserRevisionData
 
+
+/**
+ *
+ */
 class FlashcardViewModel : ViewModel() {
-
-    fun getUserRevisionData(callback: (UserRevisionData) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getUserRevisionData(callback)
-        }
-    }
-
-    fun addUserRevisionData(userRevisionData: UserRevisionData, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.addUserRevisionData(userRevisionData, callback)
-        }
-    }
-
-    fun addSubjectFlashcard(subjectId: String, flashcard: Flashcard, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.addSubjectFlashcard(subjectId, flashcard, callback)
-        }
-    }
-
-    fun getModuleInformation(moduleId: String, callback: (Module?) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getModuleInformation(moduleId, callback)
-        }
-    }
-
-    fun getSubjectInformation(subjectId: String, callback: (Subject?) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getSubjectInformation(subjectId, callback)
-        }
-    }
-
-    fun getFlashcardInformation(
-        parentId: String,
-        flashcardId: String,
-        callback: (Flashcard?) -> Unit
-    ) {
-        viewModelScope.launch {
-            FlashcardRepository.getFlashcardInformation(parentId, flashcardId, callback)
-        }
-    }
-
-    fun updateModuleInformation(
-        moduleId: String,
-        updatedModule: Module,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            FlashcardRepository.updateModuleInformation(moduleId, updatedModule, callback)
-        }
-    }
-
-    fun updateSubjectInformation(
-        subjectId: String,
-        updatedSubject: Subject,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            FlashcardRepository.updateSubjectInformation(subjectId, updatedSubject, callback)
-        }
-    }
-
-    fun updateFlashcardInformation(
-        parentId: String,
-        flashcardId: String,
-        updatedFlashcard: Flashcard,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            FlashcardRepository.updateFlashcardInformation(
-                parentId,
-                flashcardId,
-                updatedFlashcard,
-                callback
-            )
-        }
-    }
-
-    fun deleteModule(moduleId: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.deleteModule(moduleId, callback)
-        }
-    }
-
-    fun deleteSubject(subjectId: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.deleteSubject(subjectId, callback)
-        }
-    }
-
-    fun deleteClass(classId: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.deleteClass(classId, callback)
-        }
-    }
-
-    fun deleteFlashcard(parentId: String, flashcardId: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.deleteFlashcard(parentId, flashcardId, callback)
-        }
-    }
-
-    fun getFlashcardsByModule(moduleId: String, callback: (List<Flashcard>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getFlashcardsByModule(moduleId, callback)
-        }
-    }
-
-    fun getFlashcardsByClass(classId: String, callback: (List<Flashcard>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getFlashcardsByClass(classId, callback)
-        }
-    }
-
-    fun getFlashcardsBySubject(subjectId: String, callback: (List<Flashcard>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getFlashcardsBySubject(subjectId, callback)
-        }
-    }
-
-    suspend fun getAllUserFlashcards(username: String): List<Flashcard> {
-        return FlashcardRepository.getAllUserFlashcards(username)
-    }
-
-    fun getUserModules(userId: String, callback: (List<Module>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getUserModules(userId, callback)
-        }
-    }
-
-    fun getUserSubjects(userId: String, callback: (List<Subject>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getUserSubjects(userId, callback)
-        }
-    }
-
-    fun getModulesForSubject(subjectId: String, callback: (List<Module>) -> Unit) {
-        viewModelScope.launch {
-            FlashcardRepository.getModulesForSubject(subjectId, callback)
-        }
-    }
-
+    /**
+     *
+     */
     fun addDeck(
         name: String,
         subject: String,
@@ -166,20 +35,163 @@ class FlashcardViewModel : ViewModel() {
             subject = subject,
             isPublic = isPublic,
             description = description,
-            owner = owner
+            ownerId = owner
         )
         viewModelScope.launch {
             FlashcardRepository.addDeck(deck)
         }
     }
 
+    /**
+     *
+     */
     private val _decks = MutableStateFlow<List<Deck>>(emptyList())
-    val decks: StateFlow<List<Deck>> get() = _decks
+    val decks: StateFlow<List<Deck>> = _decks
 
-    fun getUserDecks(username: String) {
+    private val currentUser = FirebaseAuth.getInstance().currentUser
+
+    fun getUserDecks() {
+        currentUser?.let { user ->
+            viewModelScope.launch {
+                FlashcardRepository.getUserDecks(user.uid).collect { retrievedDecks ->
+                    _decks.value = retrievedDecks
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    private val _deckDetails = MutableLiveData<Deck?>(null)
+    val deckDetails: LiveData<Deck?> get() = _deckDetails
+
+    /**
+     *
+     */
+    fun getDeckDetails(deckId: String) {
         viewModelScope.launch {
-            val decks = FlashcardRepository.getUserDecks(username)
-            _decks.value = decks
+            val deck = FlashcardRepository.getDeckDetails(deckId)
+            _deckDetails.postValue(deck)
+        }
+    }
+
+    private val _deckWithFlashcards = MutableLiveData<Deck?>(null)
+    val deckWithFlashcards: LiveData<Deck?> = _deckWithFlashcards
+
+    fun getDeckWithFlashcards(deckId: String) {
+        viewModelScope.launch {
+            val deck = FlashcardRepository.getDeckWithFlashcards(deckId)
+            _deckWithFlashcards.postValue(deck)
+        }
+    }
+
+    /**
+     *
+     */
+    private val _flashcards = MutableLiveData<List<Flashcard>>(emptyList())
+    val flashcards: LiveData<List<Flashcard>> get() = _flashcards
+
+    fun getFlashcardsForDeck(deckId: String) {
+        viewModelScope.launch {
+            val retrievedFlashcards = FlashcardRepository.getFlashcardsByDeckId(deckId)
+            _flashcards.value = retrievedFlashcards
+        }
+    }
+
+    /**
+     *
+     */
+    fun addFlashcard(
+        deckId: String,
+        question: String,
+        answer: String,
+        difficulty: Difficulty
+    ) {
+        val flashcard = Flashcard(
+            question = question,
+            answer = answer,
+            difficulty = difficulty
+        )
+        viewModelScope.launch {
+            FlashcardRepository.addFlashcard(deckId, flashcard)
+        }
+    }
+
+
+    fun deleteDeck(deckId: String) {
+        viewModelScope.launch {
+            try {
+                FlashcardRepository.deleteDeck(deckId)
+            } catch (e: Exception) {
+                // Handle errors (e.g., show error message)
+            }
+        }
+    }
+
+    fun updateDeck(
+        deckId: String,
+        name: String,
+        subject: String,
+        isPublic: Boolean,
+        description: String,
+        ownerId: String
+    ) {
+        val updatedDeck = Deck(
+            id = deckId,
+            name = name,
+            subject = subject,
+            isPublic = isPublic,
+            description = description,
+            ownerId = ownerId
+        )
+        viewModelScope.launch {
+            FlashcardRepository.updateDeck(updatedDeck)
+        }
+    }
+
+
+    val flashcardLiveData: MutableLiveData<Flashcard?> = MutableLiveData()
+
+    fun getFlashcardById(deckId: String, flashcardId: String) {
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try { // Add a try-catch for potential errors
+                val flashcard = FlashcardRepository.getFlashcardById(deckId, flashcardId)
+                flashcardLiveData.postValue(flashcard)
+
+                // Logging
+                Log.d(
+                    "FlashcardViewModel",
+                    "Retrieved flashcard with ID: $flashcardId from deck ID: $deckId"
+                )
+            } catch (e: Exception) {
+                Log.e("FlashcardViewModel", "Error retrieving flashcard", e)
+            }
+        }
+    }
+
+    fun updateFlashcard(
+        deckId: String,
+        flashcardId: String,
+        question: String,
+        answer: String,
+        difficulty: Difficulty
+    ) {
+        val updatedFlashcard = Flashcard(
+            id = flashcardId,
+            question = question,
+            answer = answer,
+            difficulty = difficulty
+        )
+        viewModelScope.launch {
+            FlashcardRepository.updateFlashcard(updatedFlashcard,deckId)
+        }
+    }
+
+    fun deleteFlashcard(flashcardId: String, deckId: String) {
+        viewModelScope.launch {
+            FlashcardRepository.deleteFlashcard(flashcardId, deckId)
         }
     }
 

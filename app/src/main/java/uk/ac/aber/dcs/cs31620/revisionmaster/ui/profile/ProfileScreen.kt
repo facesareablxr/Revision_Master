@@ -80,7 +80,7 @@ fun ProfileScreenTopLevel(navController: NavController) {
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
-    navigator: NavController,
+    navController: NavController,
     viewModel: UserViewModel = viewModel() // Get ViewModel instance
 ) {
     val user by viewModel.user.collectAsState(initial = null)
@@ -94,12 +94,12 @@ fun ProfileScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navigator.navigateUp() }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { navigator.navigate(Screen.EditProfile.route) }) {
+                    IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
                         Icon(Icons.Filled.Edit, contentDescription = "Edit Profile")
                     }
                 }
@@ -121,7 +121,7 @@ fun ProfileScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                ProfileContent(user!!, viewModel)
+                ProfileContent(user!!, viewModel, navController)
             }
         }
     }
@@ -134,7 +134,7 @@ fun ProfileScreen(
  * @param userViewModel The user view model instance.
  */
 @Composable
-fun ProfileContent(user: User, userViewModel: UserViewModel) {
+fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavController) {
 
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
@@ -188,8 +188,11 @@ fun ProfileContent(user: User, userViewModel: UserViewModel) {
                         Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout"
                     )
-                }, // Use ExitToApp icon for logout
-                onClick = { userViewModel.signOut() }
+                },
+                onClick = {
+                    userViewModel.signOut()
+                    navController.navigate(Screen.Welcome.route)
+                }
             )
             Divider()
         }

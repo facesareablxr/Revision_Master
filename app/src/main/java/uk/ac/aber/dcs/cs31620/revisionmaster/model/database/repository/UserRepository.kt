@@ -5,139 +5,145 @@ import android.graphics.BitmapFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.Calendar
-import java.util.Date
 
+/**
+ * This object handles all user-related interactions with a Firebase Realtime Database.
+ */
 object UserRepository {
+    /* Firebase initialisation, gets an instance of the database at the URL and uses the node users
+     for efficient user data operations */
     private val rootNode = FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
     private val usersReference = rootNode.getReference("users")
-    private val auth = FirebaseAuth.getInstance()
 
+    /**
+     * Adds a user to the database
+     */
     suspend fun addUser(user: User): Response<User> {
-        val username = user.username
-        val userRef = usersReference.child(username)
-        // Check for existing user before setting value
-        val existingUser = userRef.get().await().getValue(User::class.java)
-        return if (existingUser != null) {
-            Response.Failure(Exception("Username already exists"))
-        } else {
-            try {
-                userRef.setValue(user).await()
-                Response.Success(user)
-            } catch (e: Exception) {
-                Response.Failure(e)
-            }
+        // Uses the current user that has signed up
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return Response.Failure(Exception("User not signed in"))
+        // Checks for existing username and returns an error if a duplicate is found
+        val existingUser = usersReference.orderByChild("username").equalTo(user.username).get().await().children.firstOrNull()?.getValue(User::class.java)
+        if (existingUser != null) {
+            return Response.Failure(Exception("Username already exists"))
         }
-    }
-
-    suspend fun getUserByEmail(email: String): User? {
-        usersReference.orderByChild("email")
-            .equalTo(email)
-
-        val snapshot = usersReference.get().await()
-        return snapshot.children.firstOrNull()?.getValue(User::class.java)
-    }
-
-    suspend fun updateUser(user: User) {
-        val username = user.username
-        val userRef = usersReference.child(username)
-        try {
-            userRef.setValue(user).await()
+        // Stores the user using their unique ID in the users node
+        return try {
+            usersReference.child(currentUser.uid).setValue(user).await()
+            Response.Success(user)
         } catch (e: Exception) {
             Response.Failure(e)
         }
     }
 
-    suspend fun getFollowingList(username: String): List<String> {
-        val followingList = mutableListOf<String>()
+    /**
+     * Gets a user from the database using their ID
+     */
+    suspend fun getUserById(userId: String): User? {
+        // Gets the data snapshot using the ID
         return try {
-            val querySnapshot = usersReference.orderByChild("username").equalTo(username).get().await()
-
-            if (querySnapshot.exists()) {
-                val userSnapshot = querySnapshot.children.first()
-                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
-                followingList.addAll(following.orEmpty())
+            val snapshot = usersReference.child(userId).get().await()
+            // Checks if the snapshot exists, returns null if not
+            if (snapshot.exists()) {
+                snapshot.getValue(User::class.java)
+            } else {
+                null
             }
-            followingList
         } catch (e: Exception) {
-            // Error occurred during the operation
-            emptyList()
-        }
-    }
-
-    suspend fun getFollowers(username: String): List<String> {
-        val followingList = mutableListOf<String>()
-        return try {
-            val querySnapshot = usersReference.orderByChild("username").equalTo(username).get().await()
-
-            if (querySnapshot.exists()) {
-                val userSnapshot = querySnapshot.children.first()
-                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
-                followingList.addAll(following.orEmpty())
-            }
-            followingList
-        } catch (e: Exception) {
-            // Error occurred during the operation
-            emptyList()
-        }
-    }
-
-    suspend fun updateUserStreak(userId: String) {
-        val userRef = usersReference.child(userId)
-        try {
-            val today = Date() // Get today's date
-
-            val updatedUser = userRef.get().await().getValue(User::class.java)?.apply {
-                val lastLogin = lastLoginDate // Assuming there's a lastLoginDate property in User
-
-                // Check if user logged in yesterday to maintain the streak
-                val loggedInYesterday = isYesterday(lastLogin, today)
-                if (loggedInYesterday) {
-                    currentStreak += 1 // Increase streak if logged in yesterday
-                } else {
-                    currentStreak = 0 // Reset streak if not logged in yesterday
-                }
-                lastLoginDate = today // Update last login date
-            }
-            updatedUser?.let { userRef.setValue(it).await() }
-        } catch (e: Exception) {
-            // Handle error updating streak (e.g., log the error)
-        }
-    }
-
-    // Helper function to check if date is yesterday
-    private fun isYesterday(date: Date?, today: Date): Boolean {
-        if (date == null) {
-            return false
-        }
-        val calendar = Calendar.getInstance()
-        calendar.time = today
-        calendar.add(Calendar.DAY_OF_YEAR, -1) // Subtract one day
-        return calendar.time.date == date.date &&
-                calendar.time.month == date.month &&
-                calendar.time.year == date.year
-    }
-
-    suspend fun downloadUserProfileImage(user: User): Bitmap? {
-        val imageUrl = user.profilePictureUrl
-        return try {
-            val url = URL(imageUrl)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.doInput = true
-            connection.connect()
-            val inputStream = connection.inputStream
-            BitmapFactory.decodeStream(inputStream)
-        } catch (e: IOException) {
-            // Handle error (e.g., log the error)
             null
         }
     }
 
+    /**
+     * Updates the user
+     */
+    suspend fun updateUser(user: User): Response<Unit> {
+        val username = user.username
+        val userRef = usersReference.child(username)
+        return try {
+            userRef.setValue(user).await()
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+
+    /**
+     * Gets the current users following list
+     */
+    suspend fun getFollowingList(): List<String> {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
+
+        val followingList = mutableListOf<String>()
+        return try {
+            val userSnapshot = usersReference.child(currentUser.uid).get().await()
+            if (userSnapshot.exists()) {
+                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                followingList.addAll(following.orEmpty())
+            }
+            followingList
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Gets the users followers list by their user ID
+     */
+    suspend fun getFollowers(): List<String> {
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
+        val followersList = mutableListOf<String>()
+        return try {
+            val userSnapshot = usersReference.child(currentUser.uid).get().await()
+            if (userSnapshot.exists()) {
+                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                followersList.addAll(following.orEmpty())
+            }
+            followersList
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Update the user but only their streak
+     */
+    suspend fun updateUserStreakAndData(userId: String, updatedUserData: User): Response<Unit> {
+        return try {
+            usersReference.child(userId).setValue(updatedUserData).await()
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    /**
+     * Gets the users profile image, using their profile URL. This currently does not work.
+     */
+    suspend fun downloadUserProfileImage(user: User): Bitmap? {
+        val imageUrl = user.profilePictureUrl
+        return try {
+            val url = URL(imageUrl)
+            val connection = withContext(Dispatchers.IO) {
+                url.openConnection()
+            } as HttpURLConnection
+            connection.doInput = true
+            withContext(Dispatchers.IO) {
+                connection.connect()
+            }
+            val inputStream = connection.inputStream
+            BitmapFactory.decodeStream(inputStream)
+        } catch (e: IOException) {
+            null
+        }
+    }
 }
 

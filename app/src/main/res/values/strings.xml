@@ -61,4 +61,19 @@
     <string name="chooseFromGallery">Gallery</string>
     <string name="selectImage">Upload an image</string>
     <string name="createDeck">Create Revision Deck</string>
+    <string name="AddFlashcards">Add Flashcards</string>
+    <string name="StartLearning">Start Learning</string>
+    <string name="noFlashes">No flashcards found, add some!</string>
+    <string name="optional">Description (Optional)</string>
+    <string name="deckName">Deck Name</string>
+    <string name="publicDeck">Public Deck</string>
+    <string name="createNewDeck">Create New Deck</string>
+    <string name="newMaterial">New Material</string>
+    <string name="suggestedDecks">Suggested Decks</string>
+    <string name="editDeck">Edit Deck</string>
+    <string name="saveChanges">Save Changes</string>
+    <string name="deleteDeck">Delete Deck</string>
+    <string name="delete">Delete</string>
+    <string name="moreOptions">More Options</string>
+    <string name="createButton">Create Deck</string>
 </resources>

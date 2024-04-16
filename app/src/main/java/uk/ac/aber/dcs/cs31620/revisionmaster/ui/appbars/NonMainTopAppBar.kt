@@ -21,29 +21,39 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 
+/**
+ * This is a non-main page top app bar. It has a title which can be customized.
+ * This top app bar is simpler compared to the main page top app bar and doesn't include
+ * additional components like streak counter, notification bell, or profile circle.
+ *
+ *  @author Lauren Davis [lad48]
+ */
 @Composable
 fun NonMainTopAppBar(
-    navController: NavController,
-    title: String,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    viewModel: UserViewModel = viewModel()
+    navController: NavController, // Navigation controller for handling navigation
+    title: String, // Title to be displayed in the app bar
+    scrollBehavior: TopAppBarScrollBehavior? = null, // Scroll behavior for the top app bar
+    viewModel: UserViewModel = viewModel() // View model for user data
 ) {
+    val context = LocalContext.current // Accessing the current context
 
-    val context = LocalContext.current
-
+    // Observing user data from the view model
     val user by viewModel.user.collectAsState(initial = null)
 
+    // Fetching user data when the composable is first launched
     LaunchedEffect(Unit) {
         viewModel.getUserData()
     }
+
     if (user != null) {
+        // Building the top app bar
         TopAppBar(
             title = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Greeting on the left
+                    // Title displayed in the center
                     Text(
                         text = title,
                         fontWeight = FontWeight.SemiBold,
@@ -53,10 +63,12 @@ fun NonMainTopAppBar(
                     )
                 }
             },
+            // Setting colors for the app bar
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 titleContentColor = MaterialTheme.colorScheme.onPrimary
             ),
+            // Setting scroll behavior for the app bar
             scrollBehavior = scrollBehavior
         )
     }

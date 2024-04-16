@@ -26,23 +26,44 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import uk.ac.aber.dcs.cs31620.revisionmaster.R
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.TopLevelScaffold
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 
 /**
- * Represents the home screen, has individual cards for each exercise for the current day.
+ * Represents the home screen
  * @author Lauren Davis
+ */
+
+/**
+ *
  */
 @Composable
 fun HomeScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    val decksState by flashcardViewModel.decks.collectAsState(initial = emptyList())
+
+    LaunchedEffect(Unit){
+        flashcardViewModel.getUserDecks()
+    }
+
     TopLevelScaffold(
         navController = navController,
         pageContent = { innerPadding ->
@@ -59,13 +80,13 @@ fun HomeScreen(
                             icon = Icons.Default.Book,
                             text = "Mock Test",
                             subtext = "Test Yourself",
-                            onClick = {}
+                            onClick = {navController.navigate(Screen.CreateExam.route)}
                         )
                         CardWithIcon(
                             icon = Icons.Default.LibraryAdd,
-                            text = "New Material",
-                            subtext = "Create New Flashcards",
-                            onClick = {}
+                            text = stringResource(R.string.newMaterial),
+                            subtext = stringResource(R.string.createNewDeck),
+                            onClick = { navController.navigate(Screen.AddDeck.route)}
                         )
                     }
                     Card (
@@ -77,14 +98,13 @@ fun HomeScreen(
 
                         // Carousel
                         CarouselWithPager(
-                            title = "Decks",
+                            title = stringResource(R.string.suggestedDecks),
                             icon = Icons.AutoMirrored.Filled.ArrowForward,
-                            items = listOf("Hello", "Test", "World"),
-                            onClick = {}
+                            decks = decksState.filter { it.averageDifficulty == Difficulty.HARD || it.averageDifficulty == Difficulty.MEDIUM },
+                            onClick = {  }
                         )
                     }
 
-                        // Card with List of Items and Trailing Button
                         CardWithListAndButton()
                     }
             }
@@ -92,6 +112,9 @@ fun HomeScreen(
     )
 }
 
+/**
+ *
+ */
 @Composable
 fun CardWithIcon(
     icon: ImageVector,
@@ -121,12 +144,15 @@ fun CardWithIcon(
     }
 }
 
+/**
+ *
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun CarouselWithPager(
     title: String,
     icon: ImageVector,
-    items: List<String>,
+    decks: List<Deck>,
     onClick: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -135,47 +161,58 @@ fun CarouselWithPager(
             modifier = Modifier
                 .clickable { onClick.invoke() }
         ) {
-
-
             Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
             Spacer(modifier = Modifier.padding(horizontal = 115.dp))
             Icon(imageVector = icon, contentDescription = "Next")
-
         }
         HorizontalPager(
             modifier = Modifier.fillMaxWidth(),
-            state = rememberPagerState(pageCount = { items.size }),
+            state = rememberPagerState(pageCount = { decks.size }),
             contentPadding = PaddingValues(horizontal = 16.dp)
         ) { page ->
-            CardWithCarouselItem(item = items[page])
+            CardWithCarouselItem(decks[page])
         }
     }
 }
 
+
+/**
+ *
+ */
 @Composable
-fun CardWithCarouselItem(item: String) {
+fun CardWithCarouselItem(deck: Deck) {
     Card(
         modifier = Modifier.padding(8.dp),
         colors = CardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
             disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer))
-    {
+            disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        )
+    ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
             Text(
-                text = item,
+                text = deck.name,
                 style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "Subject: ${deck.subject}, Average Difficulty: ${deck.averageDifficulty}",
+                style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.fillMaxWidth()
             )
         }
     }
 }
 
+
+/**
+ *
+ */
 @Composable
 fun CardWithListAndButton() {
     Card(modifier = Modifier

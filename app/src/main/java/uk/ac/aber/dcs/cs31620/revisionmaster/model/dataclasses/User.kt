@@ -2,7 +2,9 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
 
 import java.util.Date
 
-
+/**
+ * This is the user class, potentially separated at a later date, but unsure.
+ */
 data class User(
     var username: String = "",
     var firstName: String = "",

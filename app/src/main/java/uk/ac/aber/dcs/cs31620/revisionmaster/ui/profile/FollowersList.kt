@@ -26,8 +26,8 @@ fun FollowersScreen(userViewModel: UserViewModel = viewModel()) {
 
     LaunchedEffect(key1 = userViewModel) {
         userViewModel.getUserData()
-        userViewModel.user.value?.let { user ->
-            userViewModel.getFollowerList(user.username)
+        userViewModel.user.value?.let { _ ->
+            userViewModel.getFollowerList()
         }
     }
 

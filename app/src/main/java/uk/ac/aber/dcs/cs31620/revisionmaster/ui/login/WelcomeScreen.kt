@@ -26,11 +26,14 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 /**
+ * Composable function for the welcome screen.
  *
+ * @param navController NavController for navigating between screens.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun WelcomeScreen(navController: NavController) {
+    // Scaffold for the screen layout
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -41,15 +44,19 @@ fun WelcomeScreen(navController: NavController) {
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
+        // Content of the welcome screen
         WelcomeContent(navController)
     }
 }
 
 /**
- * This is all of the content for the welcome screen including the text and buttons
+ * Composable function containing the content for the welcome screen, including text and buttons.
+ *
+ * @param navController NavController for navigating between screens.
  */
 @Composable
 fun WelcomeContent(navController: NavController) {
+    // Column layout for organizing content vertically
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +73,7 @@ fun WelcomeContent(navController: NavController) {
             )
         }
 
-        // Welcome text in black, overriding the theme of the application for readability
+        // Subtitle text in black, overriding the theme of the application for readability
         CompositionLocalProvider(LocalContentColor provides Color.Black) {
             Text(
                 text = stringResource(R.string.welcomeSubtitle),
@@ -75,13 +82,13 @@ fun WelcomeContent(navController: NavController) {
             )
         }
 
-        // Buttons stacked vertically
+        // Column for stacking buttons vertically
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Button for sign-in, will take you into the login route via LoginScreen.kt
+            // Button for sign-in, navigates to login screen
             Button(
                 onClick = {
                     navController.navigate(Screen.Login.route)
@@ -91,7 +98,7 @@ fun WelcomeContent(navController: NavController) {
             ) {
                 Text(stringResource(R.string.signIn))
             }
-            // Button for sign-up, will take you into the sign-up route via SignUpScreen.kt
+            // Button for sign-up, navigates to sign-up screen
             Button(
                 onClick = {
                     navController.navigate(Screen.SignUp.route)

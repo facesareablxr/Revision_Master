@@ -174,7 +174,8 @@ fun EditProfileContent(
                         ButtonSpinner(
                             items = universities,
                             label = "Institution",
-                            itemClick = { selectedUniversity = it }
+                            itemClick = { selectedUniversity = it },
+
                         )
                     }
                 }

@@ -46,48 +46,63 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 /**
- *
+ * Composable function for the top-level screen of the login feature.
+ * @param navController: Navigation controller for managing navigation within the app.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LoginTopLevel(navController: NavHostController) {
+    // State for managing user information
     val user = remember { mutableStateOf(User()) }
+    // Activity context
     val context = LocalContext.current as Activity
+    // Firebase authentication instance
     val auth = FirebaseAuth.getInstance()
 
+    // String resources for messages
     val fillInAllFields = stringResource(R.string.fillallfields)
     val failureMessage = stringResource(R.string.failedLogIn)
 
+    // Effect to navigate to home screen if user is already logged in
     LaunchedEffect(auth.currentUser) {
         if (auth.currentUser != null) {
             goToHome(navController)
         }
     }
 
+    // State for showing toast message
     var showToast by remember { mutableStateOf(false) }
 
+    // Scaffold for the screen layout
     Scaffold(
         topBar = {
+            // Top app bar for navigation
             SmallTopAppBar(
                 navController,
                 stringResource(R.string.login)
             )
         }
     ) {
+        // Container for the content
         Box(modifier = Modifier.fillMaxSize()) {
+            // Login screen content
             LoginScreen(
                 user = user.value,
                 onUserChange = { newUser -> user.value = newUser },
                 onForgotPassword = { navController.navigate(Screen.ForgotDetails.route) },
                 onLogin = {
+                    // Attempt login
                     if (user.value.email.isEmpty()  || user.value.password!!.isEmpty()) {
+                        // Show toast if email or password is empty
                         showToast = true
                     } else {
+                        // Sign in with email and password
                         user.value.email.let { it1 ->
                             user.value.password.let { it2 ->
                                 if (it2 != null) {
                                     auth.signInWithEmailAndPassword(it1, it2)
                                         .addOnCompleteListener(context) { task ->
+                                            // Handle login result
                                             if (task.isSuccessful) {
                                                 // Login successful
                                                 Toast.makeText(context, "Successfully logged in", Toast.LENGTH_LONG).show()
@@ -105,6 +120,7 @@ fun LoginTopLevel(navController: NavHostController) {
                 }
             )
 
+            // Show toast message if required
             if (showToast) {
                 Toast.makeText(context, fillInAllFields, Toast.LENGTH_LONG).show()
                 showToast = false
@@ -115,11 +131,10 @@ fun LoginTopLevel(navController: NavHostController) {
 
 /**
  * Composable function for the login screen layout.
- *
- * @param user Current user information.
- * @param onUserChange Function to update user state.
- * @param onForgotPassword Function to navigate to forgot password screen.
- * @param onLogin Function to initiate login attempt.
+ * @param user: Current user information.
+ * @param onUserChange: Function to update user state.
+ * @param onForgotPassword: Function to navigate to forgot password screen.
+ * @param onLogin: Function to initiate login attempt.
  */
 @Composable
 fun LoginScreen(
@@ -128,32 +143,37 @@ fun LoginScreen(
     onForgotPassword: () -> Unit = {},
     onLogin: () -> Unit
 ) {
+    // Column layout for content
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        // Email input field
         EmailBox(user, onUserChange)
         Spacer(modifier = Modifier.height(8.dp))
+        // Password input field
         PasswordBox(user, onUserChange)
         Spacer(modifier = Modifier.height(8.dp))
+        // Login button
         LoginButton(onLogin)
+        // Forgot password button
         ForgotPassword(onForgotPassword)
     }
 }
 
 /**
  * Composable function for email input field.
- *
- * @param user Current user information.
- * @param updateUser Function to update user state.
+ * @param user: Current user information.
+ * @param updateUser: Function to update user state.
  */
 @Composable
 fun EmailBox(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // Email input field
     OutlinedTextField(
         value = user.email,
         leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) }, // Leading email icon
@@ -168,9 +188,8 @@ fun EmailBox(
 
 /**
  * Composable function for password input field.
- *
- * @param user Current user information.
- * @param updateUser Function to update user state.
+ * @param user: Current user information.
+ * @param updateUser: Function to update user state.
  */
 @Composable
 private fun PasswordBox(
@@ -180,33 +199,33 @@ private fun PasswordBox(
     // State variable for password visibility
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Password input field
     user.password?.let {
         OutlinedTextField(
-        value = it,
-        leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }, // Leading lock icon
-        trailingIcon = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) { // Toggle visibility button
-                Icon(
-                    if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, // Icon based on visibility
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password" // Button description
-                )
-            }
-        },
-        label = { Text(text = stringResource(R.string.password)) }, // Password label
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(), // Mask password
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), // Password keyboard
-        onValueChange = { // Update user state on password change
-            updateUser(User(email = user.email, password = it))
-        },
-        modifier = Modifier.fillMaxWidth() // Full width
-    )
+            value = it,
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }, // Leading lock icon
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) { // Toggle visibility button
+                    Icon(
+                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff, // Icon based on visibility
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password" // Button description
+                    )
+                }
+            },
+            label = { Text(text = stringResource(R.string.password)) }, // Password label
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(), // Mask password
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), // Password keyboard
+            onValueChange = { // Update user state on password change
+                updateUser(User(email = user.email, password = it))
+            },
+            modifier = Modifier.fillMaxWidth() // Full width
+        )
     }
 }
 
 /**
  * Composable function for "Forgot password" button.
- *
- * @param forgotPasswordAction Function to trigger forgot password action.
+ * @param forgotPasswordAction: Function to trigger forgot password action.
  */
 @Composable
 private fun ForgotPassword(forgotPasswordAction: () -> Unit) {
@@ -221,8 +240,7 @@ private fun ForgotPassword(forgotPasswordAction: () -> Unit) {
 
 /**
  * Composable function for "Login" button.
- *
- * @param loginAction Function to trigger login action.
+ * @param loginAction: Function to trigger login action.
  */
 @Composable
 private fun LoginButton(loginAction: () -> Unit) {
@@ -234,5 +252,3 @@ private fun LoginButton(loginAction: () -> Unit) {
         Text(stringResource(R.string.login))
     }
 }
-
-

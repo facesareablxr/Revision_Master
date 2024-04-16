@@ -115,5 +115,10 @@
         <item>Urban Studies</item>
         <item>Visual Arts</item>
     </string-array>
+    <string-array name="difficulties">
+        <item>Easy</item>
+        <item>Medium</item>
+        <item>Hard</item>
+    </string-array>
 
 </resources>

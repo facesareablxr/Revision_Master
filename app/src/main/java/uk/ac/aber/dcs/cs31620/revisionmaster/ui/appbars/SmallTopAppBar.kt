@@ -12,6 +12,10 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 /**
+ * @author Lauren Davis [lad48]
+ */
+
+/**
  * Composable for a small top app bar. It displays a title passed through its parameter and includes a back button.
  *
  * @param navController is the NavController for navigation control
@@ -19,11 +23,13 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
  */
 @Composable
 fun SmallTopAppBar(navController: NavController, title: String) {
+    // Building a small top app bar with a title and a back button
     TopAppBar(
         title = {
             Text(title)  // Display the passed title
         },
         navigationIcon = {
+            // Back button to navigate back to the previous screen
             IconButton(
                 onClick = {
                     navController.navigateUp() // Navigate back to the previous screen

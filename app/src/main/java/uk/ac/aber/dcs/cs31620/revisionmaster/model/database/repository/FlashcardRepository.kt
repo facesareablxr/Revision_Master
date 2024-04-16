@@ -1,384 +1,166 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository
 
 import android.util.Log
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Module
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Subject
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.UserRevisionData
 
+/**
+ * This object handles all flashcard and deck-related interactions with a Firebase Realtime Database.
+ * It provides functions to add, retrieve, update, and delete decks and flashcards.
+ */
 object FlashcardRepository {
-
+    // Firebase Realtime Database initialization
     private val rootNode =
         FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
-    private val dataReference = rootNode.reference.child("revisionData")
-    val decksRef = rootNode.reference.child("decks")
+    private val decksRef = rootNode.reference.child("decks") // Reference to the "decks" node in the database
 
-    // Get all user revision data
-    suspend fun getUserRevisionData(callback: (UserRevisionData) -> Unit) {
-        dataReference.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val userRevisionData = snapshot.getValue(UserRevisionData::class.java)
-                if (userRevisionData != null) {
-                    callback(userRevisionData)
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle database errors
-                Log.e("Flashcard Repo", "Error getting user revision data: $error")
-            }
-        })
+    /**
+     * Adds a deck to the database.
+     */
+    fun addDeck(deck: Deck) {
+        decksRef.child(deck.id).setValue(deck) // Set the value of the deck under its unique ID
     }
 
-    // Add user revision data
-    suspend fun addUserRevisionData(
-        userRevisionData: UserRevisionData,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.setValue(userRevisionData)
-            .addOnSuccessListener {
-                callback(true)
+    /**
+     * Gets the decks owned by a user using their user ID.
+     */
+    fun getUserDecks(userId: String): Flow<List<Deck>> = flow {
+        try {
+            // Retrieve decks where the ownerId matches the provided userId
+            val snapshot = decksRef.orderByChild("ownerId").equalTo(userId).get().await()
+
+            // Map the snapshot to a list of Deck objects
+            val decks = snapshot.children.mapNotNull {
+                it.getValue(Deck::class.java)
             }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    suspend fun addDeck(deck: Deck) {
-        decksRef.child(deck.id).setValue(deck)
-    }
-
-
-    // Add flashcard to a subject
-    suspend fun addSubjectFlashcard(
-        subjectId: String,
-        flashcard: Flashcard,
-        callback: (Boolean) -> Unit
-    ) {
-        val flashcardsRef = dataReference.child(subjectId).child("flashcards")
-        val key = flashcardsRef.push().key ?: return // Exit if key generation fails
-
-        flashcardsRef.child(key).setValue(flashcard)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Get module information
-    suspend fun getModuleInformation(moduleId: String, callback: (Module?) -> Unit) {
-        dataReference.child(moduleId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val module = snapshot.getValue(Module::class.java)
-                callback(module)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle database errors
-                Log.e("Flashcard Repo", "Error getting module information: $error")
-                callback(null)
-            }
-        })
-    }
-
-    // Get subject information
-    suspend fun getSubjectInformation(subjectId: String, callback: (Subject?) -> Unit) {
-        dataReference.child(subjectId).addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val subject = snapshot.getValue(Subject::class.java)
-                callback(subject)
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Handle database errors
-                Log.e("Flashcard Repo", "Error getting subject information: $error")
-                callback(null)
-            }
-        })
-    }
-
-    // Get flashcard information
-    suspend fun getFlashcardInformation(
-        parentId: String,
-        flashcardId: String,
-        callback: (Flashcard?) -> Unit
-    ) {
-        dataReference.child(parentId).child("flashcards").child(flashcardId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val flashcard = snapshot.getValue(Flashcard::class.java)
-                    callback(flashcard)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting flashcard information: $error")
-                    callback(null)
-                }
-            })
-    }
-
-    // Update module information
-    suspend fun updateModuleInformation(
-        moduleId: String,
-        updatedModule: Module,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.child(moduleId).setValue(updatedModule)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Update subject information
-    suspend fun updateSubjectInformation(
-        subjectId: String,
-        updatedSubject: Subject,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.child(subjectId).setValue(updatedSubject)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Update flashcard information
-    suspend fun updateFlashcardInformation(
-        parentId: String,
-        flashcardId: String,
-        updatedFlashcard: Flashcard,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.child(parentId).child("flashcards").child(flashcardId)
-            .setValue(updatedFlashcard)
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Delete module
-    suspend fun deleteModule(moduleId: String, callback: (Boolean) -> Unit) {
-        dataReference.child(moduleId).removeValue()
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Delete subject
-    suspend fun deleteSubject(subjectId: String, callback: (Boolean) -> Unit) {
-        dataReference.child(subjectId).removeValue()
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Delete class
-    suspend fun deleteClass(classId: String, callback: (Boolean) -> Unit) {
-        dataReference.child(classId).removeValue()
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Delete flashcard
-    suspend fun deleteFlashcard(
-        parentId: String,
-        flashcardId: String,
-        callback: (Boolean) -> Unit
-    ) {
-        dataReference.child(parentId).child("flashcards").child(flashcardId).removeValue()
-            .addOnSuccessListener {
-                callback(true)
-            }
-            .addOnFailureListener {
-                callback(false)
-            }
-    }
-
-    // Get flashcards by module
-    suspend fun getFlashcardsByModule(moduleId: String, callback: (List<Flashcard>) -> Unit) {
-        dataReference.child(moduleId).child("flashcards")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val flashcards = mutableListOf<Flashcard>()
-                    snapshot.children.forEach { data ->
-                        val flashcard = data.getValue(Flashcard::class.java)
-                        flashcard?.let { flashcards.add(it) }
-                    }
-                    callback(flashcards)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting flashcards by module: $error")
-                    callback(emptyList())
-                }
-            })
-    }
-
-    // Get flashcards by class
-    suspend fun getFlashcardsByClass(classId: String, callback: (List<Flashcard>) -> Unit) {
-        dataReference.child(classId).child("flashcards")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val flashcards = mutableListOf<Flashcard>()
-                    snapshot.children.forEach { data ->
-                        val flashcard = data.getValue(Flashcard::class.java)
-                        flashcard?.let { flashcards.add(it) }
-                    }
-                    callback(flashcards)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting flashcards by class: $error")
-                    callback(emptyList())
-                }
-            })
-    }
-
-    // Get flashcards by subject
-    suspend fun getFlashcardsBySubject(subjectId: String, callback: (List<Flashcard>) -> Unit) {
-        dataReference.child(subjectId).child("flashcards")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val flashcards = mutableListOf<Flashcard>()
-                    snapshot.children.forEach { data ->
-                        val flashcard = data.getValue(Flashcard::class.java)
-                        flashcard?.let { flashcards.add(it) }
-                    }
-                    callback(flashcards)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting flashcards by subject: $error")
-                    callback(emptyList())
-                }
-            })
-    }
-
-    // Get All Flashcards for a User
-    suspend fun getAllUserFlashcards(username: String): List<Flashcard> {
-        val flashcards = mutableListOf<Flashcard>()
-
-        return try {
-            val dataSnapshot = dataReference.get().await()
-            val userRevisionData = dataSnapshot.getValue(UserRevisionData::class.java)
-            userRevisionData?.flashcards?.let { flashcards.addAll(it) }
-            flashcards
+            emit(decks)
         } catch (e: Exception) {
-            emptyList()
+            emit(emptyList())
         }
     }
 
-    // Get User Modules
-    suspend fun getUserModules(userId: String, callback: (List<Module>) -> Unit) {
-        dataReference.orderByChild("members/$userId").equalTo(true)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userModules = mutableListOf<Module>()
-                    snapshot.children.forEach { data ->
-                        val modulesMap = data.child("modules").children
-                        modulesMap.forEach { moduleData ->
-                            val module = moduleData.getValue(Module::class.java)
-                            module?.let { userModules.add(it) }
-                        }
-                    }
-                    callback(userModules)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting user modules: $error")
-                    callback(emptyList())
-                }
-            })
+    /**
+     * Returns the details of a specific deck.
+     */
+    suspend fun getDeckDetails(deckId: String): Deck? {
+        val snapshot = decksRef.child(deckId).get().await() // Retrieve deck details from the database
+        return snapshot.getValue(Deck::class.java)
     }
 
-    // Get User Subjects
-    suspend fun getUserSubjects(userId: String, callback: (List<Subject>) -> Unit) {
-        dataReference.orderByChild("members/$userId").equalTo(true)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userSubjects = mutableListOf<Subject>()
-                    snapshot.children.forEach { data ->
-                        val subjectsMap = data.child("subjects").children
-                        subjectsMap.forEach { subjectData ->
-                            val subject = subjectData.getValue(Subject::class.java)
-                            subject?.let { userSubjects.add(it) }
-                        }
-                    }
-                    callback(userSubjects)
-                }
+    /**
+     * Retrieves all flashcards belonging to a specific deck.
+     */
+    suspend fun getFlashcardsByDeckId(deckId: String): List<Flashcard> {
+        val deckReference = decksRef.child(deckId)
+        val flashcardsRef = deckReference.child("flashcards")
 
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting user subjects: $error")
-                    callback(emptyList())
-                }
-            })
-    }
-
-    suspend fun getModulesForSubject(subjectId: String, callback: (List<Module>) -> Unit) {
-        dataReference.child(subjectId).child("modules")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val modules = mutableListOf<Module>()
-                    snapshot.children.forEach { data ->
-                        val module = data.getValue(Module::class.java)
-                        module?.let { modules.add(it) }
-                    }
-                    callback(modules)
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    // Handle database errors
-                    Log.e("Flashcard Repo", "Error getting modules for subject: $error")
-                    callback(emptyList())
-                }
-            })
-    }
-
-    // Get all user decks
-    suspend fun getUserDecks(username: String): List<Deck> {
-        val snapshot = decksRef.orderByChild("owner")
-            .equalTo(username)
-            .get()
-            .await()
-
-        val decks = mutableListOf<Deck>()
+        val snapshot = flashcardsRef.get().await()
+        val flashcards = mutableListOf<Flashcard>()
         snapshot.children.forEach { data ->
-            val deck = data.getValue(Deck::class.java)
-            deck?.let { decks.add(it) }
+            val flashcard = data.getValue(Flashcard::class.java) // Convert each child snapshot to a Flashcard object
+            flashcard?.let { flashcards.add(it) }
         }
-        return decks
+        return flashcards
     }
 
+    /**
+     * Retrieves a Deck object along with its associated flashcards.
+     */
+    suspend fun getDeckWithFlashcards(deckId: String): Deck? {
+        val deckRef = decksRef.child(deckId)
+        val deckSnapshot = deckRef.get().await()
+        if (!deckSnapshot.exists()) {
+            return null
+        }
+
+        val deck = deckSnapshot.getValue(Deck::class.java) ?: return null // Convert the snapshot to a Deck object
+
+        val flashcardsRef = deckRef.child("flashcards")
+        val flashcardsSnapshot = flashcardsRef.get().await() // Retrieve all flashcards under the deck
+        val flashcards = mutableListOf<Flashcard>()
+        flashcardsSnapshot.children.forEach { data ->
+            val flashcard = data.getValue(Flashcard::class.java)
+            flashcard?.let { flashcards.add(it) } // Add the flashcard to the list if it's not null
+        }
+        deck.cards = flashcards // Assign the list of flashcards to the deck
+        deck.averageDifficulty = calculateDeckDifficulty(flashcards) // Calculate and update the deck's average difficulty
+        return deck
+    }
+
+    /**
+     * Calculates the average difficulty level of a deck based on its flashcards.
+     */
+    private fun calculateDeckDifficulty(cards: List<Flashcard>): Difficulty {
+        if (cards.isEmpty()) {
+            Log.d("FlashcardViewModel", "No flashcards found. Defaulting to MEDIUM difficulty.")
+            return Difficulty.MEDIUM // Default difficulty if no flashcards are found
+        }
+
+        val averageWeight = cards.map { it.difficulty.weight }.average() // Calculate the average weight of flashcards
+        Log.d("FlashcardViewModel", "Average weight of flashcards: $averageWeight")
+
+        val foundDifficulty = Difficulty.values().find {
+            averageWeight - 0.5 <= it.weight && it.weight <= averageWeight + 0.5
+        }
+        return foundDifficulty ?: run {
+            Log.e("FlashcardViewModel", "Error calculating difficulty. Defaulting to MEDIUM.")
+            Difficulty.MEDIUM // Default difficulty if calculation fails
+        }
+    }
+
+    /**
+     * Adds a flashcard to a specific deck.
+     */
+    fun addFlashcard(deckId: String, flashcard: Flashcard) {
+        decksRef.child(deckId).child("flashcards").child(flashcard.id).setValue(flashcard)
+    }
+
+    /**
+     * Deletes a deck and its associated flashcards from the database.
+     */
+    suspend fun deleteDeck(deckId: String) {
+        decksRef.child(deckId).removeValue().await() // Remove the deck node from the database
+        decksRef.child(deckId).child("flashcards").removeValue().await() // Remove the flashcards node under the deck
+    }
+
+    /**
+     * Updates a deck's details.
+     */
+    fun updateDeck(deck: Deck) {
+        decksRef.child(deck.id).setValue(deck) // Update the deck details in the database
+    }
+
+    /**
+     * Gets a single flashcard by its ID from the specified deck.
+     */
+    suspend fun getFlashcardById(deckId: String, flashcardId: String): Flashcard? {
+        val deckReference = decksRef.child(deckId)
+        val flashcardsRef = deckReference.child("flashcards")
+        val flashcardRef = flashcardsRef.child(flashcardId)
+
+        val snapshot = flashcardRef.get().await()
+        return snapshot.getValue(Flashcard::class.java)
+    }
+
+    /**
+     * Updates a flashcard in a specific deck.
+     */
+    fun updateFlashcard(flashcard: Flashcard, deckId: String) {
+        val deckReference = decksRef.child(deckId)
+        val flashcardsRef = deckReference.child("flashcards")
+        val flashcardRef = flashcardsRef.child(flashcard.id)
+        flashcardRef.setValue(flashcard)
+    }
+
+    /**
+     * Deletes a flashcard from a specific deck.
+     */
+    suspend fun deleteFlashcard(flashcardId: String, deckId: String) {
+        decksRef.child(deckId).child("flashcards").child(flashcardId).removeValue().await() // Remove the flashcard from the database
+    }
 }

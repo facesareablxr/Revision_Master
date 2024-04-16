@@ -55,46 +55,60 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewModel) {
+    // Activity context
     val context = LocalContext.current as Activity
+    // State for managing user information
     var user by remember { mutableStateOf(User()) }
+    // State for managing confirmed password
     var confirmPassword by remember { mutableStateOf("") }
 
+    // String resources for messages
     val passwordsDoNotMatchMsg = stringResource(R.string.passwordsDoNotMatch)
     val weakPasswordMsg = stringResource(R.string.weakPassword)
 
+    // Effect to check if the user is already signed in
     LaunchedEffect(userViewModel) {
         FirebaseAuth.getInstance().currentUser?.let {
             goToHome(navController)
         }
     }
 
+    // Scaffold for the screen layout
     Scaffold(
         modifier = Modifier.padding(8.dp),
         topBar = {
+            // Top app bar for navigation
             SmallTopAppBar(
                 navController = navController,
                 title = stringResource(R.string.signup)
             )
         }
     ) {
+        // Sign-up screen content
         SignupScreen(
             user = user,
             confirmPassword = confirmPassword,
             updateUser = { user = it },
             updateConfirmPassword = { confirmPassword = it },
             signupAction = {
+                // Handle sign-up button click
                 if (user.password != confirmPassword) {
+                    // Show toast if passwords do not match
                     showToast(context, passwordsDoNotMatchMsg)
                 } else if (!isStrongPassword(user.password!!)) {
+                    // Show toast if password is weak
                     showToast(context, weakPasswordMsg)
                 } else {
+                    // Sign up with email and password
                     val auth = FirebaseAuth.getInstance()
                     auth.createUserWithEmailAndPassword(user.email, user.password!!)
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
+                                // Add user to database and navigate to home screen on successful sign-up
                                 userViewModel.addUserToDB(user)
                                 goToHome(navController)
                             } else {
+                                // Show toast on sign-up failure
                                 showToast(context, "Signup failed!")
                             }
                         }
@@ -103,7 +117,6 @@ fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewMode
         )
     }
 }
-
 
 /**
  * Function to display a toast message.
@@ -129,6 +142,7 @@ fun SignupScreen(
     updateConfirmPassword: (String) -> Unit,
     signupAction: () -> Unit
 ) {
+    // Column layout for content
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -136,23 +150,29 @@ fun SignupScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // First name and last name fields
         Row {
             FirstNameField(user = user, updateUser = updateUser)
             Spacer(modifier = Modifier.width(8.dp))
             LastNameField(user = user, updateUser = updateUser)
         }
         Spacer(modifier = Modifier.height(8.dp))
+        // Username field
         UsernameField(user = user, updateUser = updateUser)
         Spacer(modifier = Modifier.height(8.dp))
+        // Email field
         EmailSignUp(user = user, updateUser = updateUser)
         Spacer(modifier = Modifier.height(8.dp))
+        // Password field
         PasswordSignUp(user = user, updateUser = updateUser)
         Spacer(modifier = Modifier.height(8.dp))
+        // Confirm password field
         ConfirmPasswordField(
             confirmPassword = confirmPassword,
             updateConfirmPassword = updateConfirmPassword,
         )
         Spacer(modifier = Modifier.height(16.dp))
+        // Sign-up button
         SignupButton(signupAction = signupAction)
     }
 }
@@ -162,6 +182,7 @@ private fun FirstNameField(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // Text field for first name
     OutlinedTextField(
         value = user.firstName,
         label = { Text(text = stringResource(R.string.first_name)) },
@@ -179,6 +200,7 @@ private fun LastNameField(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // Text field for last name
     OutlinedTextField(
         value = user.lastName,
         label = { Text(text = stringResource(R.string.last_name)) },
@@ -190,7 +212,6 @@ private fun LastNameField(
         modifier = Modifier.width(180.dp)
     )
 }
-
 
 /**
  * Function that checks if the user inputted name is valid
@@ -211,8 +232,10 @@ private fun UsernameField(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // State for username text field
     val usernameState = remember { mutableStateOf(user.username) }
 
+    // Text field for username
     OutlinedTextField(
         value = usernameState.value,
         label = { Text(text = stringResource(R.string.username)) },
@@ -225,7 +248,6 @@ private fun UsernameField(
         modifier = Modifier.fillMaxWidth()
     )
 }
-
 
 /**
  * Function to check the validity of a username
@@ -246,6 +268,7 @@ private fun EmailSignUp(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // Text field for email
     OutlinedTextField(
         value = user.email,
         leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
@@ -255,7 +278,6 @@ private fun EmailSignUp(
         modifier = Modifier.fillMaxWidth()
     )
 }
-
 
 /**
  * Composable function that renders a password text field with toggle visibility.
@@ -268,29 +290,30 @@ private fun PasswordSignUp(
     user: User,
     updateUser: (User) -> Unit
 ) {
+    // State for password visibility
     var passwordVisible by remember { mutableStateOf(false) }
 
     user.password?.let {
+        // Text field for password
         OutlinedTextField(
-        value = it,
-        leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
-        trailingIcon = {
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                    contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                )
-            }
-        },
-        label = { Text(text = stringResource(R.string.password)) },
-        visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        onValueChange = { updatedPassword -> updateUser(user.copy(password = updatedPassword)) },
-        modifier = Modifier.fillMaxWidth()
-    )
+            value = it,
+            leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                    )
+                }
+            },
+            label = { Text(text = stringResource(R.string.password)) },
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            onValueChange = { updatedPassword -> updateUser(user.copy(password = updatedPassword)) },
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
-
 
 /**
  * Composable function that renders a confirm password text field with toggle visibility.
@@ -303,8 +326,10 @@ private fun ConfirmPasswordField(
     confirmPassword: String,
     updateConfirmPassword: (String) -> Unit
 ) {
+    // State for password visibility
     var passwordVisible by remember { mutableStateOf(false) }
 
+    // Text field for confirm password
     OutlinedTextField(
         value = confirmPassword,
         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
@@ -316,10 +341,10 @@ private fun ConfirmPasswordField(
                 )
             }
         },
-        label = { Text(text = stringResource(R.string.confirm_password)) }, // Updated Label
+        label = { Text(text = stringResource(R.string.confirm_password)) },
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-        onValueChange = updateConfirmPassword, // Update function passed directly
+        onValueChange = updateConfirmPassword,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -333,6 +358,7 @@ private fun ConfirmPasswordField(
 private fun SignupButton(
     signupAction: () -> Unit
 ) {
+    // Button for signup
     Button(
         onClick = signupAction,
         modifier = Modifier.fillMaxWidth()

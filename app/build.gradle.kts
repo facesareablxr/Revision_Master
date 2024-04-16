@@ -69,7 +69,7 @@ dependencies {
     //Firebase Implementation
     // Enables displaying in-app messaging from Firebase to users.
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
-    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.0")
+    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.2")
     // Provides libraries for implementing efficient pagination in app, handling large datasets.
     implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
     // Allows access to Firebase Realtime Database, a NoSQL database solution.
@@ -83,31 +83,29 @@ dependencies {
 
     //Compose Platform and Core Dependencies
     // This line defines the Bill of Materials (BOM) for Compose, ensuring all Compose libraries used are compatible versions.
-    platform("androidx.compose:compose-bom:2024.02.02")
+    platform("androidx.compose:compose-bom:2024.04.00")
     // Provides essential Kotlin extensions for core Android functionalities.
-    platform("androidx.compose:compose-bom:2024.02.02")
+    platform("androidx.compose:compose-bom:2024.04.00")
 
     implementation("androidx.core:core-ktx:1.12.0")
     // Offers lifecycle-aware components for managing data across different UI lifecycles in Kotlin.
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    // Enables building Compose activities, the foundation for your app screens.
+    // Enables building Compose activities, the foundation for the app screens.
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.activity:activity-ktx:1.8.2")
     // The core library for building user interfaces with Compose.
-    implementation ("androidx.compose.ui:ui:1.6.3")
-    // Provides foundational building blocks for your Compose UI like layouts, drawables, and interactions.
-    implementation ("androidx.compose.foundation:foundation:1.6.3")
+    implementation ("androidx.compose.ui:ui:1.6.5")
+    // Provides foundational building blocks for the Compose UI like layouts, drawables, and interactions.
+    implementation ("androidx.compose.foundation:foundation:1.6.5")
     //  Provides additional Material Design components and themes for UI, old version, but still useful, not completely necessary as I have the others but still here.
-    implementation ("androidx.compose.material:material:1.6.3")
+    implementation ("androidx.compose.material:material:1.6.5")
     // Provides tooling support for Compose, including previewing and debugging features.
-    implementation ("androidx.compose.ui:ui-tooling:1.6.3")
-    // Integrates Material Design icons for use in your UI.
-    implementation ("androidx.compose.ui:ui:1.6.3")
-    implementation ("androidx.compose.foundation:foundation:1.6.3")
-    implementation ("androidx.compose.material:material:1.6.3")
-    implementation ("androidx.compose.ui:ui-tooling:1.6.3")
+    implementation ("androidx.compose.ui:ui-tooling:1.6.5")
+    implementation ("androidx.compose.foundation:foundation:1.6.5")
+    implementation ("androidx.compose.material:material:1.6.5")
+    implementation ("androidx.compose.ui:ui-tooling:1.6.5")
     implementation("androidx.compose.material:material-icons-extended")
-    // Enables implementing navigation within your Compose app.
+    // Enables implementing navigation within the Compose app.
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     //Testing Dependencies:
@@ -148,7 +146,7 @@ dependencies {
     // Provides LiveData, a lifecycle-aware data holder.
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
     // Bridges LiveData with Compose for seamless observation.
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.4")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.5")
 
     //Firebase Implementation
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))

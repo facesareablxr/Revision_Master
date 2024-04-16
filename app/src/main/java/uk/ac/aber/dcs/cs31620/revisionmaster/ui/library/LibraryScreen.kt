@@ -1,37 +1,36 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.FabPosition
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -50,20 +49,14 @@ fun LibraryScreen(
     flashcardViewModel: FlashcardViewModel = viewModel(),
     userViewModel: UserViewModel = viewModel()
 ) {
-    val user by userViewModel.user.collectAsState(initial = null)
     val decksState by flashcardViewModel.decks.collectAsState(initial = emptyList())
 
     LaunchedEffect(Unit) {
         userViewModel.getUserData() // Fetch user data
     }
 
-    LaunchedEffect(user) {
-        user?.let { user ->
-            user.username?.let { username ->
-                flashcardViewModel.getUserDecks(username)
-            }
-        }
-    }
+    flashcardViewModel.getUserDecks()
+
 
     Scaffold(
         topBar = { NonMainTopAppBar(navController, stringResource(R.string.library)) },
@@ -74,37 +67,48 @@ fun LibraryScreen(
             ) {
                 Icon(imageVector = Icons.Default.Add, stringResource(id = R.string.addData))
             }
-        },
-        isFloatingActionButtonDocked = false,
-        floatingActionButtonPosition = FabPosition.End
-    ) {
+        }
+    ) { innerPadding ->
         if (decksState.isNotEmpty()) {
-            DeckList(decks = decksState, navController = navController)
+            DeckList(decksState, navController, innerPadding, flashcardViewModel)
         } else {
-            NoDataMessage()
+            NoDataMessage(innerPadding)
         }
     }
 }
 
 @Composable
-fun DeckList(decks: List<Deck>, navController: NavHostController) {
-    LazyColumn(contentPadding = PaddingValues(16.dp)) {
+fun DeckList(
+    decks: List<Deck>,
+    navController: NavHostController,
+    paddingValues: PaddingValues,
+    flashcardViewModel: FlashcardViewModel
+) {
+    LazyColumn(contentPadding = paddingValues) {
         items(decks) { deck ->
-            DeckItem(deck = deck, navController = navController)
+            DeckItem(deck, navController, flashcardViewModel)
         }
     }
 }
 
 @Composable
-fun DeckItem(deck: Deck, navController: NavHostController) {
+fun DeckItem(deck: Deck, navController: NavHostController, flashcardViewModel: FlashcardViewModel) {
+    LaunchedEffect(deck.id) {
+        flashcardViewModel.getDeckWithFlashcards(deck.id)
+    }
+
+    val detailedDeck by flashcardViewModel.deckWithFlashcards.observeAsState()
+
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
+            .padding(16.dp)
             .clickable {
-                // Navigate to deck details
-                // navController.navigate(Screen.DeckDetails.route + "/${deck.id}")
+                navController.navigate(Screen.DeckDetails.route + "/${deck.id}")
             },
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -112,30 +116,34 @@ fun DeckItem(deck: Deck, navController: NavHostController) {
             Text(
                 text = deck.name,
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 4.dp),
-                fontWeight = FontWeight.SemiBold
+                modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
                 text = deck.description,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(bottom = 4.dp)
             )
-            Surface(
-                modifier = Modifier
-                    .padding(horizontal = 4.dp, vertical = 6.dp)
-                    .wrapContentWidth(),
-                shape = RoundedCornerShape(4.dp),
-                contentColor = MaterialTheme.colorScheme.onSurface
+
+            Row(
+                modifier = Modifier.padding(2.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.padding(2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                OutlinedButton(onClick = {}) {
                     Text(
                         text = deck.subject,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }
+                Spacer(modifier = Modifier.padding(8.dp))
+
+                OutlinedButton(onClick = { }) {
+                    Text(
+                        text = detailedDeck?.averageDifficulty?.toString()?.lowercase()?.capitalize()
+                            ?: deck.averageDifficulty.toString().lowercase().capitalize(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+                Spacer(modifier = Modifier.padding(8.dp))
             }
         }
     }
@@ -143,22 +151,22 @@ fun DeckItem(deck: Deck, navController: NavHostController) {
 
 
 @Composable
-fun NoDataMessage() {
+fun NoDataMessage(contentPadding: PaddingValues) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp),
+            .padding(contentPadding),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp)
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            tonalElevation = 2.dp,
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.addData),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                modifier = Modifier.padding(16.dp)
             )
         }
     }

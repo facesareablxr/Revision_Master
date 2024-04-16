@@ -54,34 +54,39 @@ import java.time.LocalTime
  * The notification bell will show a badge if there is a notification for the user to see.
  * The profile circle will show the users profile picture, and when clicked - it will open their
  * profile.
+ *
+ * @author Lauren Davis [lad48]
  */
 @Composable
 fun MainPageTopAppBar(
-    navController: NavController,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
-    viewModel: UserViewModel = viewModel()
+    navController: NavController, // Navigation controller for handling navigation
+    scrollBehavior: TopAppBarScrollBehavior? = null, // Scroll behavior for the top app bar
+    userViewModel: UserViewModel = viewModel() // View model for user data
 ) {
-    val context = LocalContext.current
-    val currentTime = LocalTime.now()
-    val greeting = getGreeting(currentTime)
+    val context = LocalContext.current // Accessing the current context
+    val currentTime = LocalTime.now() // Getting the current time
+    val greeting = getGreeting(currentTime) // Getting the appropriate greeting based on the time of day
 
-    val user by viewModel.user.collectAsState(initial = null)
+    // Observing user data from the view model
+    val user by userViewModel.user.collectAsState()
+    val currentStreak = user?.currentStreak
 
+    // Fetching user data when the composable is first launched
     LaunchedEffect(Unit) {
-        viewModel.getUserData()
+        userViewModel.getUserData()
     }
 
     val notifications = 1 // Placeholder notification count
 
     if (user != null) {
-        val userStreak = user!!.currentStreak
+        // Building the top app bar
         TopAppBar(
             title = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Greeting on the left
+                    // Greeting on the left side of the app bar
                     Text(
                         text = greeting,
                         fontWeight = FontWeight.SemiBold,
@@ -93,17 +98,24 @@ fun MainPageTopAppBar(
                         horizontalArrangement = Arrangement.End,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        StreakCounter(userStreak) // Pass userStreak from ViewModel
+                        // Showing streak counter if available
+                        if (currentStreak != null) {
+                            StreakCounter(currentStreak)
+                        }
+                        // Showing notification bell
                         NotificationsBell(notifications)
+                        // Showing profile circle
                         ProfileCircle(context = context, navController = navController, user!!)
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
             },
+            // Setting colors for the app bar
             colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 titleContentColor = MaterialTheme.colorScheme.onPrimary
             ),
+            // Setting scroll behavior for the app bar
             scrollBehavior = scrollBehavior
         )
     }
@@ -119,6 +131,7 @@ private fun NotificationsBell(notifications: Int) {
             imageVector = Icons.Filled.Notifications, // Placeholder icon
             contentDescription = "Notifications"
         )
+        // Showing badge if there are notifications
         if (notifications > 0) {
             Badge(modifier = Modifier.offset(x = 8.dp, y = (-8).dp)) // Position badge on top right
         }
@@ -136,6 +149,7 @@ private fun StreakCounter(steakCounter: Int) {
             contentDescription = "Streak"
         )
     }
+    // Displaying the streak count
     Text(
         text = "$steakCounter",
         fontWeight = FontWeight.SemiBold
@@ -161,14 +175,15 @@ private fun getGreeting(currentTime: LocalTime): String {
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfileCircle(
-    context: Context,
-    navController: NavController,
-    user: User
+    context: Context, // Context for accessing resources
+    navController: NavController, // Navigation controller for handling navigation
+    user: User // User object containing user information
 ) {
-    val profilePictureUrl = user.profilePictureUrl
+    val profilePictureUrl = user.profilePictureUrl // Profile picture URL
 
-    val defaultImageRes = R.drawable.profile_image_placeholder
+    val defaultImageRes = R.drawable.profile_image_placeholder // Default profile image resource
 
+    // Creating a clickable circular profile image
     Box(
         modifier = Modifier
             .size(48.dp)
@@ -176,7 +191,7 @@ fun ProfileCircle(
             .clip(CircleShape)
             .background(Color.Gray)
             .clickable {
-                navController.navigate("profile")
+                navController.navigate("profile") // Navigating to profile screen on click
             },
         contentAlignment = Alignment.Center
     ) {

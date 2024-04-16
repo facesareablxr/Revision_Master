@@ -31,45 +31,58 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 
 /**
- *
+ * Composable function for the top-level screen of the "Forgot Password" feature.
+ * @param navController: Navigation controller for managing navigation within the app.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ForgotPassScreenTopLevel(
     navController: NavHostController
 ) {
+    // State for managing the entered email address
     val email = rememberSaveable { mutableStateOf("") }
+    // Firebase authentication instance
     val auth = FirebaseAuth.getInstance()
+    // Activity context
     val context = LocalContext.current as Activity
 
+    // String resources for messages
     val fillEmailFieldsMsg = stringResource(R.string.fillEmail)
     val resetLinkSentMsg = stringResource(R.string.resetLinkSent)
     val unableToSendResetEmailMsg = stringResource(R.string.unableToSendResetEmail)
 
+    // Scaffold for the screen layout
     Scaffold(
         topBar = {
-            SmallTopAppBar(navController, stringResource(R.string.forgot_password)
-            )
+            // Top app bar for navigation
+            SmallTopAppBar(navController, stringResource(R.string.forgot_password))
         },
         content = {
+            // Main content of the screen
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
+                // Container for the content
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
+                    // Forgot password content
                     ForgotPasswordContent(
                         email = email.value,
                         updateEmail = { email.value = it },
                         getPasswordAction = {
+                            // Action to retrieve password
                             if (email.value.isEmpty()) {
+                                // Show toast if email field is empty
                                 Toast.makeText(context, fillEmailFieldsMsg, Toast.LENGTH_LONG).show()
                             } else {
+                                // Send password reset email
                                 auth.sendPasswordResetEmail(email.value)
                                     .addOnCompleteListener(context) { task ->
+                                        // Show appropriate toast based on success or failure
                                         if (task.isSuccessful) {
                                             Toast.makeText(context, resetLinkSentMsg, Toast.LENGTH_LONG)
                                                 .show()
@@ -88,7 +101,10 @@ fun ForgotPassScreenTopLevel(
 }
 
 /**
- *
+ * Composable function for the content of the "Forgot Password" screen.
+ * @param email: Entered email address.
+ * @param updateEmail: Function to update the email address.
+ * @param getPasswordAction: Function to perform when attempting to retrieve password.
  */
 @Composable
 private fun ForgotPasswordContent(
@@ -96,6 +112,7 @@ private fun ForgotPasswordContent(
     updateEmail: (String) -> Unit,
     getPasswordAction: () -> Unit
 ) {
+    // Column layout for content
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -103,6 +120,7 @@ private fun ForgotPasswordContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Input field for email
         OutlinedTextField(
             value = email,
             label = { Text(stringResource(R.string.login_email)) },
@@ -111,8 +129,10 @@ private fun ForgotPasswordContent(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // Spacer for layout
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Button to trigger password retrieval
         Button(
             onClick = getPasswordAction,
             modifier = Modifier.fillMaxWidth()
@@ -120,6 +140,7 @@ private fun ForgotPasswordContent(
             Text(stringResource(R.string.get_password))
         }
 
+        // Spacer for layout
         Spacer(modifier = Modifier.height(16.dp))
     }
 }

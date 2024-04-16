@@ -2,12 +2,15 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
 
 import java.util.UUID
 
-
+/**
+ * Dataclass for a flashcard
+ */
 data class Flashcard(
-    val flashcardId: String = UUID.randomUUID().toString(), // Automatically generate a unique ID
-    val frontText: String,
-    val backText: String,
-    val moduleId: String?,
-    val subjectName: String?,
-    val ownerName: String
+    val id: String = UUID.randomUUID().toString(),
+    val question: String = "",
+    val answer: String = "",
+    // This is for the spaced repetition
+    val difficulty: Difficulty = Difficulty.EASY,
+    val interval: Int? = 0,
+    val reviewDate: Long? = 0
 )
