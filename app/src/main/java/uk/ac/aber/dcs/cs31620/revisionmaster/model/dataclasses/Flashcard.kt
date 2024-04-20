@@ -11,6 +11,10 @@ data class Flashcard(
     val answer: String = "",
     // This is for the spaced repetition
     val difficulty: Difficulty = Difficulty.EASY,
+    val imageUri: String? = null,
     val interval: Int? = 0,
-    val reviewDate: Long? = 0
+    val reviewDate: Long? = 0,
+    val correct: Int? = 0,
+    val incorrect: Int? = 0
+
 )

@@ -30,8 +30,14 @@ sealed class Screen(val route: String) {
     // Add/Edit flashcard screens
     object AddFlashcards : Screen("addFlashcards")
     object EditFlashcards : Screen("editFlashcards")
-    object EditIndividualCard : Screen("editIndividual")
+    object Exam : Screen("exam")
 
+    object ViewFlashcards : Screen("viewFlashcards")
+    object TestYourself : Screen("testYourself")
+    object MatchGame : Screen("matchGame")
+    object FillInBlanks : Screen("fillBlanks")
+
+    object Summary : Screen("summary")
 
     object CreateExam: Screen("createExam")
 }

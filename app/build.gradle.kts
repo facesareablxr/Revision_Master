@@ -12,6 +12,7 @@ android {
     defaultConfig {
         applicationId = "uk.ac.aber.dcs.cs31620.revisionmaster"
         minSdk = 27
+        //noinspection OldTargetApi
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -79,7 +80,11 @@ dependencies {
     implementation("com.google.firebase:firebase-database:20.3.1")
     implementation("com.google.firebase:firebase-auth:22.3.1")
     // Provides access to Firestore, a document-oriented NoSQL database solution for Firebase in Kotlin.
-    implementation("com.google.firebase:firebase-firestore-ktx:24.10.3")
+    implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
+    implementation("androidx.compose.animation:animation-graphics-android:1.6.6")
+    implementation("androidx.camera:camera-core:1.3.3")
+    implementation("com.google.firebase:firebase-ml-vision:24.1.0")
+    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
 
     //Compose Platform and Core Dependencies
     // This line defines the Bill of Materials (BOM) for Compose, ensuring all Compose libraries used are compatible versions.
@@ -94,16 +99,11 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.activity:activity-ktx:1.8.2")
     // The core library for building user interfaces with Compose.
-    implementation ("androidx.compose.ui:ui:1.6.5")
+    implementation ("androidx.compose.ui:ui:1.6.6")
     // Provides foundational building blocks for the Compose UI like layouts, drawables, and interactions.
-    implementation ("androidx.compose.foundation:foundation:1.6.5")
+    implementation ("androidx.compose.foundation:foundation:1.6.6")
     //  Provides additional Material Design components and themes for UI, old version, but still useful, not completely necessary as I have the others but still here.
     implementation ("androidx.compose.material:material:1.6.5")
-    // Provides tooling support for Compose, including previewing and debugging features.
-    implementation ("androidx.compose.ui:ui-tooling:1.6.5")
-    implementation ("androidx.compose.foundation:foundation:1.6.5")
-    implementation ("androidx.compose.material:material:1.6.5")
-    implementation ("androidx.compose.ui:ui-tooling:1.6.5")
     implementation("androidx.compose.material:material-icons-extended")
     // Enables implementing navigation within the Compose app.
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -146,7 +146,7 @@ dependencies {
     // Provides LiveData, a lifecycle-aware data holder.
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
     // Bridges LiveData with Compose for seamless observation.
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.5")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.6")
 
     //Firebase Implementation
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
@@ -159,4 +159,12 @@ dependencies {
     implementation("io.coil-kt:coil:2.6.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+
+    implementation ("com.google.android.gms:play-services-vision:20.1.3")
+    implementation ("com.google.firebase:firebase-ml-vision:24.1.0")
+    implementation ("com.google.firebase:firebase-ml-vision-barcode-model:16.1.2")
+
+
 }

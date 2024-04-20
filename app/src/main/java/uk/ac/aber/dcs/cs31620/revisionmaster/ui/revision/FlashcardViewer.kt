@@ -1,5 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision
 
+import android.annotation.SuppressLint
+import android.speech.tts.TextToSpeech
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
@@ -12,81 +14,155 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.outlined.VolumeUp
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
+import java.util.Locale
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun FlashcardViewerTopLevel(
+    navController: NavController,
+    deckId: String,
+    flashcardViewModel: FlashcardViewModel = viewModel())
+{
+    // Collects the flashcards state
+    val flashcardsState by flashcardViewModel.flashcards.observeAsState(initial = null)
+
+    // Fetch flashcards for the deck
+    LaunchedEffect(Unit) {
+        flashcardViewModel.getFlashcardsForDeck(deckId)
+    }
+
+    Scaffold(
+        topBar = { SmallTopAppBar(navController = navController, title = "Flashcard Viewer") },
+    ){
+        flashcardsState?.let { FlashcardViewer(it) }
+
+    }
+}
 
 @Composable
-fun FlashcardScreen(flashcards: List<Flashcard>, deckId: String, flashcardId: String) {
-    // Need to add get deck, index of card too
-
+fun FlashcardViewer(
+    flashcards: List<Flashcard>
+) {
     var currentCardIndex by remember { mutableStateOf(0) }
     var isFrontShowing by remember { mutableStateOf(true) }
 
     val currentFlashcard = flashcards.getOrNull(currentCardIndex)
+    val context = LocalContext.current
+    val textToSpeech = remember { TextToSpeech(context, TextToSpeech.OnInitListener { }) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        currentFlashcard?.let { card ->
-            Flashcard(
-                front = card.question,
-                back = card.answer,
-                isFrontShowing = isFrontShowing,
-                onFlip = { isFrontShowing = !isFrontShowing }
-            )
+        Box(
+            modifier = Modifier
+                .size(300.dp, 200.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .clickable { isFrontShowing = !isFrontShowing },
+            contentAlignment = Alignment.Center
+        ) {
+            currentFlashcard?.let { card ->
+                Flashcard(
+                    front = card.question,
+                    back = card.answer,
+                    isFrontShowing = isFrontShowing,
+                    onFlip = { isFrontShowing = !isFrontShowing },
+                    onTextToSpeech = { text ->
+                         textToSpeech.language = Locale.UK
+                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                    }
+                )
+            }
         }
 
-        Row(horizontalArrangement = Arrangement.SpaceAround) {
-            IconButton(onClick = {
-                // Move back if possible
-                if (currentCardIndex > 0) currentCardIndex--
-            }) {
-                Icon(Icons.Filled.ArrowBack, "Previous")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(
+                onClick = {
+                    if (currentCardIndex > 0) currentCardIndex--
+                },
+                enabled = currentCardIndex > 0
+            ) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
             }
-
-            IconButton(onClick = {
-                // Move forward if possible
-                if (currentCardIndex < flashcards.lastIndex) currentCardIndex++
-            }) {
-                Icon(Icons.Filled.ArrowForward, "Next")
+            IconButton(
+                onClick = {
+                    if (currentCardIndex < flashcards.lastIndex) currentCardIndex++
+                },
+                enabled = currentCardIndex < flashcards.lastIndex
+            ) {
+                Icon(Icons.Default.ArrowForward, contentDescription = "Next")
             }
         }
     }
 }
 
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit) {
+fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.8f)
+            .height(500.dp)
             .clickable { onFlip() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(4.dp)
     ) {
-        AnimatedContent(
-            targetState = isFrontShowing,
-            transitionSpec = { fadeIn() with fadeOut() }, label = ""
-        ) { showFront ->
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = Alignment.Center
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
+                IconButton(onClick = { onTextToSpeech(if (isFrontShowing) front else back) }) {
+                    Icon(Icons.Outlined.VolumeUp, contentDescription = "Text to Speech")
+                }
+            }
+
+            // Center the text within the card
+            AnimatedContent(
+                targetState = isFrontShowing,
+                transitionSpec = { fadeIn() with fadeOut() },
+                label = "",
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) { showFront ->
                 Text(text = if (showFront) front else back)
             }
         }

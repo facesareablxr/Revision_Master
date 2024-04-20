@@ -15,15 +15,19 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomSheetScaffold
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -48,6 +52,7 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.FlashcardMode
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBarWithMenu
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import java.util.Locale
@@ -129,7 +134,9 @@ fun DeckDetailsScreen(
                 Box{
                     when (selectedTabIndex.value) {
                         0 -> { MaterialsContent(flashcardViewModel, navController, deckId) }
-                        1 -> { /* Content for Progress tab */ }
+                        1 -> {
+                            ProgressContent(flashcardViewModel, deckId, navController)
+                        }
                     }
                 }
             }
@@ -207,7 +214,7 @@ fun FlashcardItem(flashcard: Flashcard, navController: NavController, deckId: St
     Card(modifier = Modifier
         .padding(8.dp)
         .fillMaxWidth()
-        .clickable { navController.navigate(Screen.EditFlashcards.route + "/${flashcard.id}"  + "/${deckId}")}) {
+        .clickable { navController.navigate(Screen.EditFlashcards.route + "/${flashcard.id}" + "/${deckId}") }) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Flashcard question
             Text(text = flashcard.question, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
@@ -272,4 +279,113 @@ fun DeleteConfirmationDialog(
             }
         }
     )
+}
+
+
+/**
+ * Composable function for the progress content tab.
+ */
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ProgressContent(
+    flashcardViewModel: FlashcardViewModel,
+    deckId: String,
+    navController: NavController
+) {
+    // Collects the flashcards state
+    val flashcardsState by flashcardViewModel.flashcards.observeAsState(initial = null)
+    // Collects the deck state
+    val deckState by flashcardViewModel.deckDetails.observeAsState(initial = null)
+    // Flag to control bottom sheet visibility
+    var showBottomSheet by remember { mutableStateOf(false) }
+    // Selected mode for interacting with flashcards
+    var selectedMode by remember { mutableStateOf(FlashcardMode.VIEW) }
+
+    // Fetch flashcards for the deck
+    LaunchedEffect(Unit) {
+        flashcardViewModel.getFlashcardsForDeck(deckId)
+    }
+
+    // Bottom sheet for selecting flashcard interaction mode
+    if (showBottomSheet) {
+        BottomSheetScaffold(
+            sheetContent = {
+                FlashcardModeSelectionSheet(
+                    selectedMode = selectedMode,
+                    onModeSelected = { mode ->
+                        selectedMode = mode
+                        when (mode) {
+                            FlashcardMode.VIEW -> {
+                                // Navigate to view flashcards screen
+                                navController.navigate(Screen.ViewFlashcards.route + "/$deckId")
+                            }
+                            FlashcardMode.TEST_SELF -> {
+                                // Navigate to test yourself screen
+                                navController.navigate(Screen.TestYourself.route + "/$deckId")
+                            }
+                            FlashcardMode.MATCH_GAME -> {
+                                // Navigate to match game screen
+                                navController.navigate(Screen.MatchGame.route + "/$deckId")
+                            }
+                            FlashcardMode.FILL_IN_BLANKS -> {
+                                // Navigate to fill in the blanks screen
+                                navController.navigate(Screen.FillInBlanks.route + "/$deckId")
+                            }
+                        }
+                        showBottomSheet = false
+                    }
+                )
+            }
+        ) {}
+    }
+
+    // Floating action button to select interaction mode
+    FloatingActionButton(
+        onClick = {
+            showBottomSheet = true
+        },
+        modifier = Modifier.padding(bottom = 16.dp)
+    ) {
+        Icon(Icons.Filled.PlayArrow, contentDescription = stringResource(R.string.selectMode))
+    }
+}
+
+/**
+ * Composable function for the flashcard mode selection sheet.
+ */
+@Composable
+fun FlashcardModeSelectionSheet(
+    selectedMode: FlashcardMode,
+    onModeSelected: (FlashcardMode) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "Select Interaction Mode:",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+        // Display mode selection buttons
+        FlashcardMode.values().forEach { mode ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            ) {
+                RadioButton(
+                    selected = mode == selectedMode,
+                    onClick = { onModeSelected(mode) }
+                )
+                Text(
+                    text = mode.name,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+    }
 }

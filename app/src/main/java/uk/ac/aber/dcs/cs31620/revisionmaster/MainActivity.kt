@@ -34,7 +34,10 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.EditProfileTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreenTopLevel
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.CreateExamScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardSelfTestScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardViewerTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.MatchingGame
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.SummaryScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 
 /**
@@ -97,30 +100,56 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.Welcome.route) { WelcomeScreen(navController) }
         composable(Screen.Login.route) { LoginTopLevel(navController) }
         composable(Screen.SignUp.route) { SignUpTopLevel(navController, userViewModel) }
-        composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController)}
+        composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController) }
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Chats.route) { ChatsScreen(navController) }
-        composable(Screen.Profile.route){ ProfileScreenTopLevel(navController) }
-        composable(Screen.EditProfile.route){ EditProfileTopLevel(navController) }
-        composable(Screen.Library.route){ LibraryScreen(navController) }
-        composable(Screen.AddDeck.route){ AddDeckScreen(navController) }
+        composable(Screen.Profile.route) { ProfileScreenTopLevel(navController) }
+        composable(Screen.EditProfile.route) { EditProfileTopLevel(navController) }
+        composable(Screen.Library.route) { LibraryScreen(navController) }
+        composable(Screen.AddDeck.route) { AddDeckScreen(navController) }
         composable(Screen.DeckDetails.route + "/{deckId}") { backStackEntry ->
             DeckDetailsScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
         composable(Screen.AddFlashcards.route + "/{deckId}") { backStackEntry ->
-                AddFlashcardScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
+            AddFlashcardScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
-        composable(Screen.Explore.route){ ExploreScreen(navController) }
-        composable(Screen.CreateExam.route){ CreateExamScreen(navController)}
+        composable(Screen.Explore.route) { ExploreScreen(navController) }
+
+        composable(Screen.ViewFlashcards.route + "/{deckId}") { backStackEntry ->
+            FlashcardViewerTopLevel(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
+
+        composable(Screen.TestYourself.route + "/{deckId}") { backStackEntry ->
+            FlashcardSelfTestScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
+
+        composable(Screen.MatchGame.route + "/{deckId}") { backStackEntry ->
+            MatchingGame(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
+
+        composable(Screen.FillInBlanks.route + "/{deckId}") { backStackEntry ->
+            FlashcardViewerTopLevel(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
+
         composable(Screen.EditDeck.route + "/{deckId}") { backStackEntry ->
             EditDeckScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
         composable(Screen.EditFlashcards.route + "/{flashcardId}" + "/{deckId}") { backStackEntry ->
-            EditFlashcardScreen(navController,
-                backStackEntry.arguments?.getString("flashcardId")!!, backStackEntry.arguments?.getString("deckId")!!
+            EditFlashcardScreen(
+                navController,
+                backStackEntry.arguments?.getString("flashcardId")!!,
+                backStackEntry.arguments?.getString("deckId")!!
+            )
+        }
+        composable(Screen.Summary.route + "/{correctMatches}" + "/{incorrectMatches}" + "/{deckId}") { backstackEntry ->
+            SummaryScreen(
+                backstackEntry.arguments?.getInt("correctMatches")!!,
+                backstackEntry.arguments?.getInt("incorrectMatches")!!,
+                backstackEntry.arguments?.getString("deckId")!!, navController
             )
         }
     }
 }
+
 
 

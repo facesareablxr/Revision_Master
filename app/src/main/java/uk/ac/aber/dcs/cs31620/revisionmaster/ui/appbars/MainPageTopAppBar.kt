@@ -44,7 +44,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import java.time.LocalTime
 
 /**

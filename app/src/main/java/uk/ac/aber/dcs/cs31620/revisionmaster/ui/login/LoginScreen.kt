@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 

@@ -1,4 +1,4 @@
-package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses
+package uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user
 
 import java.util.Date
 

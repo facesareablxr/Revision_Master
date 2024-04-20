@@ -76,4 +76,6 @@
     <string name="delete">Delete</string>
     <string name="moreOptions">More Options</string>
     <string name="createButton">Create Deck</string>
+    <string name="startExam">Start Exam</string>
+    <string name="selectMode">Select option:</string>
 </resources>

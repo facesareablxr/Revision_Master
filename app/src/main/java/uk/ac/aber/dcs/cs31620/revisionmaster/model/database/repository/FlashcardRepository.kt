@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.ExamQuestion
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 
 /**
@@ -163,4 +164,85 @@ object FlashcardRepository {
     suspend fun deleteFlashcard(flashcardId: String, deckId: String) {
         decksRef.child(deckId).child("flashcards").child(flashcardId).removeValue().await() // Remove the flashcard from the database
     }
+
+    suspend fun generateExam(deckId: String, difficulty: Difficulty): List<ExamQuestion> {
+        val deck = FlashcardRepository.getDeckWithFlashcards(deckId) ?: return emptyList()
+        val allFlashcards = deck.cards
+
+        // Adjust question counts based on difficulty
+        val questionCounts = when (difficulty) {
+            Difficulty.EASY -> 10
+            Difficulty.MEDIUM -> 15
+            Difficulty.HARD -> allFlashcards.size // Use all for maximum challenge
+        }
+
+        val examQuestions = mutableListOf<ExamQuestion>()
+        var questionsGenerated = 0
+
+        // Shuffle and iterate, limiting total questions if needed
+        allFlashcards.shuffled().take(questionCounts).forEach { flashcard ->
+            when (flashcard.difficulty) {
+                Difficulty.EASY, Difficulty.MEDIUM -> { // Focus on these for answer randomization
+                    val answerOptions = generateAnswerOptions(deck, flashcard.answer, 3)  // Generate 3 options
+
+                    if (flashcard.difficulty == Difficulty.EASY) {
+                        examQuestions.add(
+                            ExamQuestion.MultipleChoice(
+                                flashcard.question,
+                                answerOptions,
+                                flashcard.answer
+                            )
+                        )
+                    } else {
+                        examQuestions.add(
+                            ExamQuestion.FillInTheBlank(
+                                flashcard.question.replace("{blank}", "__________"),
+                                flashcard.answer
+                            )
+                        )
+                    }
+                    questionsGenerated++
+                }
+                Difficulty.HARD -> {
+                    // ... other question types for HARD
+                }
+            }
+        }
+
+        return examQuestions
+    }
+
+    // Helper to generate randomized answer options
+    private fun generateAnswerOptions(deck: Deck, correctAnswer: String, numOptions: Int): List<String> {
+        val options = mutableListOf(correctAnswer)
+
+        // Get other flashcards, ensuring they aren't the same as the correct answer
+        val otherCards = deck.cards.filter { it.answer != correctAnswer }.shuffled()
+
+        // Add randomized answers up to the desired count
+        options.addAll(otherCards.take(numOptions - 1).map { it.answer })
+        return options.shuffled() // Shuffle for randomness
+    }
+
+    suspend fun searchPublicDecks(query: String): List<Deck> {
+        return try {
+            val snapshot = decksRef
+                .orderByChild("title")
+                .startAt(query)
+                .endAt(query + "\uf8ff")
+                .equalTo(true, "isPublic")
+                .get()
+                .await()
+
+            snapshot.children.mapNotNull { document ->
+                document.getValue(Deck::class.java)
+            }
+        } catch (e: Exception) {
+            // Handle errors
+            emptyList()
+        }
+    }
+
 }
+
+

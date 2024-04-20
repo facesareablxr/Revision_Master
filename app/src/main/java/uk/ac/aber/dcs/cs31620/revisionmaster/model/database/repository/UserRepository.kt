@@ -8,7 +8,7 @@ import com.google.firebase.database.GenericTypeIndicator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
 import java.io.IOException
 import java.net.HttpURLConnection
@@ -20,7 +20,8 @@ import java.net.URL
 object UserRepository {
     /* Firebase initialisation, gets an instance of the database at the URL and uses the node users
      for efficient user data operations */
-    private val rootNode = FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
+    private val rootNode =
+        FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
     private val usersReference = rootNode.getReference("users")
 
     /**
@@ -28,9 +29,14 @@ object UserRepository {
      */
     suspend fun addUser(user: User): Response<User> {
         // Uses the current user that has signed up
-        val currentUser = FirebaseAuth.getInstance().currentUser ?: return Response.Failure(Exception("User not signed in"))
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return Response.Failure(
+            Exception("User not signed in")
+        )
         // Checks for existing username and returns an error if a duplicate is found
-        val existingUser = usersReference.orderByChild("username").equalTo(user.username).get().await().children.firstOrNull()?.getValue(User::class.java)
+        val existingUser = usersReference.orderByChild("username").equalTo(user.username).get()
+            .await().children.firstOrNull()?.getValue(
+            User::class.java
+        )
         if (existingUser != null) {
             return Response.Failure(Exception("Username already exists"))
         }
@@ -62,16 +68,22 @@ object UserRepository {
     }
 
     /**
-     * Updates the user
+     * Updates the user.
+     * Uses the UID of the currently authenticated user to update their data.
      */
     suspend fun updateUser(user: User): Response<Unit> {
-        val username = user.username
-        val userRef = usersReference.child(username)
-        return try {
-            userRef.setValue(user).await()
-            Response.Success(Unit)
-        } catch (e: Exception) {
-            Response.Failure(e)
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        return if (currentUser != null) {
+            val userId = currentUser.uid
+            val userRef = usersReference.child(userId)
+            try {
+                userRef.setValue(user).await()
+                Response.Success(Unit)
+            } catch (e: Exception) {
+                Response.Failure(e)
+            }
+        } else {
+            Response.Failure(Exception("User not signed in"))
         }
     }
 
@@ -86,7 +98,8 @@ object UserRepository {
         return try {
             val userSnapshot = usersReference.child(currentUser.uid).get().await()
             if (userSnapshot.exists()) {
-                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                val following = userSnapshot.child("following")
+                    .getValue(object : GenericTypeIndicator<List<String>>() {})
                 followingList.addAll(following.orEmpty())
             }
             followingList
@@ -104,7 +117,8 @@ object UserRepository {
         return try {
             val userSnapshot = usersReference.child(currentUser.uid).get().await()
             if (userSnapshot.exists()) {
-                val following = userSnapshot.child("following").getValue(object : GenericTypeIndicator<List<String>>() {})
+                val following = userSnapshot.child("following")
+                    .getValue(object : GenericTypeIndicator<List<String>>() {})
                 followersList.addAll(following.orEmpty())
             }
             followersList
@@ -145,5 +159,26 @@ object UserRepository {
             null
         }
     }
+
+    suspend fun searchUsers(query: String): List<User> {
+        return try {
+            // Query the users node to find users with the specified username
+            val dataSnapshot = usersReference.orderByChild("username").equalTo(query).get().await()
+            val userList = mutableListOf<User>()
+
+            // Iterate through the result snapshot and convert each user data to User object
+            dataSnapshot.children.forEach { snapshot ->
+                val user = snapshot.getValue(User::class.java)
+                user?.let {
+                    userList.add(it)
+                }
+            }
+            userList
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+
 }
 

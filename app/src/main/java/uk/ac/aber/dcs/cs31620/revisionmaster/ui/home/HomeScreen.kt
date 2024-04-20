@@ -101,7 +101,7 @@ fun HomeScreen(
                             title = stringResource(R.string.suggestedDecks),
                             icon = Icons.AutoMirrored.Filled.ArrowForward,
                             decks = decksState.filter { it.averageDifficulty == Difficulty.HARD || it.averageDifficulty == Difficulty.MEDIUM },
-                            onClick = {  }
+                            onClick = {}// navController.navigate(Screen.DeckDetails.route + "/${decksState}") }
                         )
                     }
 
@@ -197,12 +197,22 @@ fun CardWithCarouselItem(deck: Deck) {
         ) {
             Text(
                 text = deck.name,
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = deck.description,
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.fillMaxWidth()
             )
             Text(
-                text = "Subject: ${deck.subject}, Average Difficulty: ${deck.averageDifficulty}",
-                style = MaterialTheme.typography.headlineMedium,
+                text = "Subject: ${deck.subject}",
+                style = MaterialTheme.typography.bodySmall,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Text(
+                text = "Difficulty: ${deck.averageDifficulty}",
+                style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier.fillMaxWidth()
             )
         }

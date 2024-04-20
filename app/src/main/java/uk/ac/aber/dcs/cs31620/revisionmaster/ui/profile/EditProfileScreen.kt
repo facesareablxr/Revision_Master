@@ -1,6 +1,12 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 //noinspection UsingMaterialAndMaterial3Libraries
+import android.app.Activity
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,12 +15,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -30,19 +40,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.AddNewImage
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showImagePickerDialog
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.uploadImageToFirebase
 
 
 @Composable
@@ -95,7 +110,9 @@ fun EditProfileContent(
     }
 
     // State variables for ButtonSpinner
-    var selectedUniversity by remember { mutableStateOf("") }
+    var selectedUniversity by remember {
+        mutableStateOf(user.institution ?: "") // Check for existing institution
+    }
 
     Scaffold(
         topBar = {
@@ -105,7 +122,7 @@ fun EditProfileContent(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && profilePictureUri.value!!.isNotEmpty()) {
+                    if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && !profilePictureUri.value.isNullOrBlank()) {
                         viewModel.updateProfile(
                             firstName = firstName.value,
                             lastName = lastName.value,
@@ -124,7 +141,8 @@ fun EditProfileContent(
                         }
                     }
                 }
-            ) {
+            )
+            {
                 Icon(
                     imageVector = Icons.Filled.Check,
                     contentDescription = stringResource(id = R.string.save_changes)
@@ -140,12 +158,11 @@ fun EditProfileContent(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AddNewImage(
+                AddProfileImage(
                     imagePath = profilePictureUri.value,
                     modifier = Modifier.padding(16.dp),
-                    updateImagePath = { profilePictureUri.value = it}
+                    updateImageUrl = { profilePictureUri.value = it}
                 )
-
                 Spacer(modifier = Modifier.padding(8.dp)) // Add spacing between profile picture and text fields
 
                 // Text fields remain within a LazyColumn for scrolling
@@ -173,7 +190,7 @@ fun EditProfileContent(
                     item {
                         ButtonSpinner(
                             items = universities,
-                            label = "Institution",
+                            label = selectedUniversity,
                             itemClick = { selectedUniversity = it },
 
                         )
@@ -213,3 +230,56 @@ fun LoadingIndicator() {
     }
 }
 
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun AddProfileImage(
+    imagePath: String?,
+    modifier: Modifier,
+    updateImageUrl: (String) -> Unit = {}
+) {
+    val context = LocalContext.current
+    var photoFileUri by remember { mutableStateOf<Uri?>(null) } // Store the photo file URI
+
+    val resultLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            if (data != null) {
+                when {
+                    data.hasExtra(MediaStore.EXTRA_OUTPUT) -> { // Camera intent
+                        photoFileUri?.let { uploadImageToFirebase(context, it, updateImageUrl) }
+                    }
+                    data.data != null -> { // Gallery intent
+                        val selectedImageUri = data.data!!
+                        uploadImageToFirebase(context, selectedImageUri, updateImageUrl)
+                    }
+                    else -> { }
+                }
+            }
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .size(120.dp)
+            .clip(CircleShape)
+            .background(Color.Gray),
+        contentAlignment = Alignment.Center
+    ) {
+        // Display the selected image if available
+        if (!imagePath.isNullOrEmpty()) {
+            GlideImage(
+                model = Uri.parse(imagePath),
+                contentDescription = stringResource(R.string.profilePicture),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+            )
+        } else {
+            // Otherwise, display the "Add Photo" button
+            IconButton(onClick = { showImagePickerDialog(context, resultLauncher) }) {
+                Icon(Icons.Default.AddAPhoto, contentDescription = stringResource(R.string.addImage))
+            }
+        }
+    }
+}

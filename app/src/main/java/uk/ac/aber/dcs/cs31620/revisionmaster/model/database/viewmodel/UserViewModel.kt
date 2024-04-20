@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.UserRepository
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
 import java.util.Calendar
 import java.util.Date
