@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.FlashcardRepository
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.FlashcardRepository.calculateDeckDifficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
@@ -112,18 +113,6 @@ class FlashcardViewModel : ViewModel() {
         }
     }
 
-    /**
-     *
-     */
-    private val _deckWithFlashcards = MutableLiveData<Deck?>(null)
-    val deckWithFlashcards: LiveData<Deck?> = _deckWithFlashcards
-
-    fun getDeckWithFlashcards(deckId: String) {
-        viewModelScope.launch {
-            val deck = FlashcardRepository.getDeckWithFlashcards(deckId)
-            _deckWithFlashcards.postValue(deck)
-        }
-    }
 
     /**
      *
@@ -135,27 +124,6 @@ class FlashcardViewModel : ViewModel() {
         viewModelScope.launch {
             val retrievedFlashcards = FlashcardRepository.getFlashcardsByDeckId(deckId)
             _flashcards.value = retrievedFlashcards
-        }
-    }
-
-    /**
-     *
-     */
-    fun addFlashcard(
-        deckId: String,
-        question: String,
-        answer: String,
-        difficulty: Difficulty,
-        imageUri: String?
-    ) {
-        val flashcard = Flashcard(
-            question = question,
-            answer = answer,
-            difficulty = difficulty,
-            imageUri = imageUri
-        )
-        viewModelScope.launch {
-            FlashcardRepository.addFlashcard(deckId, flashcard)
         }
     }
 
@@ -200,20 +168,26 @@ class FlashcardViewModel : ViewModel() {
     }
 
     /**
-     * FLASHCARD FUNCTIONS
+     * Adds a flashcard to a specific deck and updates the deck's average difficulty.
      */
-    fun randomizeFlashcards(flashcards: List<Flashcard>): List<Flashcard> {
-        return flashcards.shuffled()
-    }
-
-    fun getNextFlashcard(
-        flashcards: List<Flashcard>,
-        currentIndex: Int
-    ): Flashcard? {
-        return if (currentIndex < flashcards.size) {
-            flashcards[currentIndex]
-        } else {
-            null
+    fun addFlashcardAndUpdateDeck(
+        deckId: String,
+        question: String,
+        answer: String,
+        difficulty: Difficulty,
+        imageUri: String?
+    ) {
+        val flashcard = Flashcard(
+            question = question,
+            answer = answer,
+            difficulty = difficulty,
+            imageUri = imageUri
+        )
+        viewModelScope.launch {
+            FlashcardRepository.addFlashcard(deckId, flashcard)
+            val updatedFlashcards = FlashcardRepository.getFlashcardsByDeckId(deckId)
+            val newDifficulty = calculateDeckDifficulty(updatedFlashcards)
+            FlashcardRepository.updateFlashcardDifficulty(deckId, newDifficulty)
         }
     }
 

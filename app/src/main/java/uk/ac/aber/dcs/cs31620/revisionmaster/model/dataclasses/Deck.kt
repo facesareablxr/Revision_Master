@@ -13,6 +13,6 @@ data class Deck(
     val isPublic: Boolean = false,
     val ownerId: String = "",
     var cards: MutableList<Flashcard> = mutableListOf(),
-    var averageDifficulty: Difficulty? = Difficulty.EASY,
+    var averageDifficulty: Difficulty? = null,
     val mastery: Int = 0
 )

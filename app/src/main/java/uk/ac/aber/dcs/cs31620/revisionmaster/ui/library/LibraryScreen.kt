@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -86,68 +85,63 @@ fun DeckList(
 ) {
     LazyColumn(contentPadding = paddingValues) {
         items(decks) { deck ->
-            DeckItem(deck, navController, flashcardViewModel)
+            DeckItem(deck, navController)
         }
     }
 }
 
 @Composable
-fun DeckItem(deck: Deck, navController: NavHostController, flashcardViewModel: FlashcardViewModel) {
-    LaunchedEffect(deck.id) {
-        flashcardViewModel.getDeckWithFlashcards(deck.id)
-    }
+fun DeckItem(deck: Deck, navController: NavHostController) {
 
-    val detailedDeck by flashcardViewModel.deckWithFlashcards.observeAsState()
-
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .clickable {
-                navController.navigate(Screen.DeckDetails.route + "/${deck.id}")
-            },
-        shape = MaterialTheme.shapes.large,
-        elevation = CardDefaults.elevatedCardElevation()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .clickable {
+                    navController.navigate(Screen.DeckDetails.route + "/${deck.id}")
+                },
+            shape = MaterialTheme.shapes.large,
+            elevation = CardDefaults.elevatedCardElevation()
         ) {
-            Text(
-                text = deck.name,
-                style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-                text = deck.description,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-
-            Row(
-                modifier = Modifier.padding(2.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                OutlinedButton(onClick = {}) {
-                    Text(
-                        text = deck.subject,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-                Spacer(modifier = Modifier.padding(8.dp))
+                Text(
+                    text = deck.name,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = deck.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
 
-                OutlinedButton(onClick = { }) {
-                    Text(
-                        text = detailedDeck?.averageDifficulty?.toString()?.lowercase()?.capitalize()
-                            ?: deck.averageDifficulty.toString().lowercase().capitalize(),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                Row(
+                    modifier = Modifier.padding(2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(onClick = {}) {
+                        Text(
+                            text = deck.subject,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+
+                    OutlinedButton(onClick = { }) {
+                        Text(
+                            text = deck.averageDifficulty.toString().lowercase().capitalize(),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
                 }
-                Spacer(modifier = Modifier.padding(8.dp))
             }
         }
     }
-}
+
+
 
 
 @Composable

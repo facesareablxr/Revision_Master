@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.ExamQuestion
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 
 /**
@@ -48,9 +47,20 @@ object FlashcardRepository {
     /**
      * Returns the details of a specific deck.
      */
+    /**
+     * Returns the details of a specific deck, including average difficulty.
+     */
     suspend fun getDeckDetails(deckId: String): Deck? {
-        val snapshot = decksRef.child(deckId).get().await() // Retrieve deck details from the database
-        return snapshot.getValue(Deck::class.java)
+        val snapshot = decksRef.child(deckId).get().await()
+        val deck = snapshot.getValue(Deck::class.java)
+
+        // If theres have a deck, calculate the difficulty
+        deck?.let {
+            val flashcards = getFlashcardsByDeckId(deckId)
+            it.averageDifficulty = calculateDeckDifficulty(flashcards)
+        }
+
+        return deck
     }
 
     /**
@@ -63,43 +73,18 @@ object FlashcardRepository {
         val snapshot = flashcardsRef.get().await()
         val flashcards = mutableListOf<Flashcard>()
         snapshot.children.forEach { data ->
-            val flashcard = data.getValue(Flashcard::class.java) // Convert each child snapshot to a Flashcard object
+            val flashcard = data.getValue(Flashcard::class.java)
             flashcard?.let { flashcards.add(it) }
         }
         return flashcards
     }
 
     /**
-     * Retrieves a Deck object along with its associated flashcards.
-     */
-    suspend fun getDeckWithFlashcards(deckId: String): Deck? {
-        val deckRef = decksRef.child(deckId)
-        val deckSnapshot = deckRef.get().await()
-        if (!deckSnapshot.exists()) {
-            return null
-        }
-
-        val deck = deckSnapshot.getValue(Deck::class.java) ?: return null // Convert the snapshot to a Deck object
-
-        val flashcardsRef = deckRef.child("flashcards")
-        val flashcardsSnapshot = flashcardsRef.get().await() // Retrieve all flashcards under the deck
-        val flashcards = mutableListOf<Flashcard>()
-        flashcardsSnapshot.children.forEach { data ->
-            val flashcard = data.getValue(Flashcard::class.java)
-            flashcard?.let { flashcards.add(it) } // Add the flashcard to the list if it's not null
-        }
-        deck.cards = flashcards // Assign the list of flashcards to the deck
-        deck.averageDifficulty = calculateDeckDifficulty(flashcards) // Calculate and update the deck's average difficulty
-        return deck
-    }
-
-    /**
      * Calculates the average difficulty level of a deck based on its flashcards.
      */
-    private fun calculateDeckDifficulty(cards: List<Flashcard>): Difficulty {
+    fun calculateDeckDifficulty(cards: List<Flashcard>): Difficulty {
         if (cards.isEmpty()) {
-            Log.d("FlashcardViewModel", "No flashcards found. Defaulting to MEDIUM difficulty.")
-            return Difficulty.MEDIUM // Default difficulty if no flashcards are found
+            Log.d("FlashcardViewModel", "No flashcards found.")
         }
 
         val averageWeight = cards.map { it.difficulty.weight }.average() // Calculate the average weight of flashcards
@@ -119,6 +104,27 @@ object FlashcardRepository {
      */
     fun addFlashcard(deckId: String, flashcard: Flashcard) {
         decksRef.child(deckId).child("flashcards").child(flashcard.id).setValue(flashcard)
+    }
+
+    suspend fun updateFlashcardDifficulty(flashcardId: String, newDifficulty: Difficulty) {
+        val flashcardsRef = rootNode.reference // Get a top-level reference
+        // Find the deckId associated with the flashcard
+        val deckRef = flashcardsRef.child("flashcards").child(flashcardId).parent!!
+        val deckId = deckRef.key!!
+        // Update the flashcard's difficulty
+        flashcardsRef.child(flashcardId).child("difficulty").setValue(newDifficulty)
+        // Update the deck's difficulty and trigger ViewModel updates
+        updateDeckDifficulty(deckId)
+    }
+
+    private suspend fun updateDeckDifficulty(deckId: String) {
+        val updatedFlashcards = getFlashcardsByDeckId(deckId) // Retrieve updated flashcards for the deck
+        val updatedDeck = decksRef.child(deckId).get().await().getValue(Deck::class.java)
+        updatedDeck?.let { deck ->
+            val newDifficulty = calculateDeckDifficulty(updatedFlashcards)
+            deck.averageDifficulty = newDifficulty
+            decksRef.child(deckId).setValue(deck)
+        }
     }
 
     /**
@@ -165,65 +171,6 @@ object FlashcardRepository {
         decksRef.child(deckId).child("flashcards").child(flashcardId).removeValue().await() // Remove the flashcard from the database
     }
 
-    suspend fun generateExam(deckId: String, difficulty: Difficulty): List<ExamQuestion> {
-        val deck = FlashcardRepository.getDeckWithFlashcards(deckId) ?: return emptyList()
-        val allFlashcards = deck.cards
-
-        // Adjust question counts based on difficulty
-        val questionCounts = when (difficulty) {
-            Difficulty.EASY -> 10
-            Difficulty.MEDIUM -> 15
-            Difficulty.HARD -> allFlashcards.size // Use all for maximum challenge
-        }
-
-        val examQuestions = mutableListOf<ExamQuestion>()
-        var questionsGenerated = 0
-
-        // Shuffle and iterate, limiting total questions if needed
-        allFlashcards.shuffled().take(questionCounts).forEach { flashcard ->
-            when (flashcard.difficulty) {
-                Difficulty.EASY, Difficulty.MEDIUM -> { // Focus on these for answer randomization
-                    val answerOptions = generateAnswerOptions(deck, flashcard.answer, 3)  // Generate 3 options
-
-                    if (flashcard.difficulty == Difficulty.EASY) {
-                        examQuestions.add(
-                            ExamQuestion.MultipleChoice(
-                                flashcard.question,
-                                answerOptions,
-                                flashcard.answer
-                            )
-                        )
-                    } else {
-                        examQuestions.add(
-                            ExamQuestion.FillInTheBlank(
-                                flashcard.question.replace("{blank}", "__________"),
-                                flashcard.answer
-                            )
-                        )
-                    }
-                    questionsGenerated++
-                }
-                Difficulty.HARD -> {
-                    // ... other question types for HARD
-                }
-            }
-        }
-
-        return examQuestions
-    }
-
-    // Helper to generate randomized answer options
-    private fun generateAnswerOptions(deck: Deck, correctAnswer: String, numOptions: Int): List<String> {
-        val options = mutableListOf(correctAnswer)
-
-        // Get other flashcards, ensuring they aren't the same as the correct answer
-        val otherCards = deck.cards.filter { it.answer != correctAnswer }.shuffled()
-
-        // Add randomized answers up to the desired count
-        options.addAll(otherCards.take(numOptions - 1).map { it.answer })
-        return options.shuffled() // Shuffle for randomness
-    }
-
     suspend fun searchPublicDecks(query: String): List<Deck> {
         return try {
             val snapshot = decksRef
@@ -242,7 +189,6 @@ object FlashcardRepository {
             emptyList()
         }
     }
-
 }
 
 

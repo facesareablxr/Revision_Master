@@ -57,7 +57,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showImagePickerDialog
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.uploadImageToFirebase
+import java.io.File
 
 
 @Composable
@@ -122,7 +122,7 @@ fun EditProfileContent(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty() && !profilePictureUri.value.isNullOrBlank()) {
+                    if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty()) {
                         viewModel.updateProfile(
                             firstName = firstName.value,
                             lastName = lastName.value,
@@ -158,14 +158,12 @@ fun EditProfileContent(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AddProfileImage(
+                AddNewImage(
                     imagePath = profilePictureUri.value,
                     modifier = Modifier.padding(16.dp),
-                    updateImageUrl = { profilePictureUri.value = it}
+                    updateImagePath = { profilePictureUri.value = it}
                 )
-                Spacer(modifier = Modifier.padding(8.dp)) // Add spacing between profile picture and text fields
-
-                // Text fields remain within a LazyColumn for scrolling
+                Spacer(modifier = Modifier.padding(8.dp))
                 LazyColumn(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -233,13 +231,13 @@ fun LoadingIndicator() {
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun AddProfileImage(
+fun AddNewImage(
     imagePath: String?,
     modifier: Modifier,
-    updateImageUrl: (String) -> Unit = {}
+    updateImagePath: (String) -> Unit = {}
 ) {
+    val photoFile: File? by remember { mutableStateOf(null) }
     val context = LocalContext.current
-    var photoFileUri by remember { mutableStateOf<Uri?>(null) } // Store the photo file URI
 
     val resultLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -247,11 +245,10 @@ fun AddProfileImage(
             if (data != null) {
                 when {
                     data.hasExtra(MediaStore.EXTRA_OUTPUT) -> { // Camera intent
-                        photoFileUri?.let { uploadImageToFirebase(context, it, updateImageUrl) }
+                        updateImagePath(photoFile!!.absolutePath)
                     }
                     data.data != null -> { // Gallery intent
-                        val selectedImageUri = data.data!!
-                        uploadImageToFirebase(context, selectedImageUri, updateImageUrl)
+                        updateImagePath(data.data!!.toString())
                     }
                     else -> { }
                 }
@@ -266,20 +263,15 @@ fun AddProfileImage(
             .background(Color.Gray),
         contentAlignment = Alignment.Center
     ) {
-        // Display the selected image if available
-        if (!imagePath.isNullOrEmpty()) {
-            GlideImage(
-                model = Uri.parse(imagePath),
-                contentDescription = stringResource(R.string.profilePicture),
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clip(CircleShape)
-            )
-        } else {
-            // Otherwise, display the "Add Photo" button
-            IconButton(onClick = { showImagePickerDialog(context, resultLauncher) }) {
-                Icon(Icons.Default.AddAPhoto, contentDescription = stringResource(R.string.addImage))
-            }
+        IconButton(onClick = { showImagePickerDialog(context, resultLauncher) }) {
+            Icon(Icons.Default.AddAPhoto, contentDescription = stringResource(R.string.addImage))
         }
+        GlideImage(
+            model = if (!imagePath.isNullOrEmpty()) Uri.parse(imagePath) else R.drawable.profile_image_placeholder,
+            contentDescription = stringResource(R.string.profilePicture),
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(CircleShape)
+        )
     }
 }
