@@ -19,7 +19,7 @@ fun showImagePickerDialog(context: Context, resultLauncher: ManagedActivityResul
     val options = arrayOf(context.getString(R.string.takePhoto), context.getString(R.string.chooseFromGallery))
     val builder = AlertDialog.Builder(context)
         .setTitle(context.getString(R.string.selectImage))
-        .setItems(options) { dialog, which ->
+        .setItems(options) { _, which ->
             when (which) {
                 0 -> takePicture(context, resultLauncher)
                 1 -> openGallery(context, resultLauncher)

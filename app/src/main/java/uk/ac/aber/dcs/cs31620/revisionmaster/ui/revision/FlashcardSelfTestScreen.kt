@@ -68,45 +68,37 @@ fun FlashcardSelfTestScreen(
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (isTestComplete) {
-                    navController.navigate(
-                        Screen.Summary.route +
-                                "/${correctMatches}" +
-                                "/${incorrectMatches}" +
-                                "/${deckId}"
-                    )
-                } else {
-                    TestInProgress(
-                        currentIndex = currentIndex,
-                        flashcards = flashcards,
-                        correctMatches = correctMatches,
-                        incorrectMatches = incorrectMatches,
-                        isFrontShowing = isFrontShowing,
-                        onCorrectMatch = {
-                            if (currentIndex + 1 >= flashcards!!.size) {
-                                isTestComplete = true
-                            } else {
-                                correctMatches++
-                                currentIndex++
-                            }
-                        },
-                        onIncorrectMatch = {
-                            if (currentIndex + 1 >= flashcards!!.size) {
-                                isTestComplete = true
-                            } else {
-                                incorrectMatches++
-                                currentIndex++
-                            }
-                        },
-                        onFlip = { isFrontShowing = !isFrontShowing },
-                        deckId = deckId,
-                        navController = navController
-                    )
-                }
+                TestInProgress(
+                    currentIndex = currentIndex,
+                    flashcards = flashcards,
+                    correctMatches = correctMatches,
+                    incorrectMatches = incorrectMatches,
+                    isFrontShowing = isFrontShowing,
+                    onCorrectMatch = {
+                        if (currentIndex + 1 >= flashcards!!.size) {
+                            isTestComplete = true
+                        } else {
+                            correctMatches += 1
+                            currentIndex++
+                        }
+                    },
+                    onIncorrectMatch = {
+                        if (currentIndex + 1 >= flashcards!!.size) {
+                            isTestComplete = true
+                        } else {
+                            incorrectMatches += 1
+                            currentIndex++
+                        }
+                    },
+                    onFlip = { isFrontShowing = !isFrontShowing },
+                    deckId = deckId,
+                    navController = navController
+                )
             }
         }
     )
 }
+
 
 @Composable
 fun TestInProgress(
@@ -164,6 +156,13 @@ fun TestInProgress(
             Spacer(modifier = Modifier.height(16.dp))
             Text("Correct Matches: $correctMatches")
             Text("Incorrect Matches: $incorrectMatches")
+
+            // Navigate to summary screen when the test is complete
+            if (currentIndex + 1 >= flashcards.size) {
+                navController.navigate(
+                    "${Screen.Summary.route}/$correctMatches/$incorrectMatches/$deckId"
+                )
+            }
         }
     }
 }

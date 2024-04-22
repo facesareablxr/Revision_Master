@@ -27,7 +27,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 @Composable
 fun ChatsScreen(navController: NavController) {
     Scaffold(
-        topBar = { NonMainTopAppBar(navController = navController, title = stringResource(R.string.Chats)) },
+        topBar = { NonMainTopAppBar( title = stringResource(R.string.Chats)) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { /* Handle new chat creation */ },

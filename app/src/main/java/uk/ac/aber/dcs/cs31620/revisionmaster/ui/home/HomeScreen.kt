@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.LibraryAdd
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -40,7 +41,6 @@ import androidx.navigation.NavHostController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.TopLevelScaffold
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
@@ -97,16 +97,21 @@ fun HomeScreen(
                             disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer)) {
 
                         // Carousel
-                        CarouselWithPager(
-                            title = stringResource(R.string.suggestedDecks),
-                            icon = Icons.AutoMirrored.Filled.ArrowForward,
-                            decks = decksState.filter { it.averageDifficulty == Difficulty.HARD || it.averageDifficulty == Difficulty.MEDIUM },
-                            onClick = {}// navController.navigate(Screen.DeckDetails.route + "/${decksState}") }
-                        )
+                        if (decksState!= null) {
+                            CarouselWithPager(
+                                title = stringResource(R.string.suggestedDecks),
+                                icon = Icons.AutoMirrored.Filled.ArrowForward,
+                                decks = decksState,
+                                onClick = {},// navController.navigate(Screen.DeckDetails.route + "/${decksState}") },
+                                onCreateDeckClick = {}
+                            )
+                        } else {
+                            CreateDeckPrompt(onCreateDeckClick = { navController.navigate(Screen.AddDeck.route) })
+                        }
                     }
 
-                        CardWithListAndButton()
-                    }
+                    CardWithListAndButton()
+                }
             }
         }
     )
@@ -153,6 +158,7 @@ fun CarouselWithPager(
     title: String,
     icon: ImageVector,
     decks: List<Deck>,
+    onCreateDeckClick: () -> Unit,
     onClick: () -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
@@ -161,19 +167,50 @@ fun CarouselWithPager(
             modifier = Modifier
                 .clickable { onClick.invoke() }
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
             Spacer(modifier = Modifier.padding(horizontal = 115.dp))
             Icon(imageVector = icon, contentDescription = "Next")
         }
-        HorizontalPager(
-            modifier = Modifier.fillMaxWidth(),
-            state = rememberPagerState(pageCount = { decks.size }),
-            contentPadding = PaddingValues(horizontal = 16.dp)
-        ) { page ->
-            CardWithCarouselItem(decks[page])
+        if (decks.isNotEmpty()) {
+            HorizontalPager(
+                modifier = Modifier.fillMaxWidth(),
+                state = rememberPagerState(pageCount = { decks.size }),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) { page ->
+                CardWithCarouselItem(decks[page])
+            }
+        } else {
+            CreateDeckPrompt(onCreateDeckClick = onCreateDeckClick)
         }
     }
 }
+
+@Composable
+fun CreateDeckPrompt(onCreateDeckClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            text = "No suggested decks available. Create one?",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = onCreateDeckClick,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        ) {
+            Text(text = "Create Deck")
+        }
+    }
+}
+
 
 
 /**
@@ -182,40 +219,49 @@ fun CarouselWithPager(
 @Composable
 fun CardWithCarouselItem(deck: Deck) {
     Card(
-        modifier = Modifier.padding(8.dp),
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(),
         colors = CardColors(
             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
             disabledContainerColor = MaterialTheme.colorScheme.tertiaryContainer,
             disabledContentColor = MaterialTheme.colorScheme.onTertiaryContainer
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = deck.name,
                 style = MaterialTheme.typography.headlineSmall,
-                modifier = Modifier.fillMaxWidth()
+                fontWeight = FontWeight.Bold
             )
             Text(
                 text = deck.description,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.fillMaxWidth()
             )
-            Text(
-                text = "Subject: ${deck.subject}",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                text = "Difficulty: ${deck.averageDifficulty}",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.fillMaxWidth()
-            )
+
+            // Info Section with Labels
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(modifier = Modifier.fillMaxWidth()) {
+                InfoLabel(text = "Subject:", value = deck.subject)
+                Spacer(Modifier.weight(1f))
+                InfoLabel(text = "Difficulty:", value = deck.averageDifficulty.toString().toLowerCase().capitalize())
+                Spacer(Modifier.weight(1f))
+                InfoLabel(text = "Cards:", value = deck.cards.size.toString())
+            }
         }
+    }
+}
+
+// Helper for the Info Labels
+@Composable
+fun InfoLabel(text: String, value: String) {
+    Column {
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+        Text(text = value, style = MaterialTheme.typography.bodySmall)
     }
 }
 

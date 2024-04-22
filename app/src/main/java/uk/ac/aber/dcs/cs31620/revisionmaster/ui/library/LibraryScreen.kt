@@ -58,7 +58,7 @@ fun LibraryScreen(
 
 
     Scaffold(
-        topBar = { NonMainTopAppBar(navController, stringResource(R.string.library)) },
+        topBar = { NonMainTopAppBar( stringResource(R.string.library)) },
         bottomBar = { MainPageNavigationBar(navController) },
         floatingActionButton = {
             FloatingActionButton(
@@ -69,7 +69,7 @@ fun LibraryScreen(
         }
     ) { innerPadding ->
         if (decksState.isNotEmpty()) {
-            DeckList(decksState, navController, innerPadding, flashcardViewModel)
+            DeckList(decksState, navController, innerPadding)
         } else {
             NoDataMessage(innerPadding)
         }
@@ -80,8 +80,7 @@ fun LibraryScreen(
 fun DeckList(
     decks: List<Deck>,
     navController: NavHostController,
-    paddingValues: PaddingValues,
-    flashcardViewModel: FlashcardViewModel
+    paddingValues: PaddingValues
 ) {
     LazyColumn(contentPadding = paddingValues) {
         items(decks) { deck ->
@@ -92,11 +91,10 @@ fun DeckList(
 
 @Composable
 fun DeckItem(deck: Deck, navController: NavHostController) {
-
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
                 .clickable {
                     navController.navigate(Screen.DeckDetails.route + "/${deck.id}")
                 },
@@ -140,8 +138,6 @@ fun DeckItem(deck: Deck, navController: NavHostController) {
             }
         }
     }
-
-
 
 
 @Composable

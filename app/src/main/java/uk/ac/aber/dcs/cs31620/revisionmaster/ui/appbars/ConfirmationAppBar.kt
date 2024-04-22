@@ -17,16 +17,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
-
+/**
+ * Composable function for displaying an app bar with a confirmation dialog trigger.
+ * @param navController: NavController used for navigating back.
+ * @param title: Title displayed in the app bar.
+ */
 @Composable
 fun ConfirmationAppBar(navController: NavController, title: String) {
+    // State to manage the visibility of the confirmation dialog
     var showDialog by remember { mutableStateOf(false) }
 
+    // Display the top app bar
     TopAppBar(
         title = {
             Text(title)
         },
         navigationIcon = {
+            // Display a navigation icon which triggers the confirmation dialog when clicked
             IconButton(onClick = { showDialog = true }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
@@ -36,33 +43,42 @@ fun ConfirmationAppBar(navController: NavController, title: String) {
         }
     )
 
+    // Show the confirmation dialog if showDialog is true
     if (showDialog) {
         ConfirmationDialog(
-            onKeepGoing = { showDialog = false },
+            onKeepGoing = { showDialog = false }, // Callback when "Keep Going" button is clicked
             onQuit = {
-                navController.navigateUp()
-                showDialog = false
+                navController.navigateUp() // Navigate up when "Quit" button is clicked
+                showDialog = false // Dismiss the dialog
             }
         )
     }
 }
 
+/**
+ * Composable function for displaying a confirmation dialog.
+ * @param onKeepGoing: Callback function invoked when "Keep Going" button is clicked.
+ * @param onQuit: Callback function invoked when "Quit" button is clicked.
+ */
 @Composable
 fun ConfirmationDialog(onKeepGoing: () -> Unit, onQuit: () -> Unit) {
+    // Display the AlertDialog
     AlertDialog(
-        onDismissRequest = onKeepGoing,
+        onDismissRequest = onKeepGoing, // Callback invoked when dialog is dismissed
         title = {
-            Text(text = "Are you sure you want to quit?")
+            Text(text = "Are you sure you want to quit?") // Title of the dialog
         },
         text = {
-            Text("Your progress will not be saved.")
+            Text("Your progress will not be saved.") // Message displayed in the dialog
         },
         confirmButton = {
+            // "Keep Going" button
             TextButton(onKeepGoing) {
                 Text("Keep Going")
             }
         },
         dismissButton = {
+            // "Quit" button
             TextButton(onQuit) {
                 Text("Quit")
             }

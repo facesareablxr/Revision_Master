@@ -20,6 +20,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 
 @OptIn(ExperimentalGlideComposeApi::class)
@@ -63,8 +64,8 @@ fun SummaryScreen(
             Spacer(modifier = Modifier.height(16.dp))
             Text(masteryProgress)
             Spacer(modifier = Modifier.height(32.dp))
-            Button(onClick = { navController.navigate("deck_details_screen/$deckId") }) {
-                Text("Return to Deck Details")
+            Button(onClick = { navController.navigate(Screen.DeckDetails.route + "/${deckId}") }) {
+                Text("Return to Deck")
             }
         }
     }

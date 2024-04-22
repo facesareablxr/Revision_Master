@@ -7,14 +7,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -25,7 +24,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,7 +45,6 @@ fun ButtonSpinner(
     label: String,
     modifier: Modifier = Modifier,
     fontSize: TextUnit = 16.sp,
-    dropdownHeight: Dp = 250.dp,
     itemClick: (String) -> Unit = {}
 ) {
     var itemText by rememberSaveable { mutableStateOf(label) }
@@ -87,7 +84,7 @@ fun ButtonSpinner(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
-                    .height(dropdownHeight)
+                    .wrapContentSize()
             ) {
                 items.forEach {
                     DropdownMenuItem(
@@ -99,7 +96,6 @@ fun ButtonSpinner(
                         modifier = Modifier.fillMaxWidth(),
                         text = { Text(text = it) }
                     )
-                    HorizontalDivider()
                 }
             }
         }

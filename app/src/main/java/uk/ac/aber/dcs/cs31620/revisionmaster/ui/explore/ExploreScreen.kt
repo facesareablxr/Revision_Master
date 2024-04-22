@@ -8,21 +8,25 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -41,7 +45,6 @@ fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewMod
     Scaffold(
         topBar = {
             NonMainTopAppBar(
-                navController = navController,
                 title = stringResource(R.string.explore)
             )
         },
@@ -55,7 +58,8 @@ fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewMod
                 .padding(paddingValues)
         ) {
             SearchBar(
-                onSearchInputChanged = { searchQuery.value = it }
+                onSearchInputChanged = { searchQuery.value = it },
+                onSearch = { exploreViewModel.search(it) } // Pass the search function to SearchBar
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -79,32 +83,63 @@ fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewMod
                 )
             }
 
-            // Display search results
+            // Display search results in cards
             val searchResults = exploreViewModel.searchResults.collectAsState()
-            searchResults.value.forEach { result ->
-                when (result) {
-                    is User -> {
-                        // Display user information
-                        Text(text = "User: ${result.username}")
-                    }
-                    is Deck -> {
-                        // Display deck information
-                        Text(text = "Deck: ${result.name}")
+            LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
+                items(searchResults.value) { result ->
+                    when (result) {
+                        is User -> {
+                            UserCard(user = result)
+                        }
+                        is Deck -> {
+                            DeckCard(deck = result)
+                        }
                     }
                 }
             }
         }
     }
+}
 
-    // Trigger search whenever searchQuery changes
-    LaunchedEffect(searchQuery.value) {
-        exploreViewModel.search(searchQuery.value)
+@Composable
+fun UserCard(user: User) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "User: ${user.username}", style = MaterialTheme.typography.headlineSmall)
+        }
     }
 }
 
 @Composable
-fun SearchBar(onSearchInputChanged: (String) -> Unit) {
+fun DeckCard(deck: Deck) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(text = "Deck: ${deck.name}", style = MaterialTheme.typography.headlineMedium)
+
+        }
+    }
+}
+
+@Composable
+fun SearchBar(onSearchInputChanged: (String) -> Unit, onSearch: (String) -> Unit) {
     var searchText by remember { mutableStateOf("") }
+
+    val handleSearch: (SoftwareKeyboardController?) -> Unit = { controller ->
+        onSearch(searchText)
+        controller?.hide()
+    }
 
     Row(
         modifier = Modifier
@@ -120,7 +155,8 @@ fun SearchBar(onSearchInputChanged: (String) -> Unit) {
             },
             label = { Text(text = "Search") },
             leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-            modifier = Modifier.weight(1f)
+            modifier = Modifier
+                .weight(1f)
         )
     }
 }

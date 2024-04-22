@@ -57,6 +57,13 @@ import java.time.LocalTime
  *
  * @author Lauren Davis [lad48]
  */
+
+/**
+ * Composable function for displaying the top app bar of the main page.
+ * @param navController: Navigation controller for handling navigation.
+ * @param scrollBehavior: Scroll behavior for the top app bar.
+ * @param userViewModel: View model for user data.
+ */
 @Composable
 fun MainPageTopAppBar(
     navController: NavController, // Navigation controller for handling navigation
@@ -122,7 +129,8 @@ fun MainPageTopAppBar(
 }
 
 /**
- * Notification bell code which will indicate whether the user has unread notifications
+ * Composable function for displaying a notification bell icon with badge.
+ * @param notifications: The count of unread notifications.
  */
 @Composable
 private fun NotificationsBell(notifications: Int) {
@@ -139,7 +147,8 @@ private fun NotificationsBell(notifications: Int) {
 }
 
 /**
- * Streak counter which will track how many days the user has been active on the application for
+ * Composable function for displaying a streak counter.
+ * @param steakCounter: The count of the user's streak.
  */
 @Composable
 private fun StreakCounter(steakCounter: Int) {
@@ -157,8 +166,9 @@ private fun StreakCounter(steakCounter: Int) {
 }
 
 /**
- * This is the greeting function which will display the greeting which will change depending on the
- * time of day
+ * Composable function for getting the greeting based on the current time of day.
+ * @param currentTime: The current time.
+ * @return The appropriate greeting.
  */
 @Composable
 private fun getGreeting(currentTime: LocalTime): String {
@@ -170,7 +180,10 @@ private fun getGreeting(currentTime: LocalTime): String {
 }
 
 /**
- * This is the profile circle which now triggers navigation to the profile screen on click.
+ * Composable function for displaying the profile circle, which triggers navigation to the profile screen on click.
+ * @param context: Context for accessing resources.
+ * @param navController: Navigation controller for handling navigation.
+ * @param user: User object containing user information.
  */
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable

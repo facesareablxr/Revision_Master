@@ -18,29 +18,28 @@ import java.net.URL
  * This object handles all user-related interactions with a Firebase Realtime Database.
  */
 object UserRepository {
-    /* Firebase initialisation, gets an instance of the database at the URL and uses the node users
-     for efficient user data operations */
+    /* Firebase initialization */
     private val rootNode =
         FirebaseDatabase.getInstance("https://revision-master-91910-default-rtdb.europe-west1.firebasedatabase.app")
     private val usersReference = rootNode.getReference("users")
 
     /**
-     * Adds a user to the database
+     * Adds a user to the database.
      */
     suspend fun addUser(user: User): Response<User> {
-        // Uses the current user that has signed up
+        // Gets the current signed-in user
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return Response.Failure(
             Exception("User not signed in")
         )
         // Checks for existing username and returns an error if a duplicate is found
         val existingUser = usersReference.orderByChild("username").equalTo(user.username).get()
             .await().children.firstOrNull()?.getValue(
-            User::class.java
-        )
+                User::class.java
+            )
         if (existingUser != null) {
             return Response.Failure(Exception("Username already exists"))
         }
-        // Stores the user using their unique ID in the users node
+        // Stores the user using their unique ID in the "users" node
         return try {
             usersReference.child(currentUser.uid).setValue(user).await()
             Response.Success(user)
@@ -50,7 +49,7 @@ object UserRepository {
     }
 
     /**
-     * Gets a user from the database using their ID
+     * Gets a user from the database using their ID.
      */
     suspend fun getUserById(userId: String): User? {
         // Gets the data snapshot using the ID
@@ -87,9 +86,8 @@ object UserRepository {
         }
     }
 
-
     /**
-     * Gets the current users following list
+     * Gets the current user's following list.
      */
     suspend fun getFollowingList(): List<String> {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
@@ -109,7 +107,7 @@ object UserRepository {
     }
 
     /**
-     * Gets the users followers list by their user ID
+     * Gets the user's followers list by their user ID.
      */
     suspend fun getFollowers(): List<String> {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
@@ -128,7 +126,7 @@ object UserRepository {
     }
 
     /**
-     * Update the user but only their streak
+     * Update the user but only their streak.
      */
     suspend fun updateUserStreakAndData(userId: String, updatedUserData: User): Response<Unit> {
         return try {
@@ -140,7 +138,7 @@ object UserRepository {
     }
 
     /**
-     * Gets the users profile image, using their profile URL. This currently does not work.
+     * Gets the user's profile image, using their profile URL. This currently does not work.
      */
     suspend fun downloadUserProfileImage(user: User): Bitmap? {
         val imageUrl = user.profilePictureUrl
@@ -160,9 +158,12 @@ object UserRepository {
         }
     }
 
+    /**
+     * Searches for users based on a query string.
+     */
     suspend fun searchUsers(query: String): List<User> {
         return try {
-            // Query the users node to find users with the specified username
+            // Query the "users" node to find users with the specified username
             val dataSnapshot = usersReference.orderByChild("username").equalTo(query).get().await()
             val userList = mutableListOf<User>()
 
@@ -178,7 +179,4 @@ object UserRepository {
             emptyList()
         }
     }
-
-
 }
-

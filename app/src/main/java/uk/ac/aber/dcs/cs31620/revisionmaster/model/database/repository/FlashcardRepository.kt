@@ -106,26 +106,17 @@ object FlashcardRepository {
         decksRef.child(deckId).child("flashcards").child(flashcard.id).setValue(flashcard)
     }
 
-    suspend fun updateFlashcardDifficulty(flashcardId: String, newDifficulty: Difficulty) {
-        val flashcardsRef = rootNode.reference // Get a top-level reference
-        // Find the deckId associated with the flashcard
-        val deckRef = flashcardsRef.child("flashcards").child(flashcardId).parent!!
-        val deckId = deckRef.key!!
-        // Update the flashcard's difficulty
-        flashcardsRef.child(flashcardId).child("difficulty").setValue(newDifficulty)
-        // Update the deck's difficulty and trigger ViewModel updates
-        updateDeckDifficulty(deckId)
-    }
-
-    private suspend fun updateDeckDifficulty(deckId: String) {
+    suspend fun updateDeckDifficulty(deckId: String) {
         val updatedFlashcards = getFlashcardsByDeckId(deckId) // Retrieve updated flashcards for the deck
         val updatedDeck = decksRef.child(deckId).get().await().getValue(Deck::class.java)
         updatedDeck?.let { deck ->
             val newDifficulty = calculateDeckDifficulty(updatedFlashcards)
             deck.averageDifficulty = newDifficulty
-            decksRef.child(deckId).setValue(deck)
+            // Update the difficulty under the correct node
+            decksRef.child(deck.id).child("averageDifficulty").setValue(newDifficulty.toString())
         }
     }
+
 
     /**
      * Deletes a deck and its associated flashcards from the database.

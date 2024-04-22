@@ -18,7 +18,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 
 /**
@@ -28,9 +27,15 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewMo
  *
  *  @author Lauren Davis [lad48]
  */
+
+/**
+ * Composable function for displaying the top app bar for non-main screens.
+ * @param title: Title to be displayed in the app bar.
+ * @param scrollBehavior: Scroll behavior for the top app bar.
+ * @param viewModel: View model for user data.
+ */
 @Composable
 fun NonMainTopAppBar(
-    navController: NavController, // Navigation controller for handling navigation
     title: String, // Title to be displayed in the app bar
     scrollBehavior: TopAppBarScrollBehavior? = null, // Scroll behavior for the top app bar
     viewModel: UserViewModel = viewModel() // View model for user data
