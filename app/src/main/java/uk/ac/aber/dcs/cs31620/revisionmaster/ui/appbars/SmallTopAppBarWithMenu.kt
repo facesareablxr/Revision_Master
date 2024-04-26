@@ -1,8 +1,9 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon
@@ -19,13 +20,9 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 /**
- * @author Lauren Davis [lad48]
- */
-
-/**
  * Composable for a small top app bar with a menu. It displays a title passed through its parameter,
  * a back button, and a menu with additional actions.
- *
+ * @author Lauren Davis
  * @param title is the title text to be displayed in the app bar
  * @param navController is the NavController for navigation control
  * @param onEditDeckClick is a lambda function to be invoked when the "Edit Deck" option is clicked
@@ -33,10 +30,10 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
  */
 @Composable
 fun SmallTopAppBarWithMenu(
-    title: String, // Title text to be displayed in the app bar
-    navController: NavController, // NavController for navigation control
-    onEditDeckClick: () -> Unit, // Lambda function for handling "Edit Deck" click
-    onDeleteClick: () -> Unit // Lambda function for handling "Delete Deck" click
+    title: String,
+    navController: NavController,
+    onEditDeckClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) } // State for controlling menu visibility
 
@@ -46,7 +43,10 @@ fun SmallTopAppBarWithMenu(
         navigationIcon = {
             // Back button to navigate back to the previous screen
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.goBack))
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.goBack)
+                )
             }
         },
         actions = {

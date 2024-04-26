@@ -78,4 +78,18 @@
     <string name="createButton">Create Deck</string>
     <string name="startExam">Start Exam</string>
     <string name="selectMode">Select option:</string>
+    <string name="search">Search</string>
+    <string name="filter">Filter</string>
+    <string name="subject">Subject</string>
+    <string name="difficulty">Difficulty</string>
+    <string name="close">Close</string>
+    <string name="addFlashcard">Add Flashcard</string>
+    <string name="question">Question</string>
+    <string name="answer">Answer</string>
+    <string name="flashcardAdded">Flashcard Added!</string>
+    <string name="ok">Ok</string>
+    <string name="selectedImage">Selected Image</string>
+    <string name="confirm">Confirm</string>
+    <string name="deleteCard">Delete Flashcard?</string>
+    <string name="confirmDelete">This action cannot be undone.</string>
 </resources>

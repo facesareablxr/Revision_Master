@@ -38,10 +38,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.rememberAsyncImagePainter
+import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
@@ -49,6 +51,12 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.processOCR
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showImagePickerDialog
 
+/**
+ * Composable function for adding a flashcard to a deck.
+ * @param navController: NavHostController for navigating between composables.
+ * @param deckId: String representing the ID of the deck to which the flashcard is added.
+ * @param flashcardViewModel: ViewModel for managing flashcard-related data.
+ */
 @Composable
 fun AddFlashcardScreen(
     navController: NavHostController,
@@ -59,8 +67,7 @@ fun AddFlashcardScreen(
     var answer by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
-    val ocrString by remember { mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) } // For storing image URI
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -75,7 +82,7 @@ fun AddFlashcardScreen(
         topBar = {
             SmallTopAppBar(
                 navController,
-                title = "Add Flashcard"
+                title = stringResource(R.string.addFlashcard)
             )
         },
         content = { innerPadding ->
@@ -92,7 +99,7 @@ fun AddFlashcardScreen(
                 OutlinedTextFieldWithCamera(
                     value = question,
                     onValueChange = { question = it },
-                    label = { Text("Question") },
+                    label = { Text(stringResource(R.string.question)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -103,7 +110,7 @@ fun AddFlashcardScreen(
                 OutlinedTextFieldWithCamera(
                     value = answer,
                     onValueChange = { answer = it },
-                    label = { Text("Answer") },
+                    label = { Text(stringResource(R.string.answer)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -138,7 +145,7 @@ fun AddFlashcardScreen(
                         .align(Alignment.CenterHorizontally)
                         .padding(8.dp)
                 ) {
-                    Text("Add Flashcard")
+                    Text(stringResource(R.string.addFlashcard))
                 }
             }
 
@@ -146,12 +153,12 @@ fun AddFlashcardScreen(
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
-                    title = { Text("Flashcard Added!") },
+                    title = { Text(stringResource(R.string.flashcardAdded)) },
                     confirmButton = {
                         TextButton(onClick = {
                             navController.popBackStack()
                         }) {
-                            Text("OK")
+                            Text(stringResource(R.string.ok))
                         }
                     }
                 )
@@ -160,36 +167,52 @@ fun AddFlashcardScreen(
     )
 }
 
+/**
+ * Composable function for displaying an area for image selection.
+ * @param imageUri: The URI of the selected image, null if no image is selected.
+ * @param onClick: Callback function to handle click events.
+ */
 @Composable
-fun ImageSelectionArea(imageUri: Uri?, onClick: () -> Unit) {
+fun ImageSelectionArea(
+    imageUri: Uri?,
+    onClick: () -> Unit
+) {
+    // Display a box for the image selection area
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .height(150.dp)
-            .clickable(onClick = onClick)
-            .border(1.dp, Color.Gray),
-        contentAlignment = Alignment.Center
+            .clickable(onClick = onClick) // Make the area clickable
+            .border(1.dp, Color.Gray), // Add border around the area
+        contentAlignment = Alignment.Center // Align content to center
     ) {
+        // If no image is selected, display an icon to add a photo
         if (imageUri == null) {
             Icon(
                 imageVector = Icons.Filled.AddAPhoto,
-                contentDescription = "Add Image",
+                contentDescription = stringResource(R.string.addImage),
                 tint = Color.LightGray,
                 modifier = Modifier.size(40.dp)
             )
-        } else {
+        } else { // If an image is selected, display the selected image
             Image(
                 painter = rememberAsyncImagePainter(imageUri),
-                contentDescription = "Selected Image",
-                modifier = Modifier
-                    .fillMaxSize(),
+                contentDescription = stringResource(R.string.selectedImage),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }
     }
 }
 
+/**
+ * Composable function for displaying an outlined text field with a camera button.
+ * @param value: The current value of the text field.
+ * @param onValueChange: Callback function to handle value changes.
+ * @param label: Composable function for the label of the text field.
+ * @param modifier: Modifier for customization.
+ */
 @Composable
 fun OutlinedTextFieldWithCamera(
     value: String,
@@ -199,30 +222,34 @@ fun OutlinedTextFieldWithCamera(
 ) {
     val context = LocalContext.current
 
+    // Use ActivityResultContracts.GetContent() to launch image selection
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let {
+        uri?.let { // If URI is not null, process the selected image
             processOCR(context, uri.toString()) { recognizedText ->
-                onValueChange(recognizedText)
+                onValueChange(recognizedText) // Update text field value with recognized text
             }
-        } ?: Toast.makeText(context, "Image selection failed", Toast.LENGTH_SHORT).show()
+        } ?: Toast.makeText(context, "Image selection failed", Toast.LENGTH_SHORT).show() // Show toast if image selection fails
     }
 
+    // Display a row containing an outlined text field and a camera button
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
     ) {
+        // Outlined text field for input
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             label = label,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f) // Take up available space
         )
+        // IconButton for launching image selection
         IconButton(
-            onClick = { launcher.launch("image/*") }
+            onClick = { launcher.launch("image/*") } // Launch image selection when clicked
         ) {
             Icon(
                 imageVector = Icons.Default.CameraAlt,
-                contentDescription = "Add Image"
+                contentDescription = stringResource(R.string.addImage)
             )
         }
     }

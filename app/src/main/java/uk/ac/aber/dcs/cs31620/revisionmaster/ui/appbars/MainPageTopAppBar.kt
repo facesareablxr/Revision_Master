@@ -55,7 +55,7 @@ import java.time.LocalTime
  * The profile circle will show the users profile picture, and when clicked - it will open their
  * profile.
  *
- * @author Lauren Davis [lad48]
+ * @author Lauren Davis
  */
 
 /**
@@ -66,9 +66,9 @@ import java.time.LocalTime
  */
 @Composable
 fun MainPageTopAppBar(
-    navController: NavController, // Navigation controller for handling navigation
-    scrollBehavior: TopAppBarScrollBehavior? = null, // Scroll behavior for the top app bar
-    userViewModel: UserViewModel = viewModel() // View model for user data
+    navController: NavController,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+    userViewModel: UserViewModel = viewModel()
 ) {
     val context = LocalContext.current // Accessing the current context
     val currentTime = LocalTime.now() // Getting the current time

@@ -34,12 +34,13 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 
 /**
  * Composable function for the screen to add a new deck.
- *
  * @param navController NavController for navigation.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun AddDeckScreen(navController: NavController) {
+fun AddDeckScreen(
+    navController: NavController
+) {
     // Declaration of variables for the deck creation
     val subjects = stringArrayResource(R.array.subjects).toList() // List of subjects
     val flashcardViewModel: FlashcardViewModel = viewModel() // ViewModel for flashcard operations
@@ -65,8 +66,7 @@ fun AddDeckScreen(navController: NavController) {
         }
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .padding(innerPadding)
+            modifier = Modifier.padding(innerPadding)
         ) {
             // Text field for entering the deck name
             DeckNameEnterBox(
@@ -109,12 +109,14 @@ fun AddDeckScreen(navController: NavController) {
 
 /**
  * Composable function for the switch to toggle deck visibility.
- *
  * @param isPublic Current visibility status.
  * @param onPublicChange Function to handle visibility change.
  */
 @Composable
-fun PublicSwitch(isPublic: Boolean, onPublicChange: (Boolean) -> Unit) {
+fun PublicSwitch(
+    isPublic: Boolean,
+    onPublicChange: (Boolean) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -141,7 +143,6 @@ fun PublicSwitch(isPublic: Boolean, onPublicChange: (Boolean) -> Unit) {
 
 /**
  * Composable function for the button to create a new deck.
- *
  * @param flashcardViewModel ViewModel for flashcard operations.
  * @param deckName Name of the deck.
  * @param selectedSubject Selected subject for the deck.
@@ -184,12 +185,14 @@ private fun CreateDeckButton(
 
 /**
  * Composable function for the text field to enter deck description.
- *
  * @param description Current description text.
  * @param onDescriptionChange Function to handle description text change.
  */
 @Composable
-fun DescriptionBox(description: String, onDescriptionChange: (String) -> Unit) {
+fun DescriptionBox(
+    description: String,
+    onDescriptionChange: (String) -> Unit
+) {
     // Text field for entering deck description
     OutlinedTextField(
         value = description,
@@ -204,7 +207,6 @@ fun DescriptionBox(description: String, onDescriptionChange: (String) -> Unit) {
 
 /**
  * Composable function for the spinner to select deck subject.
- *
  * @param subjects List of available subjects.
  * @param selectedSubject Currently selected subject.
  * @param onSubjectChange Function to handle subject selection change.
@@ -225,12 +227,14 @@ fun SubjectSpinner(
 
 /**
  * Composable function for the text field to enter deck name.
- *
  * @param deckName Current deck name.
  * @param onDeckNameChange Function to handle deck name change.
  */
 @Composable
-fun DeckNameEnterBox(deckName: String, onDeckNameChange: (String) -> Unit) {
+fun DeckNameEnterBox(
+    deckName: String,
+    onDeckNameChange: (String) -> Unit
+) {
     // Text field for entering deck name
     OutlinedTextField(
         value = deckName,

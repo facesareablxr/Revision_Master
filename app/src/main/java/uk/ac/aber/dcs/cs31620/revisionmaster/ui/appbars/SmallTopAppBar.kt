@@ -1,7 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -12,17 +12,16 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 /**
- * @author Lauren Davis [lad48]
- */
-
-/**
  * Composable for a small top app bar. It displays a title passed through its parameter and includes a back button.
- *
+ * @author Lauren Davis
  * @param navController is the NavController for navigation control
  * @param title is the title text to be displayed in the app bar
  */
 @Composable
-fun SmallTopAppBar(navController: NavController, title: String) {
+fun SmallTopAppBar(
+    navController: NavController,
+    title: String
+) {
     // Building a small top app bar with a title and a back button
     TopAppBar(
         title = {
@@ -36,7 +35,7 @@ fun SmallTopAppBar(navController: NavController, title: String) {
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(id = R.string.goBack) // Description for the back button
                 )
             }

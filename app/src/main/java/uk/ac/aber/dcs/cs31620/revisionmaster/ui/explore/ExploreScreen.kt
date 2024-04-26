@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,18 +14,18 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -39,8 +38,12 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.NonMainTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 
 @Composable
-fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewModel = viewModel()) {
-    val searchQuery = remember { mutableStateOf("") }
+fun ExploreScreen(
+    navController: NavController,
+    exploreViewModel: ExploreViewModel = viewModel()
+){
+    var searchQuery by remember { mutableStateOf("") }
+
 
     Scaffold(
         topBar = {
@@ -57,9 +60,16 @@ fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewMod
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            SearchBar(
-                onSearchInputChanged = { searchQuery.value = it },
-                onSearch = { exploreViewModel.search(it) } // Pass the search function to SearchBar
+            // Search bar
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Search") },
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -83,14 +93,19 @@ fun ExploreScreen(navController: NavController, exploreViewModel: ExploreViewMod
                 )
             }
 
-            // Display search results in cards
-            val searchResults = exploreViewModel.searchResults.collectAsState()
+            val searchResults by exploreViewModel.searchResults.collectAsState(initial = emptyList())
+
+            LaunchedEffect(Unit) {
+                exploreViewModel.search(searchQuery)
+            }
+
             LazyColumn(modifier = Modifier.padding(horizontal = 16.dp)) {
-                items(searchResults.value) { result ->
+                items(searchResults) { result ->
                     when (result) {
                         is User -> {
                             UserCard(user = result)
                         }
+
                         is Deck -> {
                             DeckCard(deck = result)
                         }
@@ -129,34 +144,5 @@ fun DeckCard(deck: Deck) {
             Text(text = "Deck: ${deck.name}", style = MaterialTheme.typography.headlineMedium)
 
         }
-    }
-}
-
-@Composable
-fun SearchBar(onSearchInputChanged: (String) -> Unit, onSearch: (String) -> Unit) {
-    var searchText by remember { mutableStateOf("") }
-
-    val handleSearch: (SoftwareKeyboardController?) -> Unit = { controller ->
-        onSearch(searchText)
-        controller?.hide()
-    }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        OutlinedTextField(
-            value = searchText,
-            onValueChange = {
-                searchText = it
-                onSearchInputChanged(it)
-            },
-            label = { Text(text = "Search") },
-            leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Search") },
-            modifier = Modifier
-                .weight(1f)
-        )
     }
 }

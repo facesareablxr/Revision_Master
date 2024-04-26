@@ -24,9 +24,9 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.IconGroup
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.screens
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.IconGroup
 
 /**
  * This composable represents the main page navigation bar, offering options for home, schedule, and saved exercises.
@@ -40,21 +40,25 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.screens
 fun MainPageNavigationBar(navController: NavController) {
     // Map of icons for each screen
     val icons = mapOf(
+        // Home group
         Screen.Home to IconGroup(
             filledIcon = Icons.Filled.Home,
             outlineIcon = Icons.Outlined.Home,
             label = stringResource(id = R.string.home)
         ),
+        // Library group
         Screen.Library to IconGroup(
             filledIcon = Icons.Filled.Bookmark,
             outlineIcon = Icons.Outlined.BookmarkBorder,
             label = stringResource(id = R.string.library)
         ),
-        Screen.Explore to IconGroup( // Add Explore icon and label
-            filledIcon = Icons.Filled.Search, // Placeholder icon, adjust as needed
+        // Explore group
+        Screen.Explore to IconGroup(
+            filledIcon = Icons.Filled.Search,
             outlineIcon = Icons.Outlined.Search,
             label = stringResource(id = R.string.explore)
         ),
+        // Chats group
         Screen.Chats to IconGroup(
             filledIcon = Icons.Filled.ChatBubble,
             outlineIcon = Icons.Outlined.ChatBubbleOutline,
@@ -67,16 +71,21 @@ fun MainPageNavigationBar(navController: NavController) {
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.contentColorFor(MaterialTheme.colorScheme.surface),
     ) {
+        // Get the current navigation back stack entry and destination
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
 
+        // Iterate through each screen in the screens list
         screens.forEach { screen ->
+            // Check if the current screen is selected
             val isSelected = currentDestination?.hierarchy?.any { it.route == screen.route } == true
             val labelText = icons[screen]!!.label
 
+            // Display navigation bar item with icon and label
             NavigationBarItem(
                 icon = {
                     Icon(
+                        // Display filled icon if selected, otherwise display outline icon
                         imageVector = (
                                 if (isSelected)
                                     icons[screen]!!.filledIcon
@@ -88,6 +97,7 @@ fun MainPageNavigationBar(navController: NavController) {
                 label = { Text(labelText) },
                 selected = isSelected,
                 onClick = {
+                    // Navigate to the selected screen
                     navController.navigate(screen.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true

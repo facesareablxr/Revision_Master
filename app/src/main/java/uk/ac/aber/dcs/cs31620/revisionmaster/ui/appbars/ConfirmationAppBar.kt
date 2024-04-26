@@ -1,7 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +23,10 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
  * @param title: Title displayed in the app bar.
  */
 @Composable
-fun ConfirmationAppBar(navController: NavController, title: String) {
+fun ConfirmationAppBar(
+    navController: NavController,
+    title: String
+) {
     // State to manage the visibility of the confirmation dialog
     var showDialog by remember { mutableStateOf(false) }
 
@@ -36,7 +39,7 @@ fun ConfirmationAppBar(navController: NavController, title: String) {
             // Display a navigation icon which triggers the confirmation dialog when clicked
             IconButton(onClick = { showDialog = true }) {
                 Icon(
-                    imageVector = Icons.Filled.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(id = R.string.goBack)
                 )
             }

@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -74,9 +75,9 @@ import java.util.Locale
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun DeckDetailsScreen(
-    navController: NavController, // NavController for navigation
-    deckId: String, // ID of the deck being viewed
-    flashcardViewModel: FlashcardViewModel = viewModel() // ViewModel for flashcard operations
+    navController: NavController,
+    deckId: String,
+    flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
     // Collects the deck state
     val deckState by flashcardViewModel.deckDetails.observeAsState(initial = null)
@@ -171,9 +172,10 @@ fun DeckDetailsScreen(
 
 /**
  * Composable function for the materials content tab.
- */
-/**
- * Composable function for the materials content tab.
+ *
+ * @param navController NavController for navigation.
+ * @param deckId ID of the deck being viewed.
+ * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
  */
 @Composable
 fun MaterialsContent(
@@ -256,7 +258,7 @@ fun FlashcardItem(flashcard: Flashcard, navController: NavController, deckId: St
                 shape = RoundedCornerShape(2.dp),
             ) {
                 val difficulty = flashcard.difficulty.toString()
-                // Convert difficulty label to lowercase with a capital first letter
+                // Convert difficulty label to lowercase with a capital first letter, depreciated but works
                 val difficultyCase = difficulty.lowercase().capitalize(Locale.ROOT)
                 Row(
                     modifier = Modifier.padding(2.dp),
@@ -281,9 +283,9 @@ fun FlashcardItem(flashcard: Flashcard, navController: NavController, deckId: St
  */
 @Composable
 fun DeleteConfirmationDialog(
-    deckName: String, // Name of the deck to be deleted
-    onDismiss: () -> Unit, // Callback for dismissing the dialog
-    onConfirm: () -> Unit // Callback for confirming the deck deletion
+    deckName: String,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
 ) {
     // AlertDialog for confirming deck deletion
     AlertDialog(
@@ -309,7 +311,11 @@ fun DeleteConfirmationDialog(
 
 /**
  * Composable function for the progress content tab.
- */
+ *
+ * @param navController NavController for navigation.
+ * @param deckId ID of the deck being viewed.
+ * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
+*/
 @Composable
 fun ProgressContent(
     flashcardViewModel: FlashcardViewModel,
@@ -360,7 +366,6 @@ fun ProgressContent(
             ModalBottomSheet(
                 content = {
                     FlashcardModeSelectionSheet(
-                        selectedMode = selectedMode,
                         onModeSelected = { mode ->
                             selectedMode = mode
                             when (mode) {
@@ -440,18 +445,21 @@ fun CircularProgressBar(
 
 
 /**
- * Composable function for the flashcard mode selection sheet.
+ * Composable function for displaying the flashcard mode selection sheet.
+ *
+ * @param onModeSelected: Callback function to handle mode selection.
  */
 @Composable
 fun FlashcardModeSelectionSheet(
-    selectedMode: FlashcardMode,
     onModeSelected: (FlashcardMode) -> Unit
 ) {
+    // Column layout to arrange items vertically
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
     ) {
+        // Text indicating to select interaction mode
         Text(
             text = "Select Interaction Mode:",
             style = MaterialTheme.typography.bodyMedium,
@@ -459,16 +467,19 @@ fun FlashcardModeSelectionSheet(
         )
         // Display mode selection buttons
         FlashcardMode.values().forEach { mode ->
+            // Row layout to arrange items horizontally
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
             ) {
+                // RadioButton to represent each mode
                 RadioButton(
-                    selected = mode == selectedMode,
+                    selected = false,
                     onClick = { onModeSelected(mode) }
                 )
+                // Text label for the mode
                 Text(
                     text = mode.label,
                     style = MaterialTheme.typography.bodySmall,

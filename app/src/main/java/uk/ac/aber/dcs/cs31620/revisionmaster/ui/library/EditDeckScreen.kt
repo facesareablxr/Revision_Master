@@ -30,7 +30,10 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 
 
 /**
- *
+ * Composable function for the Edit Deck screen.
+ * @param navController: NavController for navigation within the app.
+ * @param deckId: ID of the deck to be edited.
+ * @param flashcardViewModel: ViewModel for managing flashcard-related data.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -39,18 +42,23 @@ fun EditDeckScreen(
     deckId: String,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    // List of subjects
     val subjects = stringArrayResource(R.array.subjects).toList()
+    // Mutable state variables for deck details
     var deckName by remember { mutableStateOf("") }
     var selectedSubject by remember { mutableStateOf("Subject") }
     var isPublic by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
+    // Observe deck details from ViewModel
     val deckState by flashcardViewModel.deckDetails.observeAsState()
 
+    // Fetch deck details when screen launches
     LaunchedEffect(Unit) {
         flashcardViewModel.getDeckDetails(deckId)
     }
 
+    // Update state variables when deck details change
     LaunchedEffect(deckState) {
         deckState?.let { deck ->
             deckName = deck.name
@@ -60,53 +68,51 @@ fun EditDeckScreen(
         }
     }
 
-    // For pushing ownerID, as I found that it removed it from the DB otherwise.
+    // Get current user's UID for database operations
     val auth = Firebase.auth
     val currentUser = auth.currentUser
     val uid = currentUser?.uid
 
-
+    // Scaffold for the screen layout
     Scaffold(
         topBar = {
+            // Custom top app bar
             SmallTopAppBar(
                 title = stringResource(R.string.editDeck),
                 navController = navController
             )
         }
     ) { innerPadding ->
+        // Column for arranging UI components vertically
         Column(modifier = Modifier.padding(innerPadding)) {
-            /* This uses the deck name entry box from the AddDeckScreen, allowing the user to edit
-            the name of the deck */
+            // Deck name entry box
             DeckNameEnterBox(
                 deckName = deckName,
                 onDeckNameChange = { newValue -> deckName = newValue }
             )
             Spacer(modifier = Modifier.height(8.dp))
-            /* This uses the description box from the AddDeckScreen, allowing the user to change the
-            description of the deck */
+            // Description box
             DescriptionBox(
                 description = description,
                 onDescriptionChange = { newValue -> description = newValue }
             )
             Spacer(modifier = Modifier.height(8.dp))
-            /* This uses the subject spinner from the AddDeckScreen, allowing the user to change
-            what subject the deck is for */
+            // Subject spinner
             SubjectSpinner(
                 subjects = subjects,
                 selectedSubject = selectedSubject,
                 onSubjectChange = { newValue -> selectedSubject = newValue }
             )
             Spacer(modifier = Modifier.height(16.dp))
-            /* This toggles the boolean expression for it being a public deck */
+            // Public switch
             PublicSwitch(
                 isPublic = isPublic,
                 onPublicChange = { newValue -> isPublic = newValue }
             )
-            /* When pressed, this button will update the deck details in the database, and return to
-            the previous screen */
+            // Button to save changes
             Button(
                 onClick = {
-                    // Calls the view model to update the deck with the ID, and all other information
+                    // Update deck details in the database and navigate back
                     flashcardViewModel.updateDeck(
                         deckId,
                         deckName,

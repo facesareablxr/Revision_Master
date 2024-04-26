@@ -3,10 +3,9 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision
 import android.annotation.SuppressLint
 import android.speech.tts.TextToSpeech
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,9 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.outlined.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -79,7 +78,7 @@ fun FlashcardViewer(
 
     val currentFlashcard = flashcards.getOrNull(currentCardIndex)
     val context = LocalContext.current
-    val textToSpeech = remember { TextToSpeech(context, TextToSpeech.OnInitListener { }) }
+    val textToSpeech = remember { TextToSpeech(context) { } }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -118,7 +117,7 @@ fun FlashcardViewer(
                 },
                 enabled = currentCardIndex > 0
             ) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Previous")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous")
             }
             IconButton(
                 onClick = {
@@ -126,14 +125,13 @@ fun FlashcardViewer(
                 },
                 enabled = currentCardIndex < flashcards.lastIndex
             ) {
-                Icon(Icons.Default.ArrowForward, contentDescription = "Next")
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next")
             }
         }
     }
 }
 
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit) {
     Card(
@@ -152,14 +150,14 @@ fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = { onTextToSpeech(if (isFrontShowing) front else back) }) {
-                    Icon(Icons.Outlined.VolumeUp, contentDescription = "Text to Speech")
+                    Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = "Text to Speech")
                 }
             }
 
             // Center the text within the card
             AnimatedContent(
                 targetState = isFrontShowing,
-                transitionSpec = { fadeIn() with fadeOut() },
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
                 label = "",
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             ) { showFront ->

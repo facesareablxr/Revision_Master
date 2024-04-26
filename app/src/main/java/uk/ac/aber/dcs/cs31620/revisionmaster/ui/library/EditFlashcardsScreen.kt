@@ -33,6 +33,13 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 
+/**
+ * Composable function for editing a flashcard.
+ * @param navController: NavController for navigation within the app.
+ * @param flashcardId: ID of the flashcard to be edited.
+ * @param deckId: ID of the deck to which the flashcard belongs.
+ * @param flashcardViewModel: ViewModel for managing flashcard-related data.
+ */
 @Composable
 fun EditFlashcardScreen(
     navController: NavController,
@@ -40,7 +47,7 @@ fun EditFlashcardScreen(
     deckId: String,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
-    // Collecting data from ViewModel
+    // Collecting flashcard data from ViewModel
     val flashcard by flashcardViewModel.flashcardLiveData.observeAsState()
 
     // Side effect to fetch flashcard data
@@ -48,7 +55,7 @@ fun EditFlashcardScreen(
         flashcardViewModel.getFlashcardById(deckId, flashcardId)
     }
 
-    // State to hold the question, answer, and selected difficulty
+    // State to hold the question, answer, selected difficulty, and delete dialog visibility
     var question by remember { mutableStateOf("") }
     var answer by remember { mutableStateOf("") }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
@@ -63,56 +70,65 @@ fun EditFlashcardScreen(
         }
     }
 
+    // Scaffold for the screen layout
     Scaffold(
         topBar = {
+            // Custom top app bar
             SmallTopAppBar(
                 navController,
                 title = "Edit Flashcard"
             )
         },
         content = { innerPadding ->
+            // Column layout to arrange items vertically
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
             ) {
+                // Text field for entering question
                 OutlinedTextField(
                     value = question,
                     onValueChange = { question = it },
-                    label = { Text("Question") },
+                    label = { Text(stringResource(R.string.question)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
+                // Text field for entering answer
                 OutlinedTextField(
                     value = answer,
                     onValueChange = { answer = it },
-                    label = { Text("Answer") },
+                    label = { Text(stringResource(R.string.answer)) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
                 )
+                // Spinner for selecting difficulty
                 ButtonSpinner(
                     items = Difficulty.values().map { it.label },
                     label = selectedDifficulty.label,
                     itemClick = { newDifficultyLabel ->
-                        selectedDifficulty =
-                            Difficulty.values().find { it.label == newDifficultyLabel }!!
+                        selectedDifficulty = Difficulty.values().find { it.label == newDifficultyLabel }!!
                     }
                 )
+                // Row layout for buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
+                    // Button to delete flashcard
                     Button(
                         onClick = { showDeleteDialog = true },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
                     ) {
                         Text(stringResource(R.string.delete))
                     }
+                    // Button to save changes
                     Button(
                         onClick = {
+                            // Update flashcard details in database and navigate back
                             flashcardViewModel.updateFlashcard(
                                 deckId, flashcardId, question, answer, selectedDifficulty
                             )
@@ -123,22 +139,26 @@ fun EditFlashcardScreen(
                     }
                 }
 
+                // AlertDialog for confirming flashcard deletion
                 if (showDeleteDialog) {
                     AlertDialog(
                         onDismissRequest = { showDeleteDialog = false },
-                        title = { Text("Delete Flashcard?") },
-                        text = { Text("This action cannot be undone.") },
+                        title = { Text(stringResource(R.string.deleteCard)) },
+                        text = { Text(stringResource(R.string.confirmDelete)) },
                         confirmButton = {
+                            // Confirm button
                             Button(onClick = {
+                                // Delete flashcard from database and navigate back
                                 flashcardViewModel.deleteFlashcard(flashcardId, deckId)
                                 navController.popBackStack()
                             }) {
-                                Text("Confirm")
+                                Text(stringResource(R.string.confirm))
                             }
                         },
                         dismissButton = {
+                            // Cancel button
                             Button(onClick = { showDeleteDialog = false }) {
-                                Text("Cancel")
+                                Text(stringResource(R.string.cancel))
                             }
                         }
                     )
