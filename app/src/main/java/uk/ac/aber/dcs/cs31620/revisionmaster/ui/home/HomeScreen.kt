@@ -1,5 +1,6 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -18,10 +19,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.LibraryAdd
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -74,6 +77,8 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
 
+
+
                     // Two Cards in a Row
                     Row(modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp)) {
                         CardWithIcon(
@@ -97,24 +102,73 @@ fun HomeScreen(
                             disabledContentColor = MaterialTheme.colorScheme.onSecondaryContainer)) {
 
                         // Carousel
-                        if (decksState!= null) {
-                            CarouselWithPager(
-                                title = stringResource(R.string.suggestedDecks),
-                                icon = Icons.AutoMirrored.Filled.ArrowForward,
-                                decks = decksState,
-                                onClick = {},// navController.navigate(Screen.DeckDetails.route + "/${decksState}") },
-                                onCreateDeckClick = {}
-                            )
-                        } else {
-                            CreateDeckPrompt(onCreateDeckClick = { navController.navigate(Screen.AddDeck.route) })
-                        }
+                        CarouselWithPager(
+                            title = stringResource(R.string.suggestedDecks),
+                            icon = Icons.AutoMirrored.Filled.ArrowForward,
+                            decks = decksState,
+                            onClick = {},// navController.navigate(Screen.DeckDetails.route + "/${decksState}") },
+                            onCreateDeckClick = {}
+                        )
                     }
-
+                    ScheduleWithCheckBox(navController)
                     CardWithListAndButton()
                 }
             }
         }
     )
+}
+
+/**
+ *
+ */
+@Composable
+fun ScheduleWithCheckBox(navController: NavHostController) {
+    Card(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Schedule Entries",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            // Individual schedule entries with details and checkbox
+            repeat(3) { index ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = "Schedule Icon"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Subject - Topic (${index + 1}:00 PM - ${index + 2}:00 PM)",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Checkbox(
+                        checked = false,
+                        onCheckedChange = { /* Handle checkbox checked state */ },
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+            }
+            // Navigation button to the schedule screen
+            Button(
+                onClick = {
+                    navController.navigate(Screen.Schedule.route)
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text(text = "View Schedule")
+            }
+        }
+    }
 }
 
 /**
@@ -216,6 +270,7 @@ fun CreateDeckPrompt(onCreateDeckClick: () -> Unit) {
 /**
  *
  */
+@SuppressLint("DefaultLocale")
 @Composable
 fun CardWithCarouselItem(deck: Deck) {
     Card(
