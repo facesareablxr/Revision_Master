@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
@@ -23,7 +22,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,6 +41,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.NonMainTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.SearchBar
 
 
 /**
@@ -51,7 +50,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
  * @param flashcardViewModel: ViewModel for managing flashcard data.
  * @param userViewModel: ViewModel for managing user data.
  */
-@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LibraryScreen(
     navController: NavHostController,
@@ -83,10 +82,21 @@ fun LibraryScreen(
     // Building the UI using Scaffold
     Scaffold(
         topBar = {
-            Column {
-                // App bar with title and search bar
-                NonMainTopAppBar(stringResource(R.string.library))
+            NonMainTopAppBar(title = stringResource(R.string.library))
+        },
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                Spacer(modifier = Modifier.padding(32.dp))
                 SearchBar(searchQuery, setSearchQuery)
+                // Displaying the deck list or no data message based on filteredDecks
+                if (filteredDecks.isNotEmpty()) {
+                    DeckList(filteredDecks, navController)
+                } else {
+                    NoDataMessage()
+                }
             }
         },
         bottomBar = { MainPageNavigationBar(navController) },
@@ -98,35 +108,6 @@ fun LibraryScreen(
                 Icon(imageVector = Icons.Default.Add, stringResource(id = R.string.addData))
             }
         }
-    ) {
-        // Displaying the deck list or no data message based on filteredDecks
-        if (filteredDecks.isNotEmpty()) {
-            DeckList(filteredDecks, navController)
-        } else {
-            NoDataMessage()
-        }
-    }
-}
-
-
-/**
- * This composable function represents a search bar.
- * @param searchQuery: Current search query.
- * @param onSearchQueryChanged: Callback function to update the search query.
- */
-@Composable
-fun SearchBar(
-    searchQuery: String,
-    onSearchQueryChanged: (String) -> Unit
-) {
-    TextField(
-        value = searchQuery,
-        onValueChange = onSearchQueryChanged,
-        modifier = Modifier
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .fillMaxWidth(),
-        placeholder = { Text(text = stringResource(id = R.string.search)) },
-        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
     )
 }
 

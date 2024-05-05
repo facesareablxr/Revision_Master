@@ -92,4 +92,10 @@
     <string name="confirm">Confirm</string>
     <string name="deleteCard">Delete Flashcard?</string>
     <string name="confirmDelete">This action cannot be undone.</string>
+    <string name="noCards">No flashcards in this deck yet.</string>
+    <string name="mockTest">Mock Tests</string>
+    <string name="testYourself">Test Yourself</string>
+    <string name="revise">Revise</string>
+    <string name="users">Users</string>
+    <string name="decks">Decks</string>
 </resources>

@@ -162,24 +162,25 @@ object FlashcardRepository {
         decksRef.child(deckId).child("flashcards").child(flashcardId).removeValue().await() // Remove the flashcard from the database
     }
 
-    suspend fun searchPublicDecks(query: String): List<Deck> {
-        return try {
-            val snapshot = decksRef
-                .orderByChild("title")
-                .startAt(query)
-                .endAt(query + "\uf8ff")
-                .equalTo(true, "isPublic")
-                .get()
-                .await()
+    /**
+     * Gets all public decks from the database.
+     */
+    suspend fun getAllPublicDecks(): Flow<List<Deck>> = flow {
+        try {
+            // Retrieve decks where isPublic is true
+            val snapshot = decksRef.orderByChild("isPublic").equalTo(true).get().await()
 
-            snapshot.children.mapNotNull { document ->
-                document.getValue(Deck::class.java)
+            // Map the snapshot to a list of Deck objects
+            val decks = snapshot.children.mapNotNull {
+                it.getValue(Deck::class.java)
             }
+            emit(decks)
         } catch (e: Exception) {
-            // Handle errors
-            emptyList()
+            emit(emptyList())
         }
     }
+
+
 }
 
 

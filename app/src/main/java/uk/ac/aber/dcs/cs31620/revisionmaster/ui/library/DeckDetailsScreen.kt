@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -177,6 +179,13 @@ fun DeckDetailsScreen(
  * @param deckId ID of the deck being viewed.
  * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
  */
+/**
+ * Composable function for the materials content tab.
+ *
+ * @param navController NavController for navigation.
+ * @param deckId ID of the deck being viewed.
+ * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
+ */
 @Composable
 fun MaterialsContent(
     flashcardViewModel: FlashcardViewModel,
@@ -199,8 +208,11 @@ fun MaterialsContent(
             flashcardsState?.let { flashcardList ->
                 if (flashcardList.isEmpty()) {
                     Text(
-                        "No flashcards in this deck yet.",
-                        Modifier.align(Alignment.CenterHorizontally)
+                        stringResource(R.string.noCards),
+                        Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        textAlign = TextAlign.Center
                     )
                 } else {
                     // LazyColumn to display flashcards

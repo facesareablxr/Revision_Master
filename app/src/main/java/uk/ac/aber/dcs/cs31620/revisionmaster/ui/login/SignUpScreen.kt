@@ -191,6 +191,7 @@ private fun FirstNameField(
                 updateUser(user.copy(firstName = updatedFirstName))
             }
         },
+        singleLine = true,
         modifier = Modifier.width(180.dp)
     )
 }
@@ -209,6 +210,7 @@ private fun LastNameField(
                 updateUser(user.copy(lastName = updatedLastName))
             }
         },
+        singleLine = true,
         modifier = Modifier.width(180.dp)
     )
 }
@@ -245,6 +247,7 @@ private fun UsernameField(
                 updateUser(user.copy(username = newUsername))
             }
         },
+        singleLine = true,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -275,6 +278,7 @@ private fun EmailSignUp(
         label = { Text(text = stringResource(R.string.login_email)) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         onValueChange = { updatedEmail -> updateUser(user.copy(email = updatedEmail)) },
+        singleLine = true,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -297,6 +301,7 @@ private fun PasswordSignUp(
         // Text field for password
         OutlinedTextField(
             value = it,
+            singleLine = true,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -332,6 +337,7 @@ private fun ConfirmPasswordField(
     // Text field for confirm password
     OutlinedTextField(
         value = confirmPassword,
+        singleLine = true,
         leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) },
         trailingIcon = {
             IconButton(onClick = { passwordVisible = !passwordVisible }) {

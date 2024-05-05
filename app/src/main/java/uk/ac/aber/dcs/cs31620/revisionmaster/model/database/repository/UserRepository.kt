@@ -6,6 +6,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.GenericTypeIndicator
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
@@ -159,24 +161,18 @@ object UserRepository {
     }
 
     /**
-     * Searches for users based on a query string.
+     * Gets all users from the database.
      */
-    suspend fun searchUsers(query: String): List<User> {
-        return try {
-            // Query the "users" node to find users with the specified username
-            val dataSnapshot = usersReference.orderByChild("username").equalTo(query).get().await()
-            val userList = mutableListOf<User>()
-
-            // Iterate through the result snapshot and convert each user data to User object
-            dataSnapshot.children.forEach { snapshot ->
-                val user = snapshot.getValue(User::class.java)
-                user?.let {
-                    userList.add(it)
-                }
+    suspend fun getAllUsers(): Flow<List<User>> = flow {
+        try {
+            val snapshot = usersReference.get().await()
+            val users = snapshot.children.mapNotNull {
+                it.getValue(User::class.java)
             }
-            userList
+            emit(users)
         } catch (e: Exception) {
-            emptyList()
+            emit(emptyList())
         }
     }
+
 }

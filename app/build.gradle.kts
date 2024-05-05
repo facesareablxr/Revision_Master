@@ -67,24 +67,31 @@ dependencies {
     //  Provides additional Material Design components and themes for UI, old version, but still useful.
     implementation("com.google.android.material:material:1.11.0")
 
+
+    // Provides libraries for implementing efficient pagination in app, handling large datasets.
+    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
+
+    // Integrates Firebase Authentication features like user login and registration.
+    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
+
+    implementation("androidx.compose.animation:animation-graphics-android:1.6.6")
+    implementation("androidx.camera:camera-core:1.3.3")
+
+
     //Firebase Implementation
     // Enables displaying in-app messaging from Firebase to users.
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
     implementation("com.google.firebase:firebase-inappmessaging-display:20.4.2")
-    // Provides libraries for implementing efficient pagination in app, handling large datasets.
-    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
     // Allows access to Firebase Realtime Database, a NoSQL database solution.
     implementation("com.google.firebase:firebase-database:20.3.1")
-    // Integrates Firebase Authentication features like user login and registration.
-    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
     implementation("com.google.firebase:firebase-database:20.3.1")
     implementation("com.google.firebase:firebase-auth:22.3.1")
     // Provides access to Firestore, a document-oriented NoSQL database solution for Firebase in Kotlin.
     implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
-    implementation("androidx.compose.animation:animation-graphics-android:1.6.6")
-    implementation("androidx.camera:camera-core:1.3.3")
     implementation("com.google.firebase:firebase-ml-vision:24.1.0")
     implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
 
     //Compose Platform and Core Dependencies
     // This line defines the Bill of Materials (BOM) for Compose, ensuring all Compose libraries used are compatible versions.
@@ -146,7 +153,7 @@ dependencies {
     // Provides LiveData, a lifecycle-aware data holder.
     implementation ("androidx.lifecycle:lifecycle-livedata-core-ktx:2.7.0")
     // Bridges LiveData with Compose for seamless observation.
-    implementation ("androidx.compose.runtime:runtime-livedata:1.6.6")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.7")
 
     //Firebase Implementation
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))

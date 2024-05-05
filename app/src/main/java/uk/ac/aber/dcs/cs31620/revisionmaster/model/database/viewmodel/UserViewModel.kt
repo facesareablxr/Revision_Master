@@ -205,4 +205,16 @@ class UserViewModel : ViewModel() {
             _profileImage.value = bitmap
         }
     }
+
+    // Holds the list of all users
+    private val _users = MutableStateFlow<List<User>>(emptyList())
+    val users: StateFlow<List<User>> = _users
+
+    fun getAllUsers() {
+        viewModelScope.launch {
+            userRepository.getAllUsers().collect { users ->
+                _users.value = users
+            }
+        }
+    }
 }

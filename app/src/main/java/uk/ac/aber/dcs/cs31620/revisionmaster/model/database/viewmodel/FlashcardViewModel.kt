@@ -233,13 +233,18 @@ class FlashcardViewModel : ViewModel() {
         }
     }
 
+    // Holds the list of all public decks
+    private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
+    val publicDecks: StateFlow<List<Deck>> = _publicDecks
+
     /**
-     * Calculates the average mastery level of a list of flashcards.
+     * Fetches all public decks from the database.
      */
-    fun calculateAverageMastery(flashcards: List<Flashcard>): Float {
-        // Calculate the total mastery level of all flashcards
-        val totalMastery = flashcards.sumBy { it.mastery.toInt() }
-        // Return the average mastery level (if there are no flashcards, return 0)
-        return if (flashcards.isEmpty()) 0f else totalMastery / flashcards.size.toFloat()
+    fun getAllPublicDecks() {
+        viewModelScope.launch {
+            FlashcardRepository.getAllPublicDecks().collect { decks ->
+                _publicDecks.value = decks
+            }
+        }
     }
 }

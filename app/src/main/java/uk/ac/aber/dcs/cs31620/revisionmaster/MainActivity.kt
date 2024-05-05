@@ -18,7 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatsScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore.ExploreScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.AddDeckScreen
@@ -102,7 +102,7 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.SignUp.route) { SignUpTopLevel(navController, userViewModel) }
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController) }
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Chats.route) { ChatsScreen(navController) }
+        composable(Screen.Chats.route) { ChatScreen() }
         composable(Screen.Profile.route) { ProfileScreenTopLevel(navController) }
         composable(Screen.EditProfile.route) { EditProfileTopLevel(navController) }
         composable(Screen.Library.route) { LibraryScreen(navController) }

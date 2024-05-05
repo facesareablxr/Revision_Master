@@ -182,6 +182,7 @@ fun EmailBox(
         onValueChange = { // Update user state on email change
             updateUser(User(email = it, password = user.password))
         },
+        singleLine = true,
         modifier = Modifier.fillMaxWidth() // Full width
     )
 }
@@ -212,6 +213,7 @@ private fun PasswordBox(
                     )
                 }
             },
+            singleLine = true,
             label = { Text(text = stringResource(R.string.password)) }, // Password label
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(), // Mask password
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), // Password keyboard
