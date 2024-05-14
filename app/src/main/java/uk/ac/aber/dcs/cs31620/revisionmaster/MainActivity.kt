@@ -180,5 +180,6 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
                 scheduleId = backstackEntry.arguments?.getString("scheduleId")!!
             )
         }
+        composable(Screen.Schedule.route){ HomeScreen(navController = navController) }
     }
 }

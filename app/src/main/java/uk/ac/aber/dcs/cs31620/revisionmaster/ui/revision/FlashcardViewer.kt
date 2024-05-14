@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -77,7 +78,7 @@ fun FlashcardViewerTopLevel(
 fun FlashcardViewer(
     flashcards: List<Flashcard>
 ) {
-    var currentCardIndex by remember { mutableStateOf(0) }
+    var currentCardIndex by remember { mutableIntStateOf(0) }
     var isFrontShowing by remember { mutableStateOf(true) }
 
     val elapsedTimeState = remember { mutableStateOf(0L) }
