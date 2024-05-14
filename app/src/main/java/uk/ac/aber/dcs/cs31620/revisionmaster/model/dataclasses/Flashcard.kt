@@ -14,7 +14,4 @@ data class Flashcard(
     val imageUri: String? = null,
     val correct: Int = 0,
     val repetitions: Int = 0
-) {
-    val mastery: Float
-        get() = if (repetitions == 0) 0f else correct / repetitions.toFloat()
-}
+)

@@ -120,5 +120,18 @@
         <item>Medium</item>
         <item>Hard</item>
     </string-array>
-
+    <string-array name="event_types">
+        <item>Revision Session</item>
+        <item>Mock Exam</item>
+        <item>Exam</item>
+    </string-array>
+    <string-array name="days_of_week">
+        <item>Monday</item>
+        <item>Tuesday</item>
+        <item>Wednesday</item>
+        <item>Thursday</item>
+        <item>Friday</item>
+        <item>Saturday</item>
+        <item>Sunday</item>
+    </string-array>
 </resources>

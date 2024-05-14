@@ -14,5 +14,5 @@ data class Deck(
     val ownerId: String = "",
     var cards: MutableList<Flashcard> = mutableListOf(),
     var averageDifficulty: Difficulty? = null,
-    val mastery: Float = 0.0F
+    var mastery: Int? = null,
 )

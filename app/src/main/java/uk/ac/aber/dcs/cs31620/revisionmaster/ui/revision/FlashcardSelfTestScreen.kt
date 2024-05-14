@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision
 
-import android.annotation.SuppressLint
 import android.speech.tts.TextToSpeech
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,14 +37,15 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.ConfirmationAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import java.util.Locale
 
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FlashcardSelfTestScreen(
     navController: NavHostController,
     deckId: String,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    var startTime by remember { mutableStateOf(System.currentTimeMillis()) }
+    var elapsedSeconds by remember { mutableStateOf(0L) }
+
     var currentIndex by remember { mutableStateOf(0) }
     var correctMatches by remember { mutableStateOf(0) }
     var incorrectMatches by remember { mutableStateOf(0) }
@@ -65,9 +66,8 @@ fun FlashcardSelfTestScreen(
             )
         },
         content = {
-            Box(
-                modifier = Modifier.fillMaxSize()
-            ) {
+                innerPadding ->
+            Column (modifier = Modifier.padding(innerPadding)){
                 TestInProgress(
                     currentIndex = currentIndex,
                     flashcards = flashcards,
@@ -75,30 +75,38 @@ fun FlashcardSelfTestScreen(
                     incorrectMatches = incorrectMatches,
                     isFrontShowing = isFrontShowing,
                     onCorrectMatch = {
-                        if (currentIndex + 1 >= flashcards!!.size) {
-                            isTestComplete = true
-                        } else {
-                            correctMatches += 1
+                        correctMatches++
+                        if (currentIndex + 1 < flashcards!!.size) {
                             currentIndex++
+                            isFrontShowing = true // Reset to front-facing
+                        } else {
+                            isTestComplete = true
                         }
                     },
                     onIncorrectMatch = {
-                        if (currentIndex + 1 >= flashcards!!.size) {
-                            isTestComplete = true
-                        } else {
-                            incorrectMatches += 1
+                        incorrectMatches++
+                        if (currentIndex + 1 < flashcards!!.size) {
                             currentIndex++
+                            isFrontShowing = true // Reset to front-facing
+                        } else {
+                            isTestComplete = true
                         }
                     },
-                    onFlip = { isFrontShowing = !isFrontShowing },
-                    deckId = deckId,
-                    navController = navController
+                    onFlip = { isFrontShowing = !isFrontShowing }
                 )
             }
         }
     )
-}
 
+    // Navigate to summary screen when the test is complete
+    if (isTestComplete) {
+        val endTime = System.currentTimeMillis()
+        elapsedSeconds = (endTime - startTime) / 1000
+        navController.navigate(
+            "${Screen.Summary.route}/$correctMatches/$incorrectMatches/$elapsedSeconds/$deckId"
+        )
+    }
+}
 
 @Composable
 fun TestInProgress(
@@ -109,9 +117,7 @@ fun TestInProgress(
     isFrontShowing: Boolean,
     onCorrectMatch: () -> Unit,
     onIncorrectMatch: () -> Unit,
-    onFlip: () -> Unit,
-    deckId: String,
-    navController: NavHostController
+    onFlip: () -> Unit
 ) {
     val context = LocalContext.current
     val textToSpeech = remember { TextToSpeech(context) { } }
@@ -131,42 +137,44 @@ fun TestInProgress(
                     .align(Alignment.CenterHorizontally),
                 contentAlignment = Alignment.Center
             ) {
-                Flashcard(
-                    front = currentFlashcard.question,
-                    back = currentFlashcard.answer,
-                    isFrontShowing = isFrontShowing,
-                    onFlip = onFlip,
-                    onTextToSpeech = { text ->
-                        textToSpeech.language = Locale.UK
-                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
-                    }
-                )
+                if (currentFlashcard.imageUri != null) {
+                    FlashcardWithImage(
+                        front = currentFlashcard.question,
+                        back = currentFlashcard.answer,
+                        isFrontShowing = isFrontShowing,
+                        onFlip = onFlip,
+                        onTextToSpeech = { text ->
+                            textToSpeech.language = Locale.UK
+                            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                        },
+                        imageUri = currentFlashcard.imageUri.toString()
+                    )
+                } else {
+                    Flashcard(
+                        front = currentFlashcard.question,
+                        back = currentFlashcard.answer,
+                        isFrontShowing = isFrontShowing,
+                        onFlip = onFlip,
+                        onTextToSpeech = { text ->
+                            textToSpeech.language = Locale.UK
+                            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                        }
+                    )
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
-            ButtonBar(
-                onCorrectMatch = {
-                    onCorrectMatch()
-                    onFlip()
-                },
-                onIncorrectMatch = {
-                    onIncorrectMatch()
-                    onFlip()
-                }
-            )
+            if (!isFrontShowing) {
+                ButtonBar(
+                    onCorrectMatch = onCorrectMatch,
+                    onIncorrectMatch = onIncorrectMatch
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
             Text("Correct Matches: $correctMatches")
             Text("Incorrect Matches: $incorrectMatches")
-
-            // Navigate to summary screen when the test is complete
-            if (currentIndex + 1 >= flashcards.size) {
-                navController.navigate(
-                    "${Screen.Summary.route}/$correctMatches/$incorrectMatches/$deckId"
-                )
-            }
         }
     }
 }
-
 
 @Composable
 fun ButtonBar(
@@ -178,11 +186,15 @@ fun ButtonBar(
         horizontalArrangement = Arrangement.Center
     ) {
         Spacer(modifier = Modifier.width(16.dp))
-        Button(onClick = onCorrectMatch) {
+        Button(onClick = {
+            onCorrectMatch()
+        }) {
             Text("Correct")
         }
         Spacer(modifier = Modifier.width(16.dp))
-        Button(onClick = onIncorrectMatch) {
+        Button(onClick = {
+            onIncorrectMatch()
+        }) {
             Text("Incorrect")
         }
     }

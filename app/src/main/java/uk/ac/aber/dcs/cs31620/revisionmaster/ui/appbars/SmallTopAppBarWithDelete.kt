@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,14 +24,12 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
  *
  * @param title is the title text to be displayed in the app bar
  * @param navController is the NavController for navigation control
- * @param onEditDeckClick is a lambda function to be invoked when the "Edit Deck" option is clicked
- * @param onDeleteClick is a lambda function to be invoked when the "Delete Deck" option is clicked
+ * @param onDeleteClick is a lambda function to be invoked when the "Delete Schedule" option is clicked
  */
 @Composable
-fun SmallTopAppBarWithMenu(
+fun SmallTopAppBarWithDelete(
     title: String,
     navController: NavController,
-    onEditDeckClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) } // State for controlling menu visibility
@@ -52,26 +49,22 @@ fun SmallTopAppBarWithMenu(
         actions = {
             // Menu icon to show additional options
             IconButton(onClick = { showMenu = true }) {
-                Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.moreOptions))
+                Icon(
+                    Icons.Filled.MoreVert,
+                    contentDescription = stringResource(R.string.moreOptions)
+                )
             }
             // Dropdown menu with additional actions
             DropdownMenu(
                 expanded = showMenu, // Showing menu if true
                 onDismissRequest = { showMenu = false } // Dismissing menu when requested
             ) {
-                // Menu item for editing deck
-                DropdownMenuItem(onClick = {
-                    showMenu = false // Hide the menu
-                    onEditDeckClick() // Execute the edit action
-                }) {
-                    Text("Edit Deck") // Display text for editing deck option
-                }
                 // Menu item for deleting deck
                 DropdownMenuItem(onClick = {
                     showMenu = false // Hide the menu
                     onDeleteClick() // Execute the delete action
                 }) {
-                    Text("Delete Deck") // Display text for deleting deck option
+                    Text("Delete Schedule") // Display text for deleting deck option
                 }
             }
         }

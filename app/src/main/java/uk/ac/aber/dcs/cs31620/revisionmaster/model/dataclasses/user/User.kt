@@ -13,7 +13,7 @@ data class User(
     var email: String = "",
     var password: String? = "",
 
-    val profilePictureUrl: String? = null,
+    var profilePictureUrl: String? = null,
 
     val institution: String? = null,
 

@@ -32,6 +32,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 
 /**
  * Composable function for the top-level screen of the "Forgot Password" feature.
+ *
  * @param navController: Navigation controller for managing navigation within the app.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -77,17 +78,26 @@ fun ForgotPassScreenTopLevel(
                             // Action to retrieve password
                             if (email.value.isEmpty()) {
                                 // Show toast if email field is empty
-                                Toast.makeText(context, fillEmailFieldsMsg, Toast.LENGTH_LONG).show()
+                                Toast.makeText(context, fillEmailFieldsMsg, Toast.LENGTH_LONG)
+                                    .show()
                             } else {
                                 // Send password reset email
                                 auth.sendPasswordResetEmail(email.value)
                                     .addOnCompleteListener(context) { task ->
                                         // Show appropriate toast based on success or failure
                                         if (task.isSuccessful) {
-                                            Toast.makeText(context, resetLinkSentMsg, Toast.LENGTH_LONG)
+                                            Toast.makeText(
+                                                context,
+                                                resetLinkSentMsg,
+                                                Toast.LENGTH_LONG
+                                            )
                                                 .show()
                                         } else {
-                                            Toast.makeText(context, unableToSendResetEmailMsg, Toast.LENGTH_LONG)
+                                            Toast.makeText(
+                                                context,
+                                                unableToSendResetEmailMsg,
+                                                Toast.LENGTH_LONG
+                                            )
                                                 .show()
                                         }
                                     }
@@ -102,6 +112,7 @@ fun ForgotPassScreenTopLevel(
 
 /**
  * Composable function for the content of the "Forgot Password" screen.
+ *
  * @param email: Entered email address.
  * @param updateEmail: Function to update the email address.
  * @param getPasswordAction: Function to perform when attempting to retrieve password.
@@ -128,10 +139,8 @@ private fun ForgotPasswordContent(
             onValueChange = updateEmail,
             modifier = Modifier.fillMaxWidth()
         )
-
         // Spacer for layout
         Spacer(modifier = Modifier.height(16.dp))
-
         // Button to trigger password retrieval
         Button(
             onClick = getPasswordAction,
@@ -139,7 +148,6 @@ private fun ForgotPasswordContent(
         ) {
             Text(stringResource(R.string.get_password))
         }
-
         // Spacer for layout
         Spacer(modifier = Modifier.height(16.dp))
     }

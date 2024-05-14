@@ -13,7 +13,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 /**
  * Composable for a small top app bar. It displays a title passed through its parameter and includes a back button.
- * @author Lauren Davis
+ *
  * @param navController is the NavController for navigation control
  * @param title is the title text to be displayed in the app bar
  */

@@ -65,52 +65,52 @@ dependencies {
     // Required for running unit tests in your project.
     implementation("androidx.test:runner:1.5.2")
     //  Provides additional Material Design components and themes for UI, old version, but still useful.
-    implementation("com.google.android.material:material:1.11.0")
+    implementation("com.google.android.material:material:1.12.0")
 
 
     // Provides libraries for implementing efficient pagination in app, handling large datasets.
-    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
+    implementation("androidx.paging:paging-common-android:3.3.0-rc01")
 
     // Integrates Firebase Authentication features like user login and registration.
-    implementation("androidx.paging:paging-common-android:3.3.0-alpha04")
+    implementation("androidx.paging:paging-common-android:3.3.0-rc01")
 
-    implementation("androidx.compose.animation:animation-graphics-android:1.6.6")
+    implementation("androidx.compose.animation:animation-graphics-android:1.6.7")
     implementation("androidx.camera:camera-core:1.3.3")
-
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     //Firebase Implementation
     // Enables displaying in-app messaging from Firebase to users.
     implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
-    implementation("com.google.firebase:firebase-inappmessaging-display:20.4.2")
+    implementation("com.google.firebase:firebase-inappmessaging-display:21.0.0")
     // Allows access to Firebase Realtime Database, a NoSQL database solution.
-    implementation("com.google.firebase:firebase-database:20.3.1")
-    implementation("com.google.firebase:firebase-database:20.3.1")
-    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("com.google.firebase:firebase-database:21.0.0")
+    implementation("com.google.firebase:firebase-auth:23.0.0")
     // Provides access to Firestore, a document-oriented NoSQL database solution for Firebase in Kotlin.
-    implementation("com.google.firebase:firebase-firestore-ktx:24.11.1")
+    implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
     implementation("com.google.firebase:firebase-ml-vision:24.1.0")
-    implementation("com.google.firebase:firebase-storage-ktx:20.3.0")
+    implementation("com.google.firebase:firebase-storage-ktx:21.0.0")
     implementation("com.google.firebase:firebase-messaging-ktx")
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 
 
     //Compose Platform and Core Dependencies
     // This line defines the Bill of Materials (BOM) for Compose, ensuring all Compose libraries used are compatible versions.
-    platform("androidx.compose:compose-bom:2024.04.00")
+    platform("androidx.compose:compose-bom:2024.05.00")
     // Provides essential Kotlin extensions for core Android functionalities.
-    platform("androidx.compose:compose-bom:2024.04.00")
+    platform("androidx.compose:compose-bom:2024.05.00")
 
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.1")
     // Offers lifecycle-aware components for managing data across different UI lifecycles in Kotlin.
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     // Enables building Compose activities, the foundation for the app screens.
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation("androidx.activity:activity-ktx:1.8.2")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation("androidx.activity:activity-ktx:1.9.0")
     // The core library for building user interfaces with Compose.
-    implementation ("androidx.compose.ui:ui:1.6.6")
+    implementation ("androidx.compose.ui:ui:1.6.7")
     // Provides foundational building blocks for the Compose UI like layouts, drawables, and interactions.
-    implementation ("androidx.compose.foundation:foundation:1.6.6")
+    implementation ("androidx.compose.foundation:foundation:1.6.7")
     //  Provides additional Material Design components and themes for UI, old version, but still useful, not completely necessary as I have the others but still here.
-    implementation ("androidx.compose.material:material:1.6.5")
+    implementation ("androidx.compose.material:material:1.6.7")
     implementation("androidx.compose.material:material-icons-extended")
     // Enables implementing navigation within the Compose app.
     implementation("androidx.navigation:navigation-compose:2.7.7")
@@ -132,7 +132,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Provides integration between Compose and LiveData, a lifecycle-aware way to observe data changes.
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
@@ -163,7 +163,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:glide:4.16.0")
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.5")
     implementation("com.squareup.picasso:picasso:2.5.2")
-    implementation("io.coil-kt:coil:2.6.0")
+    implementation("io.coil-kt:coil-gif:2.1.0")
 
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 

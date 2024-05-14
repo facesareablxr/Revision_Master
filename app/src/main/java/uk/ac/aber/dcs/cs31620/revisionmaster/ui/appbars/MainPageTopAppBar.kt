@@ -1,19 +1,17 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars
 
-import android.content.Context
 import android.net.Uri
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -33,8 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,18 +42,8 @@ import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import java.time.LocalTime
-
-/**
- * This is the main page top app bar, it has multiple components to it. The greeting will change
- * depending on what time of day it is.
- * The streak will show how many days the user has been active on the application.
- * The notification bell will show a badge if there is a notification for the user to see.
- * The profile circle will show the users profile picture, and when clicked - it will open their
- * profile.
- *
- * @author Lauren Davis
- */
 
 /**
  * Composable function for displaying the top app bar of the main page.
@@ -70,7 +57,6 @@ fun MainPageTopAppBar(
     scrollBehavior: TopAppBarScrollBehavior? = null,
     userViewModel: UserViewModel = viewModel()
 ) {
-    val context = LocalContext.current // Accessing the current context
     val currentTime = LocalTime.now() // Getting the current time
     val greeting = getGreeting(currentTime) // Getting the appropriate greeting based on the time of day
 
@@ -112,7 +98,7 @@ fun MainPageTopAppBar(
                         // Showing notification bell
                         NotificationsBell(notifications)
                         // Showing profile circle
-                        ProfileCircle(context = context, navController = navController, user!!)
+                        ProfileCircle(navController = navController, user!!)
                         Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
@@ -181,19 +167,15 @@ private fun getGreeting(currentTime: LocalTime): String {
 
 /**
  * Composable function for displaying the profile circle, which triggers navigation to the profile screen on click.
- * @param context: Context for accessing resources.
  * @param navController: Navigation controller for handling navigation.
  * @param user: User object containing user information.
  */
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfileCircle(
-    context: Context, // Context for accessing resources
-    navController: NavController, // Navigation controller for handling navigation
-    user: User // User object containing user information
+    navController: NavController,
+    user: User
 ) {
-    val profilePictureUrl = user.profilePictureUrl // Profile picture URL
-
     val defaultImageRes = R.drawable.profile_image_placeholder // Default profile image resource
 
     // Creating a clickable circular profile image
@@ -202,18 +184,26 @@ fun ProfileCircle(
             .size(48.dp)
             .padding(8.dp)
             .clip(CircleShape)
-            .background(Color.Gray)
             .clickable {
-                navController.navigate("profile") // Navigating to profile screen on click
+                navController.navigate(Screen.Profile.route) // Navigating to profile screen on click
             },
         contentAlignment = Alignment.Center
     ) {
-        GlideImage(
-            model = if (!profilePictureUrl.isNullOrEmpty()) Uri.parse(profilePictureUrl) else defaultImageRes,
-            contentDescription = stringResource(R.string.profilePicture),
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        )
+        if (user.profilePictureUrl != null) {
+            // Display placeholder image or loaded image
+                GlideImage(
+                    model = Uri.parse(user.profilePictureUrl),
+                    contentDescription = null,
+                    modifier = Modifier.wrapContentSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+            GlideImage(
+                model = defaultImageRes,
+                contentDescription = null,
+                modifier = Modifier.wrapContentSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
     }
 }

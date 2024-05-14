@@ -32,14 +32,17 @@ sealed class Screen(val route: String) {
     object EditFlashcards : Screen("editFlashcards")
     object Exam : Screen("exam")
 
+    // Revision screens
     object ViewFlashcards : Screen("viewFlashcards")
     object TestYourself : Screen("testYourself")
-    object MatchGame : Screen("matchGame")
-    object FillInBlanks : Screen("fillBlanks")
-
     object Summary : Screen("summary")
+    object TestResults : Screen("testResults")
 
-    object CreateExam: Screen("createExam")
+    // Schedule screens
+    object AddSchedule: Screen("addSchedule")
+    object WeekSchedule: Screen("weekSchedule")
+    object DaySchedule: Screen("daySchedule")
+    object EditSchedule: Screen("editSchedule")
 }
 
 /**
@@ -47,7 +50,8 @@ sealed class Screen(val route: String) {
  */
 val screens = listOf(
     Screen.Home,
+    Screen.WeekSchedule,
     Screen.Library,
-    Screen.Explore,
-    Screen.Chats
+    Screen.Explore
+
 )

@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,8 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
@@ -35,7 +32,6 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
  * @param deckId: ID of the deck to be edited.
  * @param flashcardViewModel: ViewModel for managing flashcard-related data.
  */
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun EditDeckScreen(
     navController: NavController,
@@ -46,7 +42,7 @@ fun EditDeckScreen(
     val subjects = stringArrayResource(R.array.subjects).toList()
     // Mutable state variables for deck details
     var deckName by remember { mutableStateOf("") }
-    var selectedSubject by remember { mutableStateOf("Subject") }
+    var selectedSubject by remember { mutableStateOf("Subject")}
     var isPublic by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
@@ -67,11 +63,6 @@ fun EditDeckScreen(
             description = deck.description
         }
     }
-
-    // Get current user's UID for database operations
-    val auth = Firebase.auth
-    val currentUser = auth.currentUser
-    val uid = currentUser?.uid
 
     // Scaffold for the screen layout
     Scaffold(
@@ -103,7 +94,7 @@ fun EditDeckScreen(
                 selectedSubject = selectedSubject,
                 onSubjectChange = { newValue -> selectedSubject = newValue }
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             // Public switch
             PublicSwitch(
                 isPublic = isPublic,
@@ -118,14 +109,14 @@ fun EditDeckScreen(
                         deckName,
                         selectedSubject,
                         isPublic,
-                        description,
-                        uid.toString()
+                        description
                     )
+                    navController.navigateUp()
                     navController.popBackStack()
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp)
+                    .padding(32.dp)
             ) {
                 Text(stringResource(R.string.saveChanges))
             }

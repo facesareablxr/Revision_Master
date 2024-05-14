@@ -1,8 +1,6 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 import android.annotation.SuppressLint
-import android.net.Uri
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,17 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.School
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,21 +38,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ProfilePicture
 
 
 /**
@@ -62,31 +59,16 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
  * @author Lauren Davis
  */
 
-/**
- * The top-level composable for the profile screen.
- *
- * @param navController The navigation controller used to navigate between screens.
- */
-@Composable
-fun ProfileScreenTopLevel(navController: NavController) {
-    ProfileScreen(navController)
-}
-
-/**
- * The main composable for the profile screen.
- *
- * @param navigator The navigation controller used to navigate between screens.
- */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: UserViewModel = viewModel() // Get ViewModel instance
+    userViewModel: UserViewModel = viewModel()
 ) {
-    val user by viewModel.user.collectAsState(initial = null)
+    val user by userViewModel.user.collectAsState(initial = null)
 
     LaunchedEffect(Unit) {
-        viewModel.getUserData()
+        userViewModel.getUserData()
     }
 
     Scaffold(
@@ -94,7 +76,10 @@ fun ProfileScreen(
             TopAppBar(
                 title = {},
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                        navController.navigateUp()
+                    }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
@@ -121,7 +106,7 @@ fun ProfileScreen(
                     .padding(innerPadding)
                     .verticalScroll(rememberScrollState())
             ) {
-                ProfileContent(user!!, viewModel, navController)
+                ProfileContent(user!!, userViewModel, navController)
             }
         }
     }
@@ -135,6 +120,7 @@ fun ProfileScreen(
  */
 @Composable
 fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavController) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
 
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
@@ -149,7 +135,11 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
             Spacer(modifier = Modifier.width(16.dp))
             // Display username and full name
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = user.username, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
+                Text(
+                    text = user.username,
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
                 Text(
                     text = "${user.firstName} ${user.lastName}",
                     style = MaterialTheme.typography.bodyLarge
@@ -174,13 +164,6 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
             horizontalAlignment = Alignment.Start
         ) {
             Divider()
-            // List items for Settings and Logout
-            ListItem(
-                text = "Settings",
-                icon = { Icon(Icons.Filled.Settings, contentDescription = "Settings") },
-                onClick = { /* Handle settings click */ }
-            )
-            Divider()
             ListItem(
                 text = "Logout",
                 icon = {
@@ -195,6 +178,40 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
                 }
             )
             Divider()
+            ListItem(
+                text = "Delete Profile",
+                icon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Profile") },
+                onClick = { showDeleteConfirmation = true }
+            )
+            Divider()
+        }
+        if (showDeleteConfirmation) {
+            AlertDialog(
+                onDismissRequest = { showDeleteConfirmation = false },
+                title = { Text("Delete Profile") },
+                text = { Text("Are you sure you want to delete your profile? This action cannot be undone.") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            userViewModel.deleteProfile()
+                            navController.navigate(Screen.Welcome.route) {
+                                popUpTo(Screen.Home.route) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Confirm")
+                    }
+                },
+                dismissButton = {
+                    Button(
+                        onClick = { showDeleteConfirmation = false }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -312,29 +329,5 @@ private fun EmailDisplay(user: User) {
         Icon(Icons.Filled.Email, contentDescription = "Email")
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = user.email, style = MaterialTheme.typography.bodyLarge)
-    }
-}
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun ProfilePicture(
-    imagePath: String?,
-) {
-    val defaultImageRes = R.drawable.profile_image_placeholder
-
-    Box(
-        modifier = Modifier
-            .size(120.dp)
-            .clip(CircleShape)
-            .background(Color.Gray),
-        contentAlignment = Alignment.Center
-    ) {
-        GlideImage(
-            model = if (!imagePath.isNullOrEmpty()) Uri.parse(imagePath) else defaultImageRes,
-            contentDescription = stringResource(R.string.profilePicture),
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        )
     }
 }

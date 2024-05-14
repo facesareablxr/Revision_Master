@@ -3,11 +3,11 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.components
 import android.annotation.SuppressLint
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
@@ -46,6 +46,12 @@ fun MainPageNavigationBar(navController: NavController) {
             outlineIcon = Icons.Outlined.Home,
             label = stringResource(id = R.string.home)
         ),
+        // Chats group
+        Screen.WeekSchedule to IconGroup(
+            filledIcon = Icons.Filled.CalendarMonth,
+            outlineIcon = Icons.Outlined.CalendarMonth,
+            label = stringResource(id = R.string.schedule)
+        ),
         // Library group
         Screen.Library to IconGroup(
             filledIcon = Icons.Filled.Bookmark,
@@ -57,12 +63,6 @@ fun MainPageNavigationBar(navController: NavController) {
             filledIcon = Icons.Filled.Search,
             outlineIcon = Icons.Outlined.Search,
             label = stringResource(id = R.string.explore)
-        ),
-        // Chats group
-        Screen.Chats to IconGroup(
-            filledIcon = Icons.Filled.ChatBubble,
-            outlineIcon = Icons.Outlined.ChatBubbleOutline,
-            label = stringResource(id = R.string.chats)
         )
     )
 

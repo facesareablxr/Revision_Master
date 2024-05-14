@@ -1,17 +1,15 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,9 +32,13 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 
 /**
  * Composable function for the screen to add a new deck.
+ *
+ * Here the user will be able to create a deck with their chosen name, a description which can be
+ * used to explain what the deck is for and a subject, as although a university student only really
+ * do one subject - some do dual degrees and it allows for the filtering/searching in future.
+ *
  * @param navController NavController for navigation.
  */
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AddDeckScreen(
     navController: NavController
@@ -80,12 +82,16 @@ fun AddDeckScreen(
                 onDescriptionChange = { newValue -> description = newValue }
             )
 
+            // Spacer to ensure all boxes are evenly spaced
+            Spacer(modifier = Modifier.padding(4.dp))
+
             // Spinner for selecting the subject of the deck
             SubjectSpinner(
                 subjects = subjects,
                 selectedSubject = selectedSubject,
                 onSubjectChange = { newValue -> selectedSubject = newValue }
             )
+
 
             // Switch for toggling deck visibility
             PublicSwitch(
@@ -132,10 +138,6 @@ fun PublicSwitch(
         Switch(
             checked = isPublic,
             onCheckedChange = onPublicChange,
-            colors = SwitchDefaults.colors(
-                uncheckedThumbColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                checkedThumbColor = MaterialTheme.colorScheme.primary
-            ),
             modifier = Modifier.padding(start = 8.dp)
         )
     }

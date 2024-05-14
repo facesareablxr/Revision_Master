@@ -15,11 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 /**
- * This is a non-main page top app bar. It has a title which can be customized
- *  @author Lauren Davis
- */
-
-/**
  * Composable function for displaying the top app bar for non-main screens.
  * @param title: Title to be displayed in the app bar.
  * @param scrollBehavior: Scroll behavior for the top app bar.

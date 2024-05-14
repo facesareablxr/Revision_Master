@@ -1,12 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 //noinspection UsingMaterialAndMaterial3Libraries
-import android.app.Activity
 import android.net.Uri
-import android.provider.MediaStore
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,16 +10,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
@@ -40,30 +31,19 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showImagePickerDialog
-import java.io.File
-
-
-@Composable
-fun EditProfileTopLevel( navController: NavController) {
-    EditProfileScreen(navController)
-}
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ProfileImageSelector
 
 @Composable
 fun EditProfileScreen(
@@ -98,7 +78,7 @@ fun EditProfileContent(
 
     val firstName = remember { mutableStateOf(user.firstName) }
     val lastName = remember { mutableStateOf(user.lastName) }
-    val profilePictureUri = remember { mutableStateOf(user.profilePictureUrl) }
+    var imageUri by remember { mutableStateOf(user.profilePictureUrl?.let { Uri.parse(it) }) }
 
     val coroutineScope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -127,7 +107,8 @@ fun EditProfileContent(
                             firstName = firstName.value,
                             lastName = lastName.value,
                             institution = selectedUniversity,
-                            profilePictureUrl = profilePictureUri.value
+                            profilePictureUrl = imageUri.toString(),
+                            imagePath = imageUri
                         )
                         navController.navigateUp()
                     } else {
@@ -158,10 +139,12 @@ fun EditProfileContent(
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AddNewImage(
-                    imagePath = profilePictureUri.value,
-                    modifier = Modifier.padding(16.dp),
-                    updateImagePath = { profilePictureUri.value = it}
+                // Clickable Image Box for selecting/editing image
+                ProfileImageSelector(
+                    imageUrl = imageUri,
+                    onImageSelected = { selectedUri ->
+                        imageUri = selectedUri
+                    },
                 )
                 Spacer(modifier = Modifier.padding(8.dp))
                 LazyColumn(
@@ -228,50 +211,3 @@ fun LoadingIndicator() {
     }
 }
 
-
-@OptIn(ExperimentalGlideComposeApi::class)
-@Composable
-fun AddNewImage(
-    imagePath: String?,
-    modifier: Modifier,
-    updateImagePath: (String) -> Unit = {}
-) {
-    val photoFile: File? by remember { mutableStateOf(null) }
-    val context = LocalContext.current
-
-    val resultLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data = result.data
-            if (data != null) {
-                when {
-                    data.hasExtra(MediaStore.EXTRA_OUTPUT) -> { // Camera intent
-                        updateImagePath(photoFile!!.absolutePath)
-                    }
-                    data.data != null -> { // Gallery intent
-                        updateImagePath(data.data!!.toString())
-                    }
-                    else -> { }
-                }
-            }
-        }
-    }
-
-    Box(
-        modifier = modifier
-            .size(120.dp)
-            .clip(CircleShape)
-            .background(Color.Gray),
-        contentAlignment = Alignment.Center
-    ) {
-        IconButton(onClick = { showImagePickerDialog(context, resultLauncher) }) {
-            Icon(Icons.Default.AddAPhoto, contentDescription = stringResource(R.string.addImage))
-        }
-        GlideImage(
-            model = if (!imagePath.isNullOrEmpty()) Uri.parse(imagePath) else R.drawable.profile_image_placeholder,
-            contentDescription = stringResource(R.string.profilePicture),
-            modifier = Modifier
-                .fillMaxSize()
-                .clip(CircleShape)
-        )
-    }
-}

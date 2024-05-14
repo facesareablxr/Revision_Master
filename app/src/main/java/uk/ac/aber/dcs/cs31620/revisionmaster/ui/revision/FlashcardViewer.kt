@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,9 +42,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.FlashcardImage
 import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -76,6 +80,19 @@ fun FlashcardViewer(
     var currentCardIndex by remember { mutableStateOf(0) }
     var isFrontShowing by remember { mutableStateOf(true) }
 
+    val elapsedTimeState = remember { mutableStateOf(0L) }
+    val timerScope = rememberCoroutineScope()
+
+    // Start the timer when flashcards are loaded
+    LaunchedEffect(Unit) {
+        timerScope.launch {
+            while (true) {
+                delay(1000) // Update every second
+                elapsedTimeState.value++
+            }
+        }
+    }
+
     val currentFlashcard = flashcards.getOrNull(currentCardIndex)
     val context = LocalContext.current
     val textToSpeech = remember { TextToSpeech(context) { } }
@@ -85,24 +102,40 @@ fun FlashcardViewer(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .size(300.dp, 200.dp)
-                .clip(RoundedCornerShape(16.dp))
-                .clickable { isFrontShowing = !isFrontShowing },
-            contentAlignment = Alignment.Center
-        ) {
-            currentFlashcard?.let { card ->
-                Flashcard(
-                    front = card.question,
-                    back = card.answer,
-                    isFrontShowing = isFrontShowing,
-                    onFlip = { isFrontShowing = !isFrontShowing },
-                    onTextToSpeech = { text ->
-                         textToSpeech.language = Locale.UK
-                        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+        Row {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable { isFrontShowing = !isFrontShowing },
+                contentAlignment = Alignment.Center
+            ) {
+                currentFlashcard?.let { card ->
+                    if (card.imageUri != null) {
+                        FlashcardWithImage(
+                            front = card.question,
+                            back = card.answer,
+                            isFrontShowing = isFrontShowing,
+                            onFlip = { isFrontShowing = !isFrontShowing },
+                            onTextToSpeech = { text ->
+                                textToSpeech.language = Locale.UK
+                                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                            },
+                            imageUri = card.imageUri
+                        )
+                    } else {
+                        Flashcard(
+                            front = card.question,
+                            back = card.answer,
+                            isFrontShowing = isFrontShowing,
+                            onFlip = { isFrontShowing = !isFrontShowing },
+                            onTextToSpeech = { text ->
+                                textToSpeech.language = Locale.UK
+                                textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+                            }
+                        )
                     }
-                )
+                }
             }
         }
 
@@ -133,6 +166,42 @@ fun FlashcardViewer(
 
 
 @Composable
+fun FlashcardWithImage(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit, imageUri: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth(0.8f)
+            .wrapContentHeight()
+            .clickable { onFlip() },
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(onClick = { onTextToSpeech(if (isFrontShowing) front else back) }) {
+                    Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = "Text to Speech")
+                }
+            }
+            FlashcardImage(imagePath = imageUri)
+            // Center the text within the card
+            AnimatedContent(
+                targetState = isFrontShowing,
+                transitionSpec = { fadeIn() togetherWith fadeOut() },
+                label = "",
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            ) { showFront ->
+                Text(text = if (showFront) front else back)
+            }
+        }
+    }
+}
+
+@Composable
 fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit) {
     Card(
         modifier = Modifier
@@ -143,7 +212,8 @@ fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -
         shape = RoundedCornerShape(4.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -153,7 +223,6 @@ fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -
                     Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = "Text to Speech")
                 }
             }
-
             // Center the text within the card
             AnimatedContent(
                 targetState = isFrontShowing,

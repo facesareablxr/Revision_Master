@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -54,10 +53,8 @@ fun ButtonSpinner(
     // State to control the dropdown menu's visibility
     var expanded by rememberSaveable { mutableStateOf(false) }
 
-
     Surface(
-        modifier = modifier
-            .padding(16.dp),
+        modifier = modifier.padding(16.dp),
         shape = RoundedCornerShape(4.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
@@ -84,25 +81,33 @@ fun ButtonSpinner(
                     )
                 }
             }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .wrapContentSize()
-            ) {
-                items.forEach { dropdownItemText ->
-                    DropdownMenuItem(
-                        onClick = {
-                            expanded = false
-                            itemText = dropdownItemText // Update displayed text
-                            itemClick(dropdownItemText) // Execute callback with chosen item
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        text = { Text(text = dropdownItemText) }
-                    )
-                }
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth()
+                .padding(start = 12.dp,end = 12.dp)
+        ) {
+            items.forEach { dropdownItemText ->
+                DropdownMenuItem(
+                    onClick = {
+                        expanded = false
+                        itemText = dropdownItemText
+                        itemClick(dropdownItemText)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(start = 12.dp,end = 12.dp),
+                    text = {
+                        Text(
+                            text = dropdownItemText,
+                            maxLines = 1
+                        )
+                    }
+                )
             }
         }
     }
 }
+
+
+

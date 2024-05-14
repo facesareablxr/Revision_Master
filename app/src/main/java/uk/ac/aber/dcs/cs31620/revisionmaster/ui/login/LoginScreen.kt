@@ -47,6 +47,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 /**
  * Composable function for the top-level screen of the login feature.
+ *
  * @param navController: Navigation controller for managing navigation within the app.
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -58,7 +59,6 @@ fun LoginTopLevel(navController: NavHostController) {
     val context = LocalContext.current as Activity
     // Firebase authentication instance
     val auth = FirebaseAuth.getInstance()
-
     // String resources for messages
     val fillInAllFields = stringResource(R.string.fillallfields)
     val failureMessage = stringResource(R.string.failedLogIn)
@@ -131,6 +131,7 @@ fun LoginTopLevel(navController: NavHostController) {
 
 /**
  * Composable function for the login screen layout.
+ *
  * @param user: Current user information.
  * @param onUserChange: Function to update user state.
  * @param onForgotPassword: Function to navigate to forgot password screen.
@@ -165,6 +166,7 @@ fun LoginScreen(
 
 /**
  * Composable function for email input field.
+ *
  * @param user: Current user information.
  * @param updateUser: Function to update user state.
  */
@@ -189,6 +191,7 @@ fun EmailBox(
 
 /**
  * Composable function for password input field.
+ *
  * @param user: Current user information.
  * @param updateUser: Function to update user state.
  */
@@ -201,7 +204,7 @@ private fun PasswordBox(
     var passwordVisible by remember { mutableStateOf(false) }
 
     // Password input field
-    user.password?.let {
+    user.password?.let { it ->
         OutlinedTextField(
             value = it,
             leadingIcon = { Icon(Icons.Filled.Lock, contentDescription = null) }, // Leading lock icon
@@ -227,6 +230,7 @@ private fun PasswordBox(
 
 /**
  * Composable function for "Forgot password" button.
+ *
  * @param forgotPasswordAction: Function to trigger forgot password action.
  */
 @Composable
@@ -242,6 +246,7 @@ private fun ForgotPassword(forgotPasswordAction: () -> Unit) {
 
 /**
  * Composable function for "Login" button.
+ *
  * @param loginAction: Function to trigger login action.
  */
 @Composable

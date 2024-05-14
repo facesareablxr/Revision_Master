@@ -27,27 +27,33 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.DeckDetailsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.EditDeckScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.EditFlashcardScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.LibraryScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.TestResultsScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.ForgotPassScreenTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.LoginTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.EditProfileTopLevel
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreenTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.EditProfileScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardSelfTestScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardViewerTopLevel
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.MatchingGame
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.SummaryScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.AddScheduleScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.DayScheduleScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.EditScheduleScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.ScheduleScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.theme.RevisionMasterTheme
 
 /**
- *
+ * MainActivity class responsible for initializing the app and setting up the navigation.
  */
-
 class MainActivity : ComponentActivity() {
 
+    // Firebase authentication instance
     private lateinit var auth: FirebaseAuth
-    private val viewModel: UserViewModel by viewModels()
+
+    // UserViewModel instance using by viewModels() delegate
+    private val userViewModel: UserViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,30 +62,40 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
 
+        // Set the content of the activity
         setContent {
+            // Apply the app theme
             RevisionMasterTheme(dynamicColor = false) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Check if user is logged in
                     val currentUser = auth.currentUser
                     if (currentUser != null) {
-                        val user by viewModel.user.collectAsState()
+                        // Collect user data from ViewModel
+                        val user by userViewModel.user.collectAsState()
 
+                        // Fetch user data when the composable is first launched
                         LaunchedEffect(Unit) {
-                            viewModel.getUserData()
+                            userViewModel.getUserData()
                         }
-                        user?.let { viewModel.updateStreakIfNeeded(user!!) }
-                        BuildNavigationGraph(Screen.Home.route, viewModel)
+                        // Update streak if needed
+                        user?.let { userViewModel.updateStreakIfNeeded(user!!) }
 
+                        // Build navigation graph for authenticated user
+                        BuildNavigationGraph(Screen.Home.route, userViewModel)
+
+                        // Fetch user data again (in case of changes)
                         LaunchedEffect(Unit) {
-                            viewModel.getUserData()
+                            userViewModel.getUserData()
                         }
 
-                        BuildNavigationGraph(Screen.Home.route, viewModel)
+                        // Build navigation graph for authenticated user
+                        BuildNavigationGraph(Screen.Home.route, userViewModel)
                     } else {
-
-                        BuildNavigationGraph(Screen.Welcome.route, UserViewModel())
+                        // Build navigation graph for unauthenticated user
+                        BuildNavigationGraph(Screen.Welcome.route, userViewModel)
                     }
                 }
             }
@@ -88,23 +104,28 @@ class MainActivity : ComponentActivity() {
 }
 
 /**
- *
+ * Composable function responsible for building the navigation graph.
+ * @param destination: Starting destination of the navigation graph.
+ * @param userViewModel: UserViewModel instance.
  */
 @Composable
 fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
+    // Navigation controller instance
     val navController = rememberNavController()
+    // Define the navigation graph
     NavHost(
         navController = navController,
         startDestination = destination
     ) {
+        // Define each composable screen and its route
         composable(Screen.Welcome.route) { WelcomeScreen(navController) }
         composable(Screen.Login.route) { LoginTopLevel(navController) }
         composable(Screen.SignUp.route) { SignUpTopLevel(navController, userViewModel) }
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController) }
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Chats.route) { ChatScreen() }
-        composable(Screen.Profile.route) { ProfileScreenTopLevel(navController) }
-        composable(Screen.EditProfile.route) { EditProfileTopLevel(navController) }
+        composable(Screen.Chats.route) { ChatScreen(navController) }
+        composable(Screen.Profile.route) { ProfileScreen(navController) }
+        composable(Screen.EditProfile.route) { EditProfileScreen(navController) }
         composable(Screen.Library.route) { LibraryScreen(navController) }
         composable(Screen.AddDeck.route) { AddDeckScreen(navController) }
         composable(Screen.DeckDetails.route + "/{deckId}") { backStackEntry ->
@@ -114,21 +135,11 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
             AddFlashcardScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
         composable(Screen.Explore.route) { ExploreScreen(navController) }
-
         composable(Screen.ViewFlashcards.route + "/{deckId}") { backStackEntry ->
             FlashcardViewerTopLevel(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
-
         composable(Screen.TestYourself.route + "/{deckId}") { backStackEntry ->
             FlashcardSelfTestScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
-        }
-
-        composable(Screen.MatchGame.route + "/{deckId}") { backStackEntry ->
-            MatchingGame(navController, backStackEntry.arguments?.getString("deckId")!!)
-        }
-
-        composable(Screen.FillInBlanks.route + "/{deckId}") { backStackEntry ->
-            FlashcardViewerTopLevel(navController, backStackEntry.arguments?.getString("deckId")!!)
         }
 
         composable(Screen.EditDeck.route + "/{deckId}") { backStackEntry ->
@@ -141,15 +152,33 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
                 backStackEntry.arguments?.getString("deckId")!!
             )
         }
-        composable(Screen.Summary.route + "/{correctMatches}" + "/{incorrectMatches}" + "/{deckId}") { backstackEntry ->
-            SummaryScreen(
-                backstackEntry.arguments?.getInt("correctMatches")!!,
-                backstackEntry.arguments?.getInt("incorrectMatches")!!,
-                backstackEntry.arguments?.getString("deckId")!!, navController
+        composable(Screen.Summary.route + "/{correctMatches}/{incorrectMatches}/{elapsedSeconds}/{deckId}") { backstackEntry ->
+            val correctMatches =
+                backstackEntry.arguments?.getString("correctMatches")?.toIntOrNull() ?: 0
+            val incorrectMatches =
+                backstackEntry.arguments?.getString("incorrectMatches")?.toIntOrNull() ?: 0
+            val elapsed =
+                backstackEntry.arguments?.getString("elapsedSeconds")?.toLongOrNull() ?: 0L
+            val deckId = backstackEntry.arguments?.getString("deckId") ?: ""
+
+            SummaryScreen(correctMatches, incorrectMatches, elapsed, deckId, navController)
+        }
+        composable(Screen.TestResults.route + "/{deckId}") { backStackEntry ->
+            TestResultsScreen(backStackEntry.arguments?.getString("deckId")!!, navController)
+        }
+        composable(Screen.AddSchedule.route) { AddScheduleScreen(navController) }
+        composable(Screen.WeekSchedule.route) { ScheduleScreen(navController) }
+        composable(Screen.DaySchedule.route + "/{day}") { backstackEntry ->
+            DayScheduleScreen(
+                backstackEntry.arguments?.getString("day")!!,
+                navController = navController
+            )
+        }
+        composable(Screen.EditSchedule.route + "/{scheduleId}") { backstackEntry ->
+            EditScheduleScreen(
+                navController = navController,
+                scheduleId = backstackEntry.arguments?.getString("scheduleId")!!
             )
         }
     }
 }
-
-
-

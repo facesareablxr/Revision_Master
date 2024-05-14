@@ -3,7 +3,7 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.components
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.MainPageTopAppBar
 
 /**
@@ -17,7 +17,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.MainPageTopAppBar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopLevelScaffold(
-    navController: NavHostController,
+    navController: NavController,
     floatingActionButton: @Composable () -> Unit = { },
     snackbarContent: @Composable (SnackbarData) -> Unit = {},
     snackbarHostState: SnackbarHostState? = null,

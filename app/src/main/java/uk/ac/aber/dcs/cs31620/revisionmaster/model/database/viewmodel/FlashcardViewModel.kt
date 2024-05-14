@@ -1,5 +1,6 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,6 +15,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.TestResult
 
 
 /**
@@ -72,21 +74,11 @@ class FlashcardViewModel : ViewModel() {
         name: String,
         subject: String,
         isPublic: Boolean,
-        description: String,
-        ownerId: String
+        description: String
     ) {
-        // Create an updated Deck object with the provided data
-        val updatedDeck = Deck(
-            id = deckId,
-            name = name,
-            subject = subject,
-            isPublic = isPublic,
-            description = description,
-            ownerId = ownerId
-        )
         // Use viewModelScope to launch a coroutine to update the deck asynchronously
         viewModelScope.launch {
-            FlashcardRepository.updateDeck(updatedDeck)
+            FlashcardRepository.updateDeck(deckId, name, subject , isPublic, description)
         }
     }
 
@@ -156,19 +148,25 @@ class FlashcardViewModel : ViewModel() {
         flashcardId: String,
         question: String,
         answer: String,
-        difficulty: Difficulty
+        difficulty: Difficulty,
+        imageUri: String?
     ) {
         // Create an updated Flashcard object with the provided data
         val updatedFlashcard = Flashcard(
             id = flashcardId,
             question = question,
             answer = answer,
-            difficulty = difficulty
+            difficulty = difficulty,
+            imageUri = imageUri
         )
         // Use viewModelScope to launch a coroutine to update the flashcard asynchronously
         viewModelScope.launch {
-            FlashcardRepository.updateFlashcard(updatedFlashcard,deckId)
+            FlashcardRepository.updateFlashcard(updatedFlashcard, deckId)
         }
+        if (imageUri != null) {
+            FlashcardRepository.uploadImage(Uri.parse(imageUri))
+        }
+
     }
 
     /**
@@ -228,23 +226,70 @@ class FlashcardViewModel : ViewModel() {
         // Use viewModelScope to launch a coroutine to add the flashcard asynchronously
         viewModelScope.launch {
             FlashcardRepository.addFlashcard(deckId, flashcard)
-            // Update the average difficulty of the deck
             FlashcardRepository.updateDeckDifficulty(deckId)
-        }
-    }
-
-    // Holds the list of all public decks
-    private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
-    val publicDecks: StateFlow<List<Deck>> = _publicDecks
-
-    /**
-     * Fetches all public decks from the database.
-     */
-    fun getAllPublicDecks() {
-        viewModelScope.launch {
-            FlashcardRepository.getAllPublicDecks().collect { decks ->
-                _publicDecks.value = decks
+            if (imageUri != null) {
+                FlashcardRepository.uploadImage(Uri.parse(imageUri))
             }
         }
     }
+
+    private val _publicDecks = MutableStateFlow<List<Deck>>(emptyList())
+    val publicDecks: StateFlow<List<Deck>> = _publicDecks
+
+    fun getAllPublicDecks() {
+        viewModelScope.launch {
+            FlashcardRepository.getPublicDecks().collect {
+                _publicDecks.value = it
+            }
+        }
+    }
+    
+    fun addTestResult(
+        deckId: String,
+        correct: Int,
+        incorrect: Int,
+        elapsedTime: Long,
+        date: String
+    ) {
+        val testResult = TestResult(
+            deckId = deckId,
+            correct = correct,
+            incorrect = incorrect,
+            elapsedTime = elapsedTime,
+            date = date
+        )
+        viewModelScope.launch {
+            FlashcardRepository.addTestResultAndUpdateMastery(deckId, testResult)
+        }
+    }
+
+    private val _testResult = MutableStateFlow<TestResult?>(null)
+    val testResult: StateFlow<TestResult?> = _testResult
+
+    fun getTestResults(testId: String) {
+        val userId = currentUser?.uid ?: return
+        viewModelScope.launch {
+            val result = FlashcardRepository.getTestResults(userId, testId)
+            _testResult.value = result
+        }
+    }
+
+    // StateFlow to hold the list of all test results for a deck
+    private val _allTestResultsForDeck = MutableLiveData<List<TestResult>>(emptyList())
+    val allTestResultsForDeck: LiveData<List<TestResult>> = _allTestResultsForDeck
+
+    // Function to fetch all test results for a specific deck
+    fun getAllTestResultsForDeck(deckId: String) {
+        viewModelScope.launch {
+            FlashcardRepository.getAllTestResultsForDeck(deckId).collect { testResults ->
+                _allTestResultsForDeck.value = testResults
+            }
+        }
+    }
+
+    fun downloadDeck(id: String) {
+
+    }
 }
+
+

@@ -2,8 +2,6 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.ui.login
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,18 +31,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showToast
 
 /**
  * Top-level composable for the sign-up flow.
@@ -54,17 +55,16 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewModel) {
+fun SignUpTopLevel(
+    navController: NavHostController,
+    userViewModel: UserViewModel = viewModel()
+) {
     // Activity context
     val context = LocalContext.current as Activity
     // State for managing user information
     var user by remember { mutableStateOf(User()) }
     // State for managing confirmed password
     var confirmPassword by remember { mutableStateOf("") }
-
-    // String resources for messages
-    val passwordsDoNotMatchMsg = stringResource(R.string.passwordsDoNotMatch)
-    val weakPasswordMsg = stringResource(R.string.weakPassword)
 
     // Effect to check if the user is already signed in
     LaunchedEffect(userViewModel) {
@@ -91,38 +91,23 @@ fun SignUpTopLevel(navController: NavHostController, userViewModel: UserViewMode
             updateUser = { user = it },
             updateConfirmPassword = { confirmPassword = it },
             signupAction = {
-                // Handle sign-up button click
-                if (user.password != confirmPassword) {
-                    // Show toast if passwords do not match
-                    showToast(context, passwordsDoNotMatchMsg)
-                } else if (!isStrongPassword(user.password!!)) {
-                    // Show toast if password is weak
-                    showToast(context, weakPasswordMsg)
-                } else {
-                    // Sign up with email and password
-                    val auth = FirebaseAuth.getInstance()
-                    auth.createUserWithEmailAndPassword(user.email, user.password!!)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                // Add user to database and navigate to home screen on successful sign-up
-                                userViewModel.addUserToDB(user)
-                                goToHome(navController)
-                            } else {
-                                // Show toast on sign-up failure
-                                showToast(context, "Signup failed!")
-                            }
+                // Sign up with email and password
+                val auth = FirebaseAuth.getInstance()
+                auth.createUserWithEmailAndPassword(user.email, user.password!!)
+                    .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                            // Add user to database and navigate to home screen on successful sign-up
+                            userViewModel.addUserToDB(user)
+                            goToHome(navController)
+                        } else {
+                            // Show toast on sign-up failure
+                            showToast(context, "Signup failed!")
                         }
-                }
+                    }
+
             }
         )
     }
-}
-
-/**
- * Function to display a toast message.
- */
-private fun showToast(context: Context, message: String) {
-    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
 
 /**
@@ -142,6 +127,8 @@ fun SignupScreen(
     updateConfirmPassword: (String) -> Unit,
     signupAction: () -> Unit
 ) {
+    val weakPasswordMsg = stringResource(R.string.weakPassword)
+
     // Column layout for content
     Column(
         modifier = Modifier
@@ -172,11 +159,35 @@ fun SignupScreen(
             updateConfirmPassword = updateConfirmPassword,
         )
         Spacer(modifier = Modifier.height(16.dp))
+        // Error message for passwords not matching
+        if (user.password != confirmPassword && confirmPassword.isNotBlank()) {
+            Text(
+                text = stringResource(R.string.passwordsDoNotMatch),
+                color = Color.Red
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+
+        // Weak password message
+        if (!isStrongPassword(user.password ?: "")) {
+            Text(
+                text = weakPasswordMsg,
+                color = Color.Red,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+        }
+
         // Sign-up button
         SignupButton(signupAction = signupAction)
     }
 }
 
+/**
+ * Composable function for the first name field.
+ *
+ * @param user The user object containing the first name.
+ * @param updateUser Function to update the user object with a new first name.
+ */
 @Composable
 private fun FirstNameField(
     user: User,
@@ -196,6 +207,12 @@ private fun FirstNameField(
     )
 }
 
+/**
+ * Composable function for the last name field.
+ *
+ * @param user The user object containing the last name.
+ * @param updateUser Function to update the user object with a new last name.
+ */
 @Composable
 private fun LastNameField(
     user: User,
@@ -217,6 +234,9 @@ private fun LastNameField(
 
 /**
  * Function that checks if the user inputted name is valid
+ *
+ * @param name The name to be validated.
+ * @return True if the name is valid, False otherwise.
  */
 private fun isValidName(name: String): Boolean {
     val regex = "[a-zA-Z]+".toRegex()
@@ -254,6 +274,9 @@ private fun UsernameField(
 
 /**
  * Function to check the validity of a username
+ *
+ * @param username The username to be checked.
+ * @return True if the username is valid, False otherwise.
  */
 fun isValidUsername(username: String): Boolean {
     val regex = "^[a-zA-Z0-9_]+$".toRegex()

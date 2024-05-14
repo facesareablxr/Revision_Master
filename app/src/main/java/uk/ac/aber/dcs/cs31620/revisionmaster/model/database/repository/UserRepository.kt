@@ -2,19 +2,24 @@ package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Log
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
+import com.google.firebase.storage.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Schedule
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.UUID
 
 /**
  * This object handles all user-related interactions with a Firebase Realtime Database.
@@ -44,10 +49,19 @@ object UserRepository {
         // Stores the user using their unique ID in the "users" node
         return try {
             usersReference.child(currentUser.uid).setValue(user).await()
+            uploadImage(Uri.parse(user.profilePictureUrl))
             Response.Success(user)
         } catch (e: Exception) {
             Response.Failure(e)
         }
+    }
+
+    // Firebase Storage initialization
+    private val firebaseStorage = Firebase.storage
+
+    private fun uploadImage(imageUri: Uri) {
+        val storageRef = firebaseStorage.reference.child("images/${UUID.randomUUID()}")
+        storageRef.putFile(imageUri)
     }
 
     /**
@@ -72,12 +86,13 @@ object UserRepository {
      * Updates the user.
      * Uses the UID of the currently authenticated user to update their data.
      */
-    suspend fun updateUser(user: User): Response<Unit> {
+    suspend fun updateUser(user: User, imageUri: Uri): Response<Unit> {
         val currentUser = FirebaseAuth.getInstance().currentUser
         return if (currentUser != null) {
             val userId = currentUser.uid
             val userRef = usersReference.child(userId)
             try {
+                uploadImage(imageUri)
                 userRef.setValue(user).await()
                 Response.Success(Unit)
             } catch (e: Exception) {
@@ -93,37 +108,60 @@ object UserRepository {
      */
     suspend fun getFollowingList(): List<String> {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
-
-        val followingList = mutableListOf<String>()
+        val followingUsernames = mutableListOf<String>()
         return try {
-            val userSnapshot = usersReference.child(currentUser.uid).get().await()
-            if (userSnapshot.exists()) {
-                val following = userSnapshot.child("following")
-                    .getValue(object : GenericTypeIndicator<List<String>>() {})
-                followingList.addAll(following.orEmpty())
+            val followingSnapshot = usersReference.child(currentUser.uid).child("following").get().await()
+            if (followingSnapshot.exists()) {
+                // Iterating through each child node to retrieve the usernames
+                followingSnapshot.children.forEach { followingData ->
+                    val username = followingData.key
+                    username?.let { followingUsernames.add(it) }
+                }
+                // Log the list of usernames
+                Log.d("FollowingList", "Following: $followingUsernames")
             }
-            followingList
+            followingUsernames
         } catch (e: Exception) {
+            Log.e("FollowingList", "Error getting following list: ${e.message}")
             emptyList()
         }
     }
 
     /**
-     * Gets the user's followers list by their user ID.
+     * Gets the user's followers list by their usernames.
      */
     suspend fun getFollowers(): List<String> {
         val currentUser = FirebaseAuth.getInstance().currentUser ?: return emptyList()
-        val followersList = mutableListOf<String>()
+
         return try {
-            val userSnapshot = usersReference.child(currentUser.uid).get().await()
-            if (userSnapshot.exists()) {
-                val following = userSnapshot.child("following")
-                    .getValue(object : GenericTypeIndicator<List<String>>() {})
-                followersList.addAll(following.orEmpty())
+            val followersSnapshot = usersReference.child(currentUser.uid).child("followers").get().await()
+            if (followersSnapshot.exists()) {
+                // Directly get usernames from the snapshot
+                val followersUsernames = followersSnapshot.children
+                    .mapNotNull { it.getValue(String::class.java) }
+                    .toList()
+                Log.d("FollowersList", "Followers: $followersUsernames")
+                followersUsernames // Return the list if it exists
+            } else {
+                emptyList() // Return an empty list if the user has no followers
             }
-            followersList
         } catch (e: Exception) {
+            Log.e("FollowersList", "Error getting followers list: ${e.message}")
             emptyList()
+        }
+    }
+
+
+    /**
+     * Helper function to fetch username by user ID.
+     */
+    private suspend fun getUsernameById(userId: String): String? {
+        return try {
+            val userSnapshot = usersReference.child(userId).get().await()
+            userSnapshot.child("username").getValue(String::class.java)
+        } catch (e: Exception) {
+            Log.e("UsernameById", "Error getting username by ID: ${e.message}")
+            null
         }
     }
 
@@ -175,4 +213,112 @@ object UserRepository {
         }
     }
 
+    suspend fun addSchedule(userId: String, schedule: Schedule) {
+        usersReference.child(userId).child("schedules").child(schedule.id).setValue(schedule)
+
+    }
+
+    suspend fun updateSchedule(
+        userId: String,
+        scheduleId: String,
+        schedule: Schedule
+    ): Response<Unit> {
+        val userScheduleReference =
+            usersReference.child(userId).child("schedules").child(scheduleId)
+        return try {
+            userScheduleReference.setValue(schedule).await()
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    suspend fun getSchedules(userId: String): List<Schedule> {
+        val snapshot = usersReference.child(userId).child("schedules").get().await()
+        val schedules = mutableListOf<Schedule>()
+        snapshot.children.forEach { data ->
+            val session = data.getValue(Schedule::class.java)
+            session?.let { schedules.add(it) }
+        }
+        return schedules
+    }
+
+    /**
+     * Returns the details of a specific schedule, including average difficulty.
+     */
+    suspend fun getScheduleDetails(userId: String, scheduleId: String): Schedule? {
+        val snapshot =
+            usersReference.child(userId).child("schedules").child(scheduleId).get().await()
+        return snapshot.getValue(Schedule::class.java)
+    }
+
+
+    suspend fun deleteSchedule(userId: String, scheduleId: String): Response<Unit> {
+        val userScheduleReference =
+            usersReference.child(userId).child("schedules").child(scheduleId)
+        return try {
+            userScheduleReference.removeValue().await()
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    suspend fun deleteSchedulesContainingDay(userId: String, day: String): Response<Unit> {
+        return try {
+            val userSchedulesReference = usersReference.child(userId).child("schedules")
+            val userSchedulesSnapshot = userSchedulesReference.get().await()
+            val schedulesToDelete = mutableListOf<String>()
+
+            userSchedulesSnapshot.children.forEach { scheduleSnapshot ->
+                val schedule = scheduleSnapshot.getValue(Schedule::class.java)
+                if (schedule != null && schedule.dayOfWeek.contains(day)) {
+                    schedulesToDelete.add(schedule.id)
+                }
+            }
+
+            schedulesToDelete.forEach { scheduleId ->
+                userSchedulesReference.child(scheduleId).removeValue().await()
+            }
+
+            Response.Success(Unit)
+        } catch (e: Exception) {
+            Response.Failure(e)
+        }
+    }
+
+    /**
+     * Deletes a deck and its associated flashcards from the database.
+     */
+    suspend fun deleteUser(userId: String) {
+        usersReference.child(userId).removeValue().await()
+        FlashcardRepository.deleteDecksByUserId(userId)
+    }
+
+    // Function to follow a user
+    suspend fun followUser(userId: String, usernameToFollow: String) {
+        val userIdToFollow = getUserIdByUsername(usernameToFollow)
+        val user = getUserById(userId)
+        // Add the user to the following list
+        usersReference.child(userId).child("following").child(usernameToFollow).setValue(true)
+        // Add the current user to the followers list of the followed user
+        usersReference.child(userIdToFollow).child("followers").child(user!!.username).setValue(true)
+    }
+
+    // Function to unfollow a user
+    suspend fun unfollowUser(userId: String, usernameToUnfollow: String) {
+        val userIdToUnfollow = getUserIdByUsername(usernameToUnfollow)
+        val user = getUserById(userId)
+        // Remove the user from the following list
+        usersReference.child(userId).child("following").child(usernameToUnfollow).removeValue()
+        // Remove the current user from the followers list of the unfollowed user
+        usersReference.child(userIdToUnfollow).child("followers").child(user!!.username).removeValue()
+    }
+
+    // Function to get the user ID by username
+    private suspend fun getUserIdByUsername(username: String): String {
+        val snapshot = usersReference.orderByChild("username").equalTo(username).get().await()
+        return snapshot.children.firstOrNull()?.key
+            ?: throw Exception("User with username $username not found")
+    }
 }

@@ -1,10 +1,14 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel
 
 
-import android.graphics.Bitmap
+import android.content.ContentValues.TAG
+import android.net.Uri
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
@@ -13,6 +17,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.repository.UserRepository
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Schedule
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.Response
 import java.util.Calendar
@@ -22,7 +28,7 @@ import java.util.Date
  * This class represents the ViewModel responsible for managing user-related data
  * and actions within the application.
  */
-class UserViewModel : ViewModel() {
+class UserViewModel(): ViewModel() {
     // Definition of the user repository call, and the result of the add user to database.
     private val userRepository = UserRepository
     private var addUserToDBResponse by mutableStateOf<Response<User>>(Response.Success(null))
@@ -49,7 +55,6 @@ class UserViewModel : ViewModel() {
      */
     private val _user = MutableStateFlow<User?>(null)
     val user: StateFlow<User?> = _user
-
 
     /**
      * Fetches the user's data based on the current user's ID.
@@ -82,7 +87,8 @@ class UserViewModel : ViewModel() {
         firstName: String,
         lastName: String,
         institution: String,
-        profilePictureUrl: String?
+        profilePictureUrl: String?,
+        imagePath: Uri?
     ) = viewModelScope.launch(Dispatchers.IO) {
         val retrievedUser = user.value ?: return@launch
         val updatedUser = retrievedUser.copy(
@@ -91,44 +97,8 @@ class UserViewModel : ViewModel() {
             institution = institution,
             profilePictureUrl = profilePictureUrl
         )
-        userRepository.updateUser(updatedUser)
-    }
-
-    // Holds the current user's list of followed users (represented by IDs).
-    private val _followingList = mutableStateOf<List<String>>(emptyList())
-    val followingList = _followingList
-
-    /**
-     * Retrieves the current user's 'following' list.
-     */
-    fun getFollowingList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val following = userRepository.getFollowingList()
-                _followingList.value = following
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
-
-    /**
-     *
-     */
-    private val _followerList = mutableStateOf<List<String>>(emptyList())
-    val followerList = _followerList
-
-    /**
-     * Retrieves the current user's 'follower' list.
-     */
-    fun getFollowerList() {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val follower = userRepository.getFollowers()
-                _followerList.value = follower
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+        if (imagePath != null) {
+            userRepository.updateUser(updatedUser, imagePath)
         }
     }
 
@@ -190,22 +160,6 @@ class UserViewModel : ViewModel() {
         return todayStart
     }
 
-    /**
-     * Holds the Profile Image URI
-     */
-    private val _profileImage = MutableStateFlow<Bitmap?>(null)
-    val profileImage: StateFlow<Bitmap?> = _profileImage
-
-    /**
-     * Downloads the current profile image using the users Profile Image URI
-     */
-    fun downloadUserProfileImage(user: User) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val bitmap = userRepository.downloadUserProfileImage(user)
-            _profileImage.value = bitmap
-        }
-    }
-
     // Holds the list of all users
     private val _users = MutableStateFlow<List<User>>(emptyList())
     val users: StateFlow<List<User>> = _users
@@ -217,4 +171,159 @@ class UserViewModel : ViewModel() {
             }
         }
     }
+
+    fun addSchedule(
+        dayOfWeek: String,
+        startTime: Long,
+        endTime: Long,
+        eventType: String,
+        selectedDecks: List<Deck>,
+        description: String,
+        repeating: Boolean
+    ) {
+        val schedule = Schedule(
+            dayOfWeek = dayOfWeek,
+            startTime = startTime,
+            endTime = endTime,
+            focus = eventType,
+            decks = selectedDecks,
+            description = description,
+            repeat = repeating
+        )
+        val userId = currentUser?.uid ?: return
+        viewModelScope.launch {
+            userRepository.addSchedule(userId, schedule)
+        }
+    }
+
+    fun updateSchedule(scheduleId: String, schedule: Schedule) {
+        val userId = currentUser?.uid ?: return
+        viewModelScope.launch {
+            val response = userRepository.updateSchedule(userId, scheduleId, schedule)
+        }
+    }
+
+    // Holds the list of all schedules for the current user
+    private val _schedules = MutableLiveData<List<Schedule>>(emptyList())
+    val schedules: LiveData<List<Schedule>> = _schedules
+
+    fun getSchedules() {
+        currentUser?.let { user ->
+            viewModelScope.launch {
+                val retrievedSessions = UserRepository.getSchedules(user.uid)
+                _schedules.value = retrievedSessions
+            }
+        }
+    }
+
+
+    // Holds the list of all schedules for the current user
+    private val _schedule = MutableLiveData<Schedule>()
+    val schedule: LiveData<Schedule> = _schedule
+
+    // Function to get schedule details by ID
+    fun getScheduleDetails(scheduleId: String): LiveData<Schedule?> {
+        viewModelScope.launch {
+            try {
+                val schedule = UserRepository.getScheduleDetails(currentUser!!.uid, scheduleId)
+                _schedule.value = schedule!!
+            } catch (e: Exception) {
+                // Handle error gracefully, for example:
+                Log.e(TAG, "Error fetching schedule details: ${e.message}")
+            }
+        }
+        return _schedule
+    }
+
+
+    fun deleteSchedule(scheduleId: String) {
+        viewModelScope.launch {
+            try {
+                userRepository.deleteSchedule(currentUser!!.uid, scheduleId)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun deleteSchedulesContainingDay(day: String) {
+        viewModelScope.launch(Dispatchers.IO) {
+            userRepository.deleteSchedulesContainingDay(userId = currentUser!!.uid, day = day)
+        }
+    }
+
+    fun deleteProfile() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val userId = currentUser?.uid
+            signOut()
+            UserRepository.deleteUser(userId!!)
+        }
+    }
+
+    // Holds the user's followers list
+    private val _followers = MutableStateFlow<List<String>>(emptyList())
+    val followers: StateFlow<List<String>> = _followers
+
+
+    // Holds the list of all schedules for the current user
+    private val _following = MutableStateFlow<List<String>>(emptyList())
+    val following: StateFlow<List<String>> = _following
+
+
+    // Function to handle following a user
+    fun followUser(userIdToFollow: String) {
+        val currentUserId = currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                userRepository.followUser(currentUserId, userIdToFollow)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // Function to handle unfollowing a user
+    fun unfollowUser(userIdToUnfollow: String) {
+        val currentUserId = currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                userRepository.unfollowUser(currentUserId, userIdToUnfollow)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // Function to get the user's followers list
+    private fun getFollowersList() {
+        viewModelScope.launch {
+            try {
+                val followersIds = userRepository.getFollowers()
+                val followersList = mutableListOf<String>()
+                for (followerId in followersIds) {
+                    userRepository.getUserById(followerId)?.let { followersList.add(it.toString()) }
+                }
+                _followers.value = followersList
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    // Function to get the user's following list
+    fun getFollowingList() {
+        viewModelScope.launch {
+            try {
+                val followingIds = userRepository.getFollowingList()
+                val followingList = mutableListOf<String>()
+                for (followingId in followingIds) {
+                    userRepository.getUserById(followingId)?.let { followingList.add(it.toString()) }
+                }
+                _following.value = followingList
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
