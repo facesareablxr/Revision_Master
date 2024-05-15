@@ -91,6 +91,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx:21.0.0")
     implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("com.google.firebase:firebase-storage:21.0.0")
 
 
     //Compose Platform and Core Dependencies

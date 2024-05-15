@@ -59,7 +59,7 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showToast
@@ -69,12 +69,6 @@ import java.util.Locale
 
 /**
  * Composable function for the Add Schedule screen.
- *
- * This screen allows users to add a new study schedule. It provides input fields for the user to
- * specify the day of the week, start and end time, event type, description, and whether the session
- * repeats. Additionally, users can select one or more decks associated with the schedule. The
- * screen validates the input data and saves the schedule if all fields are filled correctly and
- * there are no overlapping sessions.
  *
  * @param navController The NavController for navigating within the app.
  * @param userViewModel The ViewModel for accessing user data.
@@ -87,14 +81,14 @@ fun AddScheduleScreen(
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
     // Local state variables for schedule details
-    var dayOfWeek by remember { mutableStateOf("Day") } // Selected day of the week
-    var startTime by remember { mutableStateOf(0L) } // Selected start time
-    var endTime by remember { mutableStateOf(0L) } // Selected end time
-    var sessionType by remember { mutableStateOf("Session Type") } // Selected event type
-    var selectedDecks by remember { mutableStateOf<List<Deck>>(emptyList()) } // Selected decks
-    var description by remember { mutableStateOf("") } // Description of the schedule
-    var isRepeatingSession by remember { mutableStateOf(false) } // Flag for repeating session
-    val showDialog = remember { mutableStateOf(false) } // Flag to show deck selection dialog
+    var dayOfWeek by remember { mutableStateOf("Day") }
+    var startTime by remember { mutableStateOf(0L) }
+    var endTime by remember { mutableStateOf(0L) }
+    var sessionType by remember { mutableStateOf("Session Type") }
+    var selectedDecks by remember { mutableStateOf<List<Deck>>(emptyList()) }
+    var description by remember { mutableStateOf("") }
+    var isRepeatingSession by remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) } 
 
     // Collect user's study schedules
     val schedulesState by userViewModel.schedules.observeAsState(initial = emptyList())

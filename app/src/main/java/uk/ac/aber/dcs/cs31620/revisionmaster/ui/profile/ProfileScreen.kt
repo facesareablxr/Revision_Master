@@ -1,6 +1,7 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
@@ -43,55 +42,64 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ProfilePicture
 
-
 /**
- * This is the profile screen where the user will be able to see all of their information, from here
- * they will be able to either edit their details or go back to the home screen.
- * @author Lauren Davis
+ * ProfileScreen composable function.
+ *
+ * @param navController The NavController to handle navigation within the app.
+ * @param userViewModel The UserViewModel to manage user data.
  */
-
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfileScreen(
     navController: NavController,
     userViewModel: UserViewModel = viewModel()
 ) {
+    // Collect user data from the view model
     val user by userViewModel.user.collectAsState(initial = null)
 
+    // Fetch user data when the composable is launched
     LaunchedEffect(Unit) {
         userViewModel.getUserData()
     }
 
+    // Scaffold for the profile screen UI
     Scaffold(
         topBar = {
+            // Top app bar with navigation icon and actions
             TopAppBar(
                 title = {},
                 navigationIcon = {
+                    // Navigation icon to navigate back
                     IconButton(onClick = {
                         navController.popBackStack()
                         navController.navigateUp()
                     }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.goBack))
                     }
                 },
                 actions = {
+                    // Action button to navigate to edit profile screen
                     IconButton(onClick = { navController.navigate(Screen.EditProfile.route) }) {
-                        Icon(Icons.Filled.Edit, contentDescription = "Edit Profile")
+                        Icon(Icons.Filled.Edit, contentDescription = stringResource(R.string.editProfile))
                     }
                 }
             )
         }
     ) { innerPadding ->
+        // Display user profile content
         if (user == null) {
+            // Show loading indicator if user data is not yet available
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
@@ -101,10 +109,10 @@ fun ProfileScreen(
                 CircularProgressIndicator()
             }
         } else {
+            // Display profile content when user data is available
             Column(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
             ) {
                 ProfileContent(user!!, userViewModel, navController)
             }
@@ -113,15 +121,24 @@ fun ProfileScreen(
 }
 
 /**
- * This composable displays the user's profile information.
+ * ProfileContent composable function.
  *
  * @param user The user object containing user data.
  * @param userViewModel The user view model instance.
+ * @param navController The NavController to handle navigation within the app.
  */
 @Composable
 fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavController) {
+    // State for showing delete confirmation dialog
     var showDeleteConfirmation by remember { mutableStateOf(false) }
 
+    // Collect followers and following lists from the view model
+    val userFollows by userViewModel.userFollows.collectAsState()
+    LaunchedEffect(userFollows) {
+        userViewModel.getUserFollows()
+    }
+
+    // Column to display user profile information
     Column(modifier = Modifier.padding(8.dp)) {
         Row(
             modifier = Modifier
@@ -147,29 +164,38 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        // Display the email
+        // Display email
         EmailDisplay(user)
         Spacer(modifier = Modifier.height(8.dp))
-        // Display the institution of the user
-        InstitutionDisplay(user)
+        // Display institution
+        if (user.institution != null) {
+            InstitutionDisplay(user)
+        }
         Spacer(modifier = Modifier.height(8.dp))
-        // Display the following and follower count for the user
-        FollowingFollowersCount(user)
+        // Display following and followers count
+        val followers = userFollows?.followers ?: emptyList()
+        val following = userFollows?.following ?: emptyList()
+        FollowingFollowersCount(
+            followers = followers,
+            following = following,
+            onFollowingClick = { navController.navigate(Screen.Following.route) },
+            onFollowersClick = { navController.navigate(Screen.Followers.route) }
+        )
         Spacer(modifier = Modifier.height(8.dp))
-
-        // Column for the display of other options such as Settings and Login, more may be added if needed
+        // Column for other options like Logout and Delete Profile
         Column(
             modifier = Modifier
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.Start
         ) {
             Divider()
+            // Logout option
             ListItem(
-                text = "Logout",
+                text = stringResource(R.string.logout),
                 icon = {
                     Icon(
                         Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "Logout"
+                        contentDescription = stringResource(R.string.logout)
                     )
                 },
                 onClick = {
@@ -178,18 +204,20 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
                 }
             )
             Divider()
+            // Delete profile option
             ListItem(
-                text = "Delete Profile",
-                icon = { Icon(Icons.Filled.Delete, contentDescription = "Delete Profile") },
+                text = stringResource(R.string.deleteProfile),
+                icon = { Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.delete)) },
                 onClick = { showDeleteConfirmation = true }
             )
             Divider()
         }
+        // Delete confirmation dialog
         if (showDeleteConfirmation) {
             AlertDialog(
                 onDismissRequest = { showDeleteConfirmation = false },
-                title = { Text("Delete Profile") },
-                text = { Text("Are you sure you want to delete your profile? This action cannot be undone.") },
+                title = { stringResource(R.string.deleteTitle) },
+                text = { stringResource(R.string.deleteConfirm) },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -201,14 +229,14 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
                             }
                         }
                     ) {
-                        Text("Confirm")
+                        Text(stringResource(R.string.confirm))
                     }
                 },
                 dismissButton = {
                     Button(
                         onClick = { showDeleteConfirmation = false }
                     ) {
-                        Text("Cancel")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
@@ -217,7 +245,7 @@ fun ProfileContent(user: User, userViewModel: UserViewModel, navController: NavC
 }
 
 /**
- * Creates a clickable list item with text and an icon.
+ * ListItem composable function.
  *
  * @param text The text to display in the list item.
  * @param icon The icon to display on the right side of the list item.
@@ -244,31 +272,49 @@ private fun ListItem(text: String, icon: @Composable () -> Unit, onClick: () -> 
 }
 
 /**
- * Displays the user's following and followers count.
+ * FollowingFollowersCount composable function.
  *
- * @param user The user object containing the following and followers count.
+ * @param followers The list of followers.
+ * @param following The list of users the user is following.
+ * @param onFollowingClick The callback function when the following box is clicked.
+ * @param onFollowersClick The callback function when the followers box is clicked.
  */
 @Composable
-private fun FollowingFollowersCount(user: User) {
+private fun FollowingFollowersCount(
+    followers: List<String>,
+    following: List<String>,
+    onFollowingClick: () -> Unit,
+    onFollowersClick: () -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        CountBox(text = "Following", count = 0)
-        CountBox(text = "Followers", count = 0)
+        ClickableCountBox(
+            text = stringResource(R.string.following),
+            count = following.size,
+            onClick = onFollowingClick
+        )
+        ClickableCountBox(
+            text = stringResource(R.string.followers),
+            count = followers.size,
+            onClick = onFollowersClick
+        )
     }
 }
 
 /**
- * Creates a box with rounded corners that displays a count.
+ * ClickableCountBox composable function.
  *
- * @param text The text to display above the count.
- * @param count The numerical count to display.
+ * @param text The text to display.
+ * @param count The count to display.
+ * @param onClick The callback function when the box is clicked.
  */
 @Composable
-private fun CountBox(text: String, count: Int) {
+private fun ClickableCountBox(text: String, count: Int, onClick: () -> Unit) {
     Surface(
         modifier = Modifier
+            .clickable(onClick = onClick)
             .padding(8.dp)
             .size(width = 100.dp, height = 50.dp),
         shape = RoundedCornerShape(8.dp)
@@ -289,31 +335,32 @@ private fun CountBox(text: String, count: Int) {
 }
 
 /**
- * Displays the user's institution.
+ * InstitutionDisplay composable function.
  *
  * @param user The user object containing the institution information.
  */
 @Composable
-private fun InstitutionDisplay(user: User) {
+fun InstitutionDisplay(user: User) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Trailing icon
+        // Icon for institution
         Icon(Icons.Filled.School, contentDescription = "School")
         Spacer(modifier = Modifier.width(8.dp))
+        // Display institution name
         Text(
-            // Will automatically set to N/A if there isn't an institution set up
-            text = user.institution ?: "",
+            // Set to N/A if there isn't an institution set up
+            text = user.institution!!,
             style = MaterialTheme.typography.bodyLarge
         )
     }
 }
 
 /**
- * Displays the user's email address.
+ * EmailDisplay composable function.
  *
  * @param user The user object containing the email address.
  */
@@ -325,9 +372,10 @@ private fun EmailDisplay(user: User) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Trailing icon
+        // Icon for email
         Icon(Icons.Filled.Email, contentDescription = "Email")
         Spacer(modifier = Modifier.width(8.dp))
+        // Display email address
         Text(text = user.email, style = MaterialTheme.typography.bodyLarge)
     }
 }

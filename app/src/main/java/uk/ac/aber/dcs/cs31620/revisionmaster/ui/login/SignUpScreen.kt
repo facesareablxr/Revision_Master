@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -39,7 +41,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
@@ -56,7 +58,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showToast
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SignUpTopLevel(
-    navController: NavHostController,
+    navController: NavController,
     userViewModel: UserViewModel = viewModel()
 ) {
     // Activity context
@@ -65,6 +67,8 @@ fun SignUpTopLevel(
     var user by remember { mutableStateOf(User()) }
     // State for managing confirmed password
     var confirmPassword by remember { mutableStateOf("") }
+    // State for username availability
+    var isUsernameAvailable by remember { mutableStateOf(false) }
 
     // Effect to check if the user is already signed in
     LaunchedEffect(userViewModel) {
@@ -91,23 +95,58 @@ fun SignUpTopLevel(
             updateUser = { user = it },
             updateConfirmPassword = { confirmPassword = it },
             signupAction = {
-                // Sign up with email and password
-                val auth = FirebaseAuth.getInstance()
-                auth.createUserWithEmailAndPassword(user.email, user.password!!)
-                    .addOnCompleteListener { task ->
-                        if (task.isSuccessful) {
-                            // Add user to database and navigate to home screen on successful sign-up
-                            userViewModel.addUserToDB(user)
-                            goToHome(navController)
-                        } else {
-                            // Show toast on sign-up failure
-                            showToast(context, "Signup failed!")
-                        }
-                    }
+                // Checks if username is available before allowing for sign up
+                userViewModel.checkUsernameAvailability(user.username) { available ->
+                    isUsernameAvailable = available
+                }
+                if (isUsernameAvailable) {
+                    // Sign up with email, password, and username
+                    val auth = FirebaseAuth.getInstance()
+                    auth.createUserWithEmailAndPassword(user.email, user.password!!)
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                // Add user to database and navigate to home screen on successful sign-up
+                                userViewModel.addUserToDB(user)
+                                goToHome(navController)
+                            } else {
+                                // Show toast on sign-up failure
+                                val errorMessage = task.exception?.message
+                                errorMessage?.let {
+                                    when {
+                                        it.contains("email address is already in use") -> {
+                                            showToast(context, "Email address is already in use.")
+                                        }
 
+                                        it.contains("The email address is badly formatted") -> {
+                                            showToast(context, "Invalid email address format.")
+                                        }
+
+                                        it.contains("Password should be at least 6 characters") -> {
+                                            showToast(
+                                                context,
+                                                "Password should be at least 6 characters."
+                                            )
+                                        }
+                                        it.contains("We have blocked all requests from this device") -> {
+                                            showToast(
+                                                context,
+                                                "Too many unsuccessful login attempts. Please try again later."
+                                            )
+                                        }
+                                        else -> {
+                                            showToast(context, "Signup failed!")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                } else {
+                    showToast(context, "Username is already taken.")
+                }
             }
         )
     }
+
 }
 
 /**
@@ -127,13 +166,13 @@ fun SignupScreen(
     updateConfirmPassword: (String) -> Unit,
     signupAction: () -> Unit
 ) {
-    val weakPasswordMsg = stringResource(R.string.weakPassword)
 
     // Column layout for content
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -171,7 +210,7 @@ fun SignupScreen(
         // Weak password message
         if (!isStrongPassword(user.password ?: "")) {
             Text(
-                text = weakPasswordMsg,
+                text = stringResource(R.string.weakPassword),
                 color = Color.Red,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
@@ -203,7 +242,11 @@ private fun FirstNameField(
             }
         },
         singleLine = true,
-        modifier = Modifier.width(180.dp)
+        modifier = Modifier.width(180.dp),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            autoCorrect = true
+        )
     )
 }
 
@@ -228,8 +271,13 @@ private fun LastNameField(
             }
         },
         singleLine = true,
-        modifier = Modifier.width(180.dp)
+        modifier = Modifier.width(180.dp),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            autoCorrect = true
+        )
     )
+
 }
 
 /**
@@ -268,7 +316,11 @@ private fun UsernameField(
             }
         },
         singleLine = true,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            autoCorrect = true
+        )
     )
 }
 
@@ -411,13 +463,11 @@ private fun SignupButton(
  */
 fun isStrongPassword(password: String): Boolean {
     val minLength = 8
-
     // Check for all required characters:
     val hasUpperCase = password.any { it.isUpperCase() }
     val hasLowerCase = password.any { it.isLowerCase() }
     val hasNumber = password.any { it.isDigit() }
-    val hasSpecialChar = password.any { !it.isLetter() && !it.isDigit() } // Exclude digits
-
+    val hasSpecialChar = password.any { !it.isLetter() && !it.isDigit() }
     return password.length >= minLength &&
             hasUpperCase &&
             hasLowerCase &&

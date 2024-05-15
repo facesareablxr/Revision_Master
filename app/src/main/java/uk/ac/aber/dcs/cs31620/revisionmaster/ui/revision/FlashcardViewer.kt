@@ -40,24 +40,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Flashcard
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.FlashcardImage
 import java.util.Locale
 
+/**
+ * Composable function for displaying the top-level of the flashcard viewer.
+ * @param navController Navigation controller for navigating between composables.
+ * @param deckId Identifier for the deck of flashcards being viewed.
+ * @param flashcardViewModel ViewModel for managing flashcard data.
+ */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun FlashcardViewerTopLevel(
     navController: NavController,
     deckId: String,
-    flashcardViewModel: FlashcardViewModel = viewModel())
-{
+    flashcardViewModel: FlashcardViewModel = viewModel()
+) {
     // Collects the flashcards state
     val flashcardsState by flashcardViewModel.flashcards.observeAsState(initial = null)
 
@@ -68,19 +76,25 @@ fun FlashcardViewerTopLevel(
 
     Scaffold(
         topBar = { SmallTopAppBar(navController = navController, title = "Flashcard Viewer") },
-    ){
+    ) {
+        // Display the flashcards when they are loaded
         flashcardsState?.let { FlashcardViewer(it) }
-
     }
 }
 
+/**
+ * Composable function for displaying the flashcards.
+ * @param flashcards List of flashcards to display.
+ */
 @Composable
 fun FlashcardViewer(
     flashcards: List<Flashcard>
 ) {
+    // State for tracking current card index and whether front or back of card is showing
     var currentCardIndex by remember { mutableIntStateOf(0) }
     var isFrontShowing by remember { mutableStateOf(true) }
 
+    // State for tracking elapsed time for each flashcard
     val elapsedTimeState = remember { mutableStateOf(0L) }
     val timerScope = rememberCoroutineScope()
 
@@ -94,6 +108,7 @@ fun FlashcardViewer(
         }
     }
 
+    // Get the current flashcard based on index
     val currentFlashcard = flashcards.getOrNull(currentCardIndex)
     val context = LocalContext.current
     val textToSpeech = remember { TextToSpeech(context) { } }
@@ -103,6 +118,7 @@ fun FlashcardViewer(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        // Display flashcard content
         Row {
             Box(
                 modifier = Modifier
@@ -122,7 +138,7 @@ fun FlashcardViewer(
                                 textToSpeech.language = Locale.UK
                                 textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
                             },
-                            imageUri = card.imageUri
+                            imageUri = card.imageUri!!
                         )
                     } else {
                         Flashcard(
@@ -140,6 +156,7 @@ fun FlashcardViewer(
             }
         }
 
+        // Navigation buttons for moving between flashcards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -165,9 +182,24 @@ fun FlashcardViewer(
     }
 }
 
-
+/**
+ * Composable function for displaying a flashcard with an image.
+ * @param front Text displayed on the front side of the flashcard.
+ * @param back Text displayed on the back side of the flashcard.
+ * @param isFrontShowing Flag indicating whether the front or back side of the flashcard is showing.
+ * @param onFlip Callback function to flip the flashcard.
+ * @param onTextToSpeech Callback function for text-to-speech functionality.
+ * @param imageUri URI of the image to display on the flashcard.
+ */
 @Composable
-fun FlashcardWithImage(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit, imageUri: String) {
+fun FlashcardWithImage(
+    front: String,
+    back: String,
+    isFrontShowing: Boolean,
+    onFlip: () -> Unit,
+    onTextToSpeech: (String) -> Unit,
+    imageUri: String
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.8f)
@@ -180,14 +212,19 @@ fun FlashcardWithImage(front: String, back: String, isFrontShowing: Boolean, onF
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Text-to-speech button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = { onTextToSpeech(if (isFrontShowing) front else back) }) {
-                    Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = "Text to Speech")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
+                        contentDescription = stringResource(id = R.string.TTS)
+                    )
                 }
             }
+            // Display image and text content of the flashcard
             FlashcardImage(imagePath = imageUri)
             // Center the text within the card
             AnimatedContent(
@@ -202,11 +239,26 @@ fun FlashcardWithImage(front: String, back: String, isFrontShowing: Boolean, onF
     }
 }
 
+/**
+ * Composable function for displaying a text-based flashcard.
+ * @param front Text displayed on the front side of the flashcard.
+ * @param back Text displayed on the back side of the flashcard.
+ * @param isFrontShowing Flag indicating whether the front or back side of the flashcard is showing.
+ * @param onFlip Callback function to flip the flashcard.
+ * @param onTextToSpeech Callback function for text-to-speech functionality.
+ */
 @Composable
-fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -> Unit, onTextToSpeech: (String) -> Unit) {
+fun Flashcard(
+    front: String,
+    back: String,
+    isFrontShowing: Boolean,
+    onFlip: () -> Unit,
+    onTextToSpeech: (String) -> Unit
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth(0.8f)
+            .wrapContentHeight()
             .height(500.dp)
             .clickable { onFlip() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -216,15 +268,19 @@ fun Flashcard(front: String, back: String, isFrontShowing: Boolean, onFlip: () -
             modifier = Modifier.padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Text-to-speech button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = { onTextToSpeech(if (isFrontShowing) front else back) }) {
-                    Icon(Icons.AutoMirrored.Outlined.VolumeUp, contentDescription = "Text to Speech")
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.VolumeUp,
+                        contentDescription = stringResource(id = R.string.TTS)
+                    )
                 }
             }
-            // Center the text within the card
+            // Display text content of the flashcard
             AnimatedContent(
                 targetState = isFrontShowing,
                 transitionSpec = { fadeIn() togetherWith fadeOut() },

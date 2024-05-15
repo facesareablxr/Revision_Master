@@ -43,7 +43,7 @@ fun EditDeckScreen(
     // Mutable state variables for deck details
     var deckName by remember { mutableStateOf("") }
     var selectedSubject by remember { mutableStateOf("Subject")}
-    var isPublic by remember { mutableStateOf(false) }
+    var public by remember { mutableStateOf(false) }
     var description by remember { mutableStateOf("") }
 
     // Observe deck details from ViewModel
@@ -59,7 +59,7 @@ fun EditDeckScreen(
         deckState?.let { deck ->
             deckName = deck.name
             selectedSubject = deck.subject
-            isPublic = deck.isPublic
+            public = deck.public
             description = deck.description
         }
     }
@@ -97,8 +97,8 @@ fun EditDeckScreen(
             Spacer(modifier = Modifier.height(8.dp))
             // Public switch
             PublicSwitch(
-                isPublic = isPublic,
-                onPublicChange = { newValue -> isPublic = newValue }
+                public = public,
+                onPublicChange = { newValue -> public = newValue }
             )
             // Button to save changes
             Button(
@@ -108,7 +108,7 @@ fun EditDeckScreen(
                         deckId,
                         deckName,
                         selectedSubject,
-                        isPublic,
+                        public,
                         description
                     )
                     navController.navigateUp()

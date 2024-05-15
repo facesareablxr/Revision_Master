@@ -35,11 +35,19 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Schedule
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.showToast
 
+/**
+ * Composable function for editing a schedule.
+ *
+ * @param navController NavController for navigation.
+ * @param scheduleId The ID of the schedule to edit.
+ * @param userViewModel ViewModel for user-related operations.
+ * @param flashcardViewModel ViewModel for flashcard operations.
+ */
 @Composable
 fun EditScheduleScreen(
     navController: NavController,
@@ -47,6 +55,7 @@ fun EditScheduleScreen(
     userViewModel: UserViewModel = viewModel(),
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    // Mutable state variables to track schedule details
     var dayOfWeek by remember { mutableStateOf("Day") }
     var startTime by remember { mutableStateOf(0L) }
     var endTime by remember { mutableStateOf(0L) }
@@ -54,8 +63,10 @@ fun EditScheduleScreen(
     var selectedDecks by remember { mutableStateOf<List<Deck?>>(emptyList()) }
     var description by remember { mutableStateOf("") }
     var isRepeatingSession by remember { mutableStateOf(false) }
+    // State to control dialog visibility
     val showDialog = remember { mutableStateOf(false) }
 
+    // Collect schedule details and user's decks
     val schedulesState by userViewModel.schedule.observeAsState()
     val decksState by flashcardViewModel.decks.collectAsState()
     val context = LocalContext.current as Activity
@@ -65,6 +76,7 @@ fun EditScheduleScreen(
         flashcardViewModel.getUserDecks()
     }
 
+    // Update state when schedule details or decks change
     LaunchedEffect(schedulesState, decksState) {
         schedulesState?.let { schedule ->
             dayOfWeek = schedule.dayOfWeek
@@ -100,34 +112,29 @@ fun EditScheduleScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Input fields for day of week, description, event type, start time, and end time
             schedulesState?.let { it ->
                 DayOfWeekInput(
                     dayOfWeek = it.dayOfWeek,
                     updateDayOfWeek = { dayOfWeek = it }
                 )
             }
-
             DescriptionInput(
                 description = description,
                 onDescriptionChanged = { description = it }
             )
-
             schedulesState?.let { it ->
                 EventTypeInput(
                     sessionType = it.focus,
                     onSessionTypeSelected = { eventType = it },
                 )
             }
-
-            // Start time picker
             schedulesState?.let { it ->
                 StartTimePicker(
                     startTime = it.startTime!!,
                     onSelectedTime = { startTime = it }
                 )
             }
-
-            // End time picker
             schedulesState?.let { it ->
                 EndTimePicker(
                     endTime = it.endTime!!,
@@ -135,6 +142,7 @@ fun EditScheduleScreen(
                 )
             }
 
+            // Button to select decks
             Column(
                 modifier = Modifier
                     .clickable { showDialog.value = true }
@@ -158,6 +166,7 @@ fun EditScheduleScreen(
                 }
             }
 
+            // Display selected decks
             if (selectedDecks.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
@@ -173,6 +182,7 @@ fun EditScheduleScreen(
                 }
             }
 
+            // Dialog to select decks
             if (showDialog.value) {
                 DecksCheckboxDialog(
                     decks = decksState.sortedBy { it.name },
@@ -184,11 +194,13 @@ fun EditScheduleScreen(
                 ) { showDialog.value = false }
             }
 
+            // Toggle for repeating session
             RepeatingSessionToggle(
                 isRepeating = isRepeatingSession,
                 onToggle = { isRepeatingSession = it },
             )
 
+            // Button to save schedule
             Button(
                 onClick = {
                     if (startTime > endTime) {

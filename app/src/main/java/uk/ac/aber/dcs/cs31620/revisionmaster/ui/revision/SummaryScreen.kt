@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,7 +33,16 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
-
+/**
+ * Display summary screen with test results.
+ *
+ * @param correctMatches Number of correct matches.
+ * @param incorrectMatches Number of incorrect matches.
+ * @param elapsedSeconds Elapsed time in seconds.
+ * @param deckId Unique identifier of the deck.
+ * @param navController NavController to handle navigation.
+ * @param flashcardViewModel ViewModel for flashcard operations.
+ */
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun SummaryScreen(
@@ -43,11 +53,12 @@ fun SummaryScreen(
     navController: NavController,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    // Calculate accuracy percentage
     val totalMatches = correctMatches + incorrectMatches
     var accuracy by remember { mutableIntStateOf(0) }
     accuracy = if (totalMatches > 0) ((correctMatches.toFloat() / totalMatches.toFloat()) * 100).roundToInt() else 0
-    val masteryProgress = "Your accuracy: $accuracy%"
 
+    // Determine image based on accuracy
     val imageResourceId = when {
         accuracy >= 75 -> R.drawable.excellent
         accuracy >= 50 -> R.drawable.awesome
@@ -55,11 +66,14 @@ fun SummaryScreen(
         else -> R.drawable.goodjob
     }
 
+    // Get current date
     val currentDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
 
+    // Display the summary screen
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Summary") })
+            // Display top app bar
+            TopAppBar(title = { stringResource(R.string.summary) })
         }
     ) { innerPadding ->
         Column(
@@ -70,32 +84,35 @@ fun SummaryScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Test Summary", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            // Display test results title
+            Text(stringResource(id = R.string.testResults), fontSize = 28.sp, fontWeight = FontWeight.Bold)
 
+            // Display image based on accuracy
             GlideImage(
                 model = imageResourceId,
-                contentDescription = "Accuracy Image"
+                contentDescription = stringResource(R.string.resultsImage)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Correct Matches: $correctMatches")
-
-            Text("Incorrect Matches: $incorrectMatches")
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(masteryProgress)
+            // Display number of correct matches
+            Text(stringResource(R.string.correctMatches) + ": $correctMatches")
+            // Display number of incorrect matches
+            Text((stringResource(R.string.incorrectMatches))+ ": $incorrectMatches")
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text("Date: $currentDate")
+            //Display accuracy
+            Text(stringResource(R.string.accuracy) + " $accuracy%")
 
             Spacer(modifier = Modifier.height(32.dp))
+            // Button to return to deck
             Button(onClick = {
+                // Add result to database
                 flashcardViewModel.addTestResult(deckId, correctMatches, incorrectMatches, elapsedSeconds, currentDate)
                 navController.popBackStack()
+                // Navigate back to deck details
                 navController.navigate(Screen.DeckDetails.route + "/${deckId}")
             }) {
-                Text("Return to Deck")
+                Text(stringResource(R.string.returnDeck))
             }
         }
     }

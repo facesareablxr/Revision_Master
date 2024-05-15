@@ -69,21 +69,21 @@ fun ConfirmationDialog(onKeepGoing: () -> Unit, onQuit: () -> Unit) {
     AlertDialog(
         onDismissRequest = onKeepGoing, // Callback invoked when dialog is dismissed
         title = {
-            Text(text = "Are you sure you want to quit?") // Title of the dialog
+            stringResource(R.string.confirmTitle)
         },
         text = {
-            Text("Your progress will not be saved.") // Message displayed in the dialog
+            stringResource(R.string.confirmMessage)
         },
         confirmButton = {
             // "Keep Going" button
             TextButton(onKeepGoing) {
-                Text("Keep Going")
+                stringResource(R.string.keepGoing)
             }
         },
         dismissButton = {
             // "Quit" button
             TextButton(onQuit) {
-                Text("Quit")
+                stringResource(R.string.quit)
             }
         }
     )

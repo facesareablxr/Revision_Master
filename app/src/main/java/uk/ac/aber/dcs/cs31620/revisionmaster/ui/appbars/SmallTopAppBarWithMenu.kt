@@ -56,22 +56,22 @@ fun SmallTopAppBarWithMenu(
             }
             // Dropdown menu with additional actions
             DropdownMenu(
-                expanded = showMenu, // Showing menu if true
-                onDismissRequest = { showMenu = false } // Dismissing menu when requested
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
             ) {
                 // Menu item for editing deck
                 DropdownMenuItem(onClick = {
-                    showMenu = false // Hide the menu
-                    onEditDeckClick() // Execute the edit action
+                    showMenu = false
+                    onEditDeckClick()
                 }) {
-                    Text("Edit Deck") // Display text for editing deck option
+                   stringResource(R.string.editDeck)
                 }
                 // Menu item for deleting deck
                 DropdownMenuItem(onClick = {
-                    showMenu = false // Hide the menu
-                    onDeleteClick() // Execute the delete action
+                    showMenu = false
+                    onDeleteClick()
                 }) {
-                    Text("Delete Deck") // Display text for deleting deck option
+                    stringResource(R.string.deleteDeck)
                 }
             }
         }

@@ -16,33 +16,40 @@ import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 
 
+/**
+ * Composable function for displaying a profile picture.
+ *
+ * @param imagePath The path to the image to display.
+ */
 @SuppressLint("UnusedBoxWithConstraintsScope")
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun ProfilePicture(
     imagePath: String?,
 ) {
+    // Default placeholder image resource
     val defaultImageRes = R.drawable.profile_image_placeholder
 
+    // Box composable to contain the profile picture
     Box(
         modifier = Modifier
-            .size(120.dp)
-            .clip(CircleShape)
+            .size(120.dp) // Set size of the profile picture
+            .clip(CircleShape) // Clip the image to a circular shape
     ) {
         // Display placeholder image or loaded image
         if (imagePath != null) {
             GlideImage(
-                model = Uri.parse(imagePath),
+                model = Uri.parse(imagePath), // Load image from URI
                 contentDescription = null,
-                modifier = Modifier.wrapContentSize(),
-                contentScale = ContentScale.Crop
+                modifier = Modifier.wrapContentSize(), // Wrap content size of the image
+                contentScale = ContentScale.Crop // Scale image to fit within the bounds while maintaining aspect ratio
             )
         } else {
             GlideImage(
-                model = defaultImageRes,
+                model = defaultImageRes, // Load placeholder image from resources
                 contentDescription = null,
-                modifier = Modifier.wrapContentSize(),
-                contentScale = ContentScale.Crop
+                modifier = Modifier.wrapContentSize(), // Wrap content size of the image
+                contentScale = ContentScale.Crop // Scale image to fit within the bounds while maintaining aspect ratio
             )
         }
     }

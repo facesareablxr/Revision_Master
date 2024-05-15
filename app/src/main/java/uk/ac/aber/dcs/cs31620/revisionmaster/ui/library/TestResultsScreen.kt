@@ -33,7 +33,7 @@ import kotlin.math.roundToInt
 /**
  * This composable function represents the Test Results screen.
  *
- * @param navController: NavHostController to navigate between composables.
+ * @param navController: NavController to navigate between composables.
  * @param flashcardViewModel: ViewModel for managing flashcard data.
  */
 @Composable

@@ -64,7 +64,7 @@ fun SmallTopAppBarWithDelete(
                     showMenu = false // Hide the menu
                     onDeleteClick() // Execute the delete action
                 }) {
-                    Text("Delete Schedule") // Display text for deleting deck option
+                    stringResource(id = R.string.deleteSession)
                 }
             }
         }

@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -38,7 +40,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
@@ -52,7 +54,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
  */
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun LoginTopLevel(navController: NavHostController) {
+fun LoginTopLevel(navController: NavController) {
     // State for managing user information
     val user = remember { mutableStateOf(User()) }
     // Activity context
@@ -148,7 +150,8 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 16.dp)
+        .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center
     ) {
         // Email input field
@@ -178,14 +181,14 @@ fun EmailBox(
     // Email input field
     OutlinedTextField(
         value = user.email,
-        leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) }, // Leading email icon
-        label = { Text(text = stringResource(R.string.login_email)) }, // Email label
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), // Email keyboard
+        leadingIcon = { Icon(Icons.Filled.Email, contentDescription = null) },
+        label = { Text(text = stringResource(R.string.login_email)) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
         onValueChange = { // Update user state on email change
             updateUser(User(email = it, password = user.password))
         },
         singleLine = true,
-        modifier = Modifier.fillMaxWidth() // Full width
+        modifier = Modifier.fillMaxWidth(),
     )
 }
 

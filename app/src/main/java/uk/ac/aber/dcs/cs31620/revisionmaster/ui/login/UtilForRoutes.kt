@@ -1,6 +1,6 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.login
 
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 
 /**
@@ -9,7 +9,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
  * @param navController Reference to the navigation controller.
  */
 fun goToHome(
-    navController: NavHostController
+    navController: NavController
 ) {
     navController.navigate(Screen.Home.route) {
         // This block is executed when the navigation happens

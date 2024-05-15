@@ -1,10 +1,9 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.util
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,29 +20,17 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.R
 fun FlashcardImage(
     imagePath: String?,
 ) {
-    val imageUrl = Uri.parse(imagePath)
     val defaultImageRes = R.drawable.profile_image_placeholder
-
     Box(
         modifier = Modifier
             .size(240.dp)
             .clip(RoundedCornerShape(4.dp))
     ) {
-        // Display placeholder image or loaded image
-        if (imageUrl != null) {
-            GlideImage(
-                model = imageUrl,
-                contentDescription = null,
-                modifier = Modifier.wrapContentSize(),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            GlideImage(
-                model = defaultImageRes,
-                contentDescription = null,
-                modifier = Modifier.wrapContentSize(),
-                contentScale = ContentScale.Crop
-            )
-        }
+        GlideImage(
+            model = imagePath ?: defaultImageRes,
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
     }
 }

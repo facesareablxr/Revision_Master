@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ClickableImageBox
@@ -53,7 +52,7 @@ fun EditFlashcardScreen(
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
     // Collecting flashcard data from ViewModel
-    val flashcard by flashcardViewModel.flashcardLiveData.observeAsState()
+    val flashcard by flashcardViewModel.flashcard.observeAsState()
 
     // Side effect to fetch flashcard data
     LaunchedEffect(Unit) {
@@ -65,7 +64,7 @@ fun EditFlashcardScreen(
     var answer by remember { mutableStateOf("") }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUri by remember { mutableStateOf<String?>(null) }
 
     // Side effect to update UI when flashcard data changes
     LaunchedEffect(flashcard) {
@@ -73,7 +72,7 @@ fun EditFlashcardScreen(
             question = flashcard.question
             answer = flashcard.answer
             selectedDifficulty = flashcard.difficulty
-            imageUri = Uri.parse(flashcard.imageUri ?: "") // Parse image URI
+            imageUri = flashcard.imageUri
         }
     }
 
@@ -97,15 +96,15 @@ fun EditFlashcardScreen(
             ) {
                 // Clickable Image Box for selecting/editing image
                 ClickableImageBox(
-                    imageUrl = imageUri,
-                    onImageSelected = { selectedUri ->
+                    imageUri = imageUri,
+                    onImageUploaded = { selectedUri ->
                         imageUri = selectedUri
                     },
                 )
                 // Delete image button
                 if (imageUri != null) {
                     Button(
-                        onClick = { imageUri = null },
+                        onClick = { imageUri = "" },
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text("Delete Image")

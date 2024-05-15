@@ -10,29 +10,28 @@ sealed class Screen(val route: String) {
     object SignUp : Screen("signup")
     object ForgotDetails : Screen ("forgot")
 
-    // Home screen and Nav Bar screens
+    // Home screen
     object Home : Screen("home")
-    object Library : Screen("library")
-    object Explore : Screen("explore")
-    object Chats : Screen("chats")
 
     // Profile routes
     object Profile : Screen("profile")
     object EditProfile : Screen("editProfile")
+    object Following : Screen("following")
+    object Followers : Screen("followers")
 
+    // Library Screen
+    object Library : Screen("library")
     // Add/Edit deck screens
     object AddDeck : Screen("addDeck")
     object EditDeck : Screen("editDeck")
-
     // Deck detail screen
     object DeckDetails : Screen("deckDetails")
-
     // Add/Edit flashcard screens
     object AddFlashcards : Screen("addFlashcards")
     object EditFlashcards : Screen("editFlashcards")
-    object Exam : Screen("exam")
 
     // Revision screens
+    object Review : Screen("review")
     object ViewFlashcards : Screen("viewFlashcards")
     object TestYourself : Screen("testYourself")
     object Summary : Screen("summary")
@@ -43,6 +42,11 @@ sealed class Screen(val route: String) {
     object WeekSchedule: Screen("weekSchedule")
     object DaySchedule: Screen("daySchedule")
     object EditSchedule: Screen("editSchedule")
+
+    // Explore Screens
+    object Explore : Screen("explore")
+    object PreviewUser : Screen("previewUser")
+    object PreviewDeck : Screen("previewDeck")
 }
 
 /**

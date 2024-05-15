@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -20,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -44,12 +48,12 @@ fun AddDeckScreen(
     navController: NavController
 ) {
     // Declaration of variables for the deck creation
-    val subjects = stringArrayResource(R.array.subjects).toList() // List of subjects
-    val flashcardViewModel: FlashcardViewModel = viewModel() // ViewModel for flashcard operations
-    var deckName by remember { mutableStateOf("") } // Deck name
-    var selectedSubject by remember { mutableStateOf("Subject") } // Selected subject
-    var isPublic by remember { mutableStateOf(false) } // Flag indicating if the deck is public
-    var description by remember { mutableStateOf("") } // Description of the deck
+    val subjects = stringArrayResource(R.array.subjects).toList()
+    val flashcardViewModel: FlashcardViewModel = viewModel()
+    var deckName by remember { mutableStateOf("") }
+    var selectedSubject by remember { mutableStateOf("Subject") }
+    var public by remember { mutableStateOf(false) }
+    var description by remember { mutableStateOf("") }
 
     // Access Firebase authentication
     val auth = Firebase.auth
@@ -69,6 +73,7 @@ fun AddDeckScreen(
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         ) {
             // Text field for entering the deck name
             DeckNameEnterBox(
@@ -95,8 +100,8 @@ fun AddDeckScreen(
 
             // Switch for toggling deck visibility
             PublicSwitch(
-                isPublic = isPublic,
-                onPublicChange = { newValue -> isPublic = newValue }
+                public = public,
+                onPublicChange = { newValue -> public = newValue }
             )
 
             // Button to create the deck
@@ -104,7 +109,7 @@ fun AddDeckScreen(
                 flashcardViewModel,
                 deckName,
                 selectedSubject,
-                isPublic,
+                public,
                 description,
                 uid!!,
                 navController
@@ -115,12 +120,12 @@ fun AddDeckScreen(
 
 /**
  * Composable function for the switch to toggle deck visibility.
- * @param isPublic Current visibility status.
+ * @param public Current visibility status.
  * @param onPublicChange Function to handle visibility change.
  */
 @Composable
 fun PublicSwitch(
-    isPublic: Boolean,
+    public: Boolean,
     onPublicChange: (Boolean) -> Unit
 ) {
     Row(
@@ -136,7 +141,7 @@ fun PublicSwitch(
         )
         // Switch for toggling visibility
         Switch(
-            checked = isPublic,
+            checked = public,
             onCheckedChange = onPublicChange,
             modifier = Modifier.padding(start = 8.dp)
         )
@@ -148,7 +153,7 @@ fun PublicSwitch(
  * @param flashcardViewModel ViewModel for flashcard operations.
  * @param deckName Name of the deck.
  * @param selectedSubject Selected subject for the deck.
- * @param isPublic Visibility status of the deck.
+ * @param public Visibility status of the deck.
  * @param description Description of the deck.
  * @param uid User ID of the deck creator.
  * @param navController NavController for navigation.
@@ -158,7 +163,7 @@ private fun CreateDeckButton(
     flashcardViewModel: FlashcardViewModel,
     deckName: String,
     selectedSubject: String,
-    isPublic: Boolean,
+    public: Boolean,
     description: String,
     uid: String,
     navController: NavController
@@ -170,7 +175,7 @@ private fun CreateDeckButton(
             flashcardViewModel.addDeck(
                 deckName,
                 selectedSubject,
-                isPublic,
+                public,
                 description,
                 uid
             )
@@ -203,7 +208,10 @@ fun DescriptionBox(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        maxLines = 3
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Text,
+            autoCorrect = true
+        )
     )
 }
 

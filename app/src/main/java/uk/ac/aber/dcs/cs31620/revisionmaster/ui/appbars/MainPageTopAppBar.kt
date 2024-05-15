@@ -69,8 +69,6 @@ fun MainPageTopAppBar(
         userViewModel.getUserData()
     }
 
-    val notifications = 1 // Placeholder notification count
-
     if (user != null) {
         // Building the top app bar
         TopAppBar(
@@ -95,8 +93,6 @@ fun MainPageTopAppBar(
                         if (currentStreak != null) {
                             StreakCounter(currentStreak)
                         }
-                        // Showing notification bell
-                        NotificationsBell(notifications)
                         // Showing profile circle
                         ProfileCircle(navController = navController, user!!)
                         Spacer(modifier = Modifier.width(4.dp))

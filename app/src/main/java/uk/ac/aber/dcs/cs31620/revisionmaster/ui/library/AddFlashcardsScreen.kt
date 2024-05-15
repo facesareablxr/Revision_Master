@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
@@ -28,12 +30,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.ButtonSpinner
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ClickableImageBox
@@ -42,13 +45,13 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.processOCR
 /**
  * Composable function for adding a flashcard to a deck.
  *
- * @param navController: NavHostController for navigating between composables.
+ * @param navController: NavController for navigating between composables.
  * @param deckId: String representing the ID of the deck to which the flashcard is added.
  * @param flashcardViewModel: ViewModel for managing flashcard-related data.
  */
 @Composable
 fun AddFlashcardScreen(
-    navController: NavHostController,
+    navController: NavController,
     deckId: String,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
@@ -56,7 +59,7 @@ fun AddFlashcardScreen(
     var answer by remember { mutableStateOf("") }
     var selectedDifficulty by remember { mutableStateOf(Difficulty.EASY) }
     val image by remember {mutableStateOf<String?>(null) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
+    var imageUri by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -66,29 +69,29 @@ fun AddFlashcardScreen(
             )
         },
         content = { innerPadding ->
-            // Column layout to arrange items vertically
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 // Clickable Image Box for selecting/editing image
                 ClickableImageBox(
-                    imageUrl = imageUri,
-                    onImageSelected = { selectedUri ->
-                        imageUri = selectedUri
-                    },
-                )
+                    imageUri = imageUri,
+                ) { selectedUri ->
+                    imageUri = selectedUri
+                }
                 // Delete image button
                 if (imageUri != null) {
                     Button(
-                        onClick = { imageUri = null },
+                        onClick = { imageUri = "null"},
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
                         Text("Delete Image")
                     }
                 }
+                Spacer(modifier = Modifier.padding(8.dp))
                 // Question text field with camera icon
                 OutlinedTextFieldWithCamera(
                     value = question,
@@ -96,7 +99,7 @@ fun AddFlashcardScreen(
                     label = { Text(stringResource(R.string.question)) },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
                 )
 
                 // Answer text field with camera icon
@@ -141,6 +144,7 @@ fun AddFlashcardScreen(
                 ) {
                     Text(stringResource(R.string.addFlashcard))
                 }
+                Spacer(modifier = Modifier.padding(32.dp))
             }
         }
     )
@@ -181,7 +185,11 @@ fun OutlinedTextFieldWithCamera(
             value = value,
             onValueChange = onValueChange,
             label = label,
-            modifier = Modifier.weight(1f) // Take up available space
+            modifier = Modifier.weight(1f),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                autoCorrect = true
+            )
         )
         // IconButton for launching image selection
         IconButton(

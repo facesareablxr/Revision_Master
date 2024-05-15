@@ -18,8 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.chats.ChatScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore.DeckPreviewScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore.ExploreScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore.UserPreviewScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.home.HomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.AddDeckScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.AddFlashcardScreen
@@ -34,9 +35,12 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.SignUpTopLevel
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.login.WelcomeScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.EditProfileScreen
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.FollowersPage
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.FollowingScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.profile.ProfileScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardSelfTestScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.FlashcardViewerTopLevel
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.ReviewScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.revision.SummaryScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.AddScheduleScreen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.schedule.DayScheduleScreen
@@ -79,17 +83,11 @@ class MainActivity : ComponentActivity() {
                         // Fetch user data when the composable is first launched
                         LaunchedEffect(Unit) {
                             userViewModel.getUserData()
+                            userViewModel.updateStreakIfNeeded()
                         }
-                        // Update streak if needed
-                        user?.let { userViewModel.updateStreakIfNeeded(user!!) }
 
                         // Build navigation graph for authenticated user
                         BuildNavigationGraph(Screen.Home.route, userViewModel)
-
-                        // Fetch user data again (in case of changes)
-                        LaunchedEffect(Unit) {
-                            userViewModel.getUserData()
-                        }
 
                         // Build navigation graph for authenticated user
                         BuildNavigationGraph(Screen.Home.route, userViewModel)
@@ -123,7 +121,6 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.SignUp.route) { SignUpTopLevel(navController, userViewModel) }
         composable(Screen.ForgotDetails.route) { ForgotPassScreenTopLevel(navController) }
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Chats.route) { ChatScreen(navController) }
         composable(Screen.Profile.route) { ProfileScreen(navController) }
         composable(Screen.EditProfile.route) { EditProfileScreen(navController) }
         composable(Screen.Library.route) { LibraryScreen(navController) }
@@ -166,6 +163,12 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
         composable(Screen.TestResults.route + "/{deckId}") { backStackEntry ->
             TestResultsScreen(backStackEntry.arguments?.getString("deckId")!!, navController)
         }
+        composable(Screen.Review.route + "/{deckId}") { backStackEntry ->
+            ReviewScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
+        composable(Screen.PreviewDeck.route + "/{deckId}") { backStackEntry ->
+            DeckPreviewScreen(navController, backStackEntry.arguments?.getString("deckId")!!)
+        }
         composable(Screen.AddSchedule.route) { AddScheduleScreen(navController) }
         composable(Screen.WeekSchedule.route) { ScheduleScreen(navController) }
         composable(Screen.DaySchedule.route + "/{day}") { backstackEntry ->
@@ -180,6 +183,13 @@ fun BuildNavigationGraph(destination: String, userViewModel: UserViewModel) {
                 scheduleId = backstackEntry.arguments?.getString("scheduleId")!!
             )
         }
-        composable(Screen.Schedule.route){ HomeScreen(navController = navController) }
+        composable(Screen.Followers.route ) { FollowersPage(navController = navController)}
+        composable(Screen.Following.route){ FollowingScreen( navController = navController)}
+        composable(Screen.PreviewUser.route + "/{username}" ){ backstackEntry ->
+            UserPreviewScreen(
+                navController = navController,
+                username = backstackEntry.arguments?.getString("username")!!
+            )
+        }
     }
 }

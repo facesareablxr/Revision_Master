@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
@@ -43,15 +44,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Difficulty
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.util.FilterOption
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Difficulty
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.filters.FilterType
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.NonMainTopAppBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.MainPageNavigationBar
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
@@ -60,7 +62,7 @@ import java.util.Locale
 /**
  * This composable function represents the Library screen.
  *
- * @param navController: NavHostController to navigate between composables.
+ * @param navController: NavController to navigate between composables.
  * @param flashcardViewModel: ViewModel for managing flashcard data.
  * @param userViewModel: ViewModel for managing user data.
  */
@@ -75,7 +77,7 @@ fun LibraryScreen(
     // Mutable state for search query
     var searchQuery by remember { mutableStateOf("") }
     // Mutable state for selected filter option
-    var selectedFilter by remember { mutableStateOf(FilterOption.None) }
+    var selectedFilter by remember { mutableStateOf(FilterType.None) }
     // Mutable state for selected difficulty
     var selectedDifficulty by remember { mutableStateOf<Difficulty?>(null) }
 
@@ -91,9 +93,9 @@ fun LibraryScreen(
             decks.filter { deck ->
                 val matchesSearchQuery = deck.subject.contains(searchQuery, ignoreCase = true)
                 val matchesFilter = when (selectedFilter) {
-                    FilterOption.Subject -> deck.subject.equals(searchQuery, ignoreCase = true)
-                    FilterOption.Difficulty -> deck.averageDifficulty == selectedDifficulty
-                    FilterOption.None -> true
+                    FilterType.Subject -> deck.subject.equals(searchQuery, ignoreCase = true)
+                    FilterType.Difficulty -> deck.averageDifficulty == selectedDifficulty
+                    FilterType.None -> true
                 }
                 matchesSearchQuery && matchesFilter
             }
@@ -150,7 +152,7 @@ fun SearchBarWithFilter(
     decks: List<Deck>,
     searchQuery: String,
     onSearchQueryChanged: (String) -> Unit,
-    onFilterSelected: (FilterOption) -> Unit,
+    onFilterSelected: (FilterType) -> Unit,
     onDifficultySelected: (Difficulty) -> Unit
 ) {
     // Mutable state for dropdown menu expansion
@@ -174,7 +176,11 @@ fun SearchBarWithFilter(
             modifier = Modifier.weight(1f),
             placeholder = { Text(text = stringResource(id = R.string.search)) },
             singleLine = true,
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text,
+                autoCorrect = true
+            )
         )
         Spacer(modifier = Modifier.padding(4.dp))
         // Filter button with background
@@ -199,7 +205,7 @@ fun SearchBarWithFilter(
                 )
                 DropdownMenuItem(
                     onClick = {
-                        onFilterSelected(FilterOption.None)
+                        onFilterSelected(FilterType.None)
                         onSearchQueryChanged("") // Clear the search query
                         onDifficultySelected(Difficulty.NONE) // Clear the selected difficulty
                         expanded = false
@@ -216,7 +222,7 @@ fun SearchBarWithFilter(
                 subjects.forEach { subject ->
                     DropdownMenuItem(
                         onClick = {
-                            onFilterSelected(FilterOption.Subject)
+                            onFilterSelected(FilterType.Subject)
                             onSearchQueryChanged(subject) // Update search query with selected subject
                             expanded = false
                         },
@@ -233,7 +239,8 @@ fun SearchBarWithFilter(
                 difficulties.forEach { difficulty ->
                     DropdownMenuItem(
                         onClick = {
-                            onDifficultySelected(Difficulty.valueOf(
+                            onDifficultySelected(
+                                Difficulty.valueOf(
                                 difficulty.toString()
                                     .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }))
                             expanded = false
@@ -256,7 +263,7 @@ fun SearchBarWithFilter(
  * This composable function represents a list of decks.
  *
  * @param decks: List of decks to display.
- * @param navController: NavHostController for navigation.
+ * @param navController: NavController for navigation.
  */
 @Composable
 fun DeckList(
@@ -274,7 +281,7 @@ fun DeckList(
  * This composable represents the individual decks in a card.
  *
  * @param deck: Deck object representing the data for a particular deck.
- * @param navController: NavHostController for navigating to deck details screen.
+ * @param navController: NavController for navigating to deck details screen.
  */
 @SuppressLint("DefaultLocale")
 @Composable

@@ -46,7 +46,7 @@ import androidx.navigation.NavController
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Schedule
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.components.TopLevelScaffold
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
@@ -80,6 +80,13 @@ fun HomeScreen(
     // Fetch suggested decks
     LaunchedEffect(Unit) {
         flashcardViewModel.getUserDecks()
+    }
+
+    // Pick 5 random decks
+    val randomDecks = if (decksState.size >= 5) {
+        decksState.shuffled().take(5)
+    } else {
+        decksState
     }
 
     // Top-level scaffold
@@ -131,11 +138,11 @@ fun HomeScreen(
                     )
                 ) {
                     // Carousel with suggested decks
-                    if (decksState.isNotEmpty()) {
+                    if (randomDecks.isNotEmpty()) {
                         CarouselWithPager(
                             title = stringResource(R.string.suggestedDecks),
                             icon = Icons.AutoMirrored.Filled.ArrowForward,
-                            decks = decksState,
+                            decks = randomDecks,
                             onClick = {
                                 navController.popBackStack()
                                 navController.navigate(Screen.Library.route)
@@ -158,7 +165,6 @@ fun HomeScreen(
         }
     }
 }
-
 
 /**
  * Composable function for the card with icon.
@@ -191,7 +197,7 @@ fun CardWithIcon(
                 .width(150.dp)
         ) {
             // Icon
-            Icon(imageVector = icon, contentDescription = "Icon")
+            Icon(imageVector = icon, contentDescription = stringResource(R.string.icon))
             Spacer(modifier = Modifier.height(8.dp))
             // Text and subtext
             Text(
@@ -204,7 +210,6 @@ fun CardWithIcon(
     }
 }
 
-
 /**
  * Composable function for the carousel with pager.
  *
@@ -212,7 +217,7 @@ fun CardWithIcon(
  * @param icon ImageVector icon for the carousel.
  * @param decks List of suggested decks.
  * @param onClick Callback for clicking on the carousel.
- * @param navController
+ * @param navController NavController
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -237,7 +242,7 @@ fun CarouselWithPager(
             )
             Spacer(modifier = Modifier.padding(horizontal = 115.dp))
             // Icon for navigation
-            Icon(imageVector = icon, contentDescription = "Next")
+            Icon(imageVector = icon, contentDescription = stringResource(R.string.next))
         }
         // Horizontal Pager for decks
         HorizontalPager(
@@ -293,7 +298,7 @@ fun CreateDeckPrompt(
  *
  * @param deck The suggested deck.
  * @param navController NavController for navigation.
- * @param
+ * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
  */
 @Composable
 fun CardWithCarouselItem(
@@ -439,7 +444,7 @@ private fun SessionCard(
         // Schedule icon
         Icon(
             imageVector = Icons.Default.CalendarToday,
-            contentDescription = "Schedule Icon"
+            contentDescription = stringResource(R.string.session)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column {

@@ -1,7 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
-//noinspection UsingMaterialAndMaterial3Libraries
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,11 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.TabRowDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -66,12 +62,12 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Deck
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.Flashcard
-import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.FlashcardMode
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Flashcard
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.FlashcardMode
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBarWithMenu
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
-import java.util.Locale
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.formattedDate
 import kotlin.math.roundToInt
 
 /**
@@ -87,28 +83,32 @@ fun DeckDetailsScreen(
     deckId: String,
     flashcardViewModel: FlashcardViewModel = viewModel()
 ) {
+    // Observing the deck details state from the ViewModel
     val deckState by flashcardViewModel.deckDetails.observeAsState(initial = null)
+    // State to control the visibility of the delete confirmation dialog
     var showDeleteDialog by remember { mutableStateOf(false) }
-    // Collects the flashcards state
+    // Observing the flashcards state from the ViewModel
     val flashcardsState by flashcardViewModel.flashcards.observeAsState(initial = null)
+
+    // Fetching deck details and flashcards when the screen launches
     LaunchedEffect(Unit) {
         flashcardViewModel.getDeckDetails(deckId)
         flashcardViewModel.getFlashcardsForDeck(deckId)
     }
 
-
-
-
     Scaffold(
         topBar = {
+            // Displaying the top app bar with deck details and actions
             deckState?.let { deck ->
                 SmallTopAppBarWithMenu(
                     title = deck.name,
                     navController = navController,
                     onEditDeckClick = {
+                        // Navigating to edit deck screen
                         navController.navigate(Screen.EditDeck.route + "/${deck.id}")
                     },
                     onDeleteClick = {
+                        // Setting showDeleteDialog to true to show the delete confirmation dialog
                         showDeleteDialog = true
                     }
                 )
@@ -116,6 +116,7 @@ fun DeckDetailsScreen(
         },
         content = { innerPadding ->
             Column(Modifier.padding(innerPadding)) {
+                // Tab navigation for materials and progress
                 val tabs = listOf("Materials", "Progress")
                 val selectedTabIndex = remember { mutableStateOf(0) }
 
@@ -141,10 +142,12 @@ fun DeckDetailsScreen(
                 Box {
                     when (selectedTabIndex.value) {
                         0 -> {
+                            // Displaying materials content
                             MaterialsContent(flashcardsState, navController, deckId)
                         }
 
                         1 -> {
+                            // Displaying progress content or a message if no flashcards available
                             deckState?.let { _ ->
                                 if (flashcardsState != null) {
                                     ProgressContent(flashcardViewModel, deckId, navController)
@@ -160,12 +163,14 @@ fun DeckDetailsScreen(
                 }
             }
 
+            // Displaying the delete confirmation dialog if showDeleteDialog is true
             if (showDeleteDialog) {
                 deckState?.let { deck ->
                     DeleteConfirmationDialog(
                         deckName = deck.name,
                         onDismiss = { showDeleteDialog = false },
                         onConfirm = {
+                            // Deleting the deck when confirmation is received
                             flashcardViewModel.deleteDeck(deck.id)
                             showDeleteDialog = false
                             navController.navigateUp()
@@ -177,12 +182,12 @@ fun DeckDetailsScreen(
     )
 }
 
+
 /**
  * Composable function for the materials content tab.
  *
  * @param navController NavController for navigation.
  * @param deckId ID of the deck being viewed.
- * @param flashcardViewModel ViewModel for flashcard operations. Default is viewModel().
  */
 @Composable
 fun MaterialsContent(
@@ -268,30 +273,39 @@ fun FlashcardItem(flashcard: Flashcard, navController: NavController, deckId: St
                 // Flashcard answer
                 Text(text = flashcard.answer, style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(8.dp)) // Spacer for vertical spacing
-                // Flashcard difficulty
-                Surface(
-                    modifier = Modifier
-                        .wrapContentSize(),
-                    shape = RoundedCornerShape(2.dp),
+                Row(
+                    verticalAlignment = CenterVertically
                 ) {
-                    val difficulty = flashcard.difficulty.toString()
-                    // Convert difficulty label to lowercase with a capital first letter
-                    val difficultyCase = difficulty.lowercase()
-                        .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
-                    Row(
-                        modifier = Modifier.padding(6.dp),
-                        verticalAlignment = CenterVertically
-                    ) {
-                        Text(
-                            text = difficultyCase,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                    // Chip for difficulty
+                    Chip(text = flashcard.difficulty.toString().lowercase().capitalize())
+                    if (flashcard.nextReview != null){
+                        Chip(text = "Next review: " + formattedDate(flashcard.nextReview!!))
                     }
                 }
             }
         }
     }
 }
+/**
+ * Composable which gives the appearance of a chip.
+ * @param text The text content displayed within the chip.
+ */
+@Composable
+fun Chip(text: String) {
+    // Creating a Surface composable with rounded corners to represent the chip
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.padding(4.dp)
+    ) {
+        // Displaying the text content within the chip
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(12.dp)
+        )
+    }
+}
+
 
 /**
  * Composable function for the delete confirmation dialog.
@@ -337,45 +351,62 @@ fun DeleteConfirmationDialog(
  */
 @Composable
 fun ProgressContent(
-    flashcardViewModel: FlashcardViewModel,
-    deckId: String,
-    navController: NavController
+    flashcardViewModel: FlashcardViewModel, // ViewModel for flashcard operations
+    deckId: String, // ID of the deck being viewed
+    navController: NavController // NavController for navigation
 ) {
+    // Observing deck details state from the ViewModel
     val deckState by flashcardViewModel.deckDetails.observeAsState(initial = null)
+    // State to control the visibility of the bottom sheet
     var showBottomSheet by remember { mutableStateOf(false) }
+    // State to track the selected mode (VIEW, TEST_SELF, REVIEW)
     var selectedMode by remember { mutableStateOf(FlashcardMode.VIEW) }
+    // State to control the visibility of loading indicator
     var showLoading by remember { mutableStateOf(false) }
 
+    // Fetching flashcards for the deck when the screen launches
+    LaunchedEffect(Unit) {
+        flashcardViewModel.getFlashcardsForDeck(deckId)
+    }
+
+    // Fetching flashcards for the deck and showing loading indicator
     LaunchedEffect(Unit) {
         showLoading = true
         flashcardViewModel.getFlashcardsForDeck(deckId)
         showLoading = false
     }
+
+    // Scaffold for the screen layout
     Scaffold(content = { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Displaying circular progress bar based on deck details
             CircularProgressBar(deckState)
             Spacer(modifier = Modifier.padding(8.dp))
-            // Display recent test results in cards
+            // Displaying recent test results in cards
             RecentTestResults(deckId, flashcardViewModel, navController)
         }
 
+        // Showing bottom sheet for selecting flashcard mode
         if (showBottomSheet) {
             ModalBottomSheet(
                 content = {
                     FlashcardModeSelectionSheet(
                         onModeSelected = { mode ->
                             selectedMode = mode
+                            // Navigating based on selected mode
                             when (mode) {
                                 FlashcardMode.VIEW -> {
                                     navController.navigate(Screen.ViewFlashcards.route + "/$deckId")
                                 }
-
                                 FlashcardMode.TEST_SELF -> {
                                     navController.navigate(Screen.TestYourself.route + "/$deckId")
+                                }
+                                FlashcardMode.REVIEW -> {
+                                    navController.navigate(Screen.Review.route + "/$deckId")
                                 }
                             }
                             showBottomSheet = false
@@ -387,6 +418,7 @@ fun ProgressContent(
             )
         }
     },
+        // Floating action button for opening bottom sheet
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -404,6 +436,14 @@ fun ProgressContent(
     )
 }
 
+/**
+ * Composable function for the circular progress bar.
+ *
+ * @param deckState The state of the deck.
+ * @param size Size of the circular progress bar.
+ * @param strokeWidth Width of the progress bar stroke.
+ * @param backgroundArcColor Color of the background arc.
+ */
 @Composable
 fun CircularProgressBar(
     deckState: Deck?,
@@ -411,6 +451,7 @@ fun CircularProgressBar(
     strokeWidth: Dp = 12.dp,
     backgroundArcColor: Color = Color.LightGray,
 ) {
+    // Calculate mastery level and progress color based on mastery level
     val masteryLevel = (deckState?.mastery ?: 0.0).toFloat()
     val progressColor = when {
         masteryLevel < 50 -> Color.Red // Novice
@@ -419,13 +460,16 @@ fun CircularProgressBar(
         else -> Color.Blue // Mastery
     }
 
+    // Box composable to contain circular progress bar and text
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
+        // Canvas for drawing circular progress bar
         Canvas(modifier = Modifier.size(size)) {
+            // Draw background arc
             drawArc(
                 color = backgroundArcColor,
                 startAngle = 0f,
@@ -434,6 +478,7 @@ fun CircularProgressBar(
                 size = Size(size.toPx(), size.toPx()),
                 style = Stroke(width = strokeWidth.toPx())
             )
+            // Draw progress arc
             drawArc(
                 color = progressColor,
                 startAngle = 270f,
@@ -443,6 +488,7 @@ fun CircularProgressBar(
                 style = Stroke(width = strokeWidth.toPx())
             )
         }
+        // Text displaying mastery level
         Text(
             text = "Mastery Level: ${(masteryLevel)}%",
             style = MaterialTheme.typography.bodyMedium,
@@ -451,28 +497,39 @@ fun CircularProgressBar(
     }
 }
 
-
+/**
+ * Composable function for displaying recent test results.
+ *
+ * @param deckId ID of the deck.
+ * @param flashcardViewModel ViewModel for flashcard operations.
+ * @param navController NavController for navigation.
+ */
 @Composable
 fun RecentTestResults(
     deckId: String,
     flashcardViewModel: FlashcardViewModel,
     navController: NavController
 ) {
+    // State for storing all test results for the deck
     val allTestResults by flashcardViewModel.allTestResultsForDeck.observeAsState()
 
+    // Fetch all test results for the deck
     LaunchedEffect(Unit) {
         flashcardViewModel.getAllTestResultsForDeck(deckId)
     }
 
+    // Column for displaying recent test results
     Column(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
+        // Text indicating recent test results
         Text(
             text = (stringResource(R.string.recentResults)),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
+        // Display recent test results as cards
         if (allTestResults != null) {
             allTestResults!!.take(5).forEach { result ->
                 val totalMatches = result.correct + result.incorrect
@@ -490,6 +547,7 @@ fun RecentTestResults(
                     Column(
                         modifier = Modifier.padding(16.dp)
                     ) {
+                        // Display accuracy of the test result
                         Text(
                             text = "Accuracy: ${accuracy}%",
                             style = MaterialTheme.typography.bodyMedium
@@ -497,6 +555,7 @@ fun RecentTestResults(
                         val time = result.elapsedTime
                         val minutes = time / 60
                         val seconds = time % 60
+                        // Display time taken for the test
                         Text(
                             text = "Time: $minutes min $seconds sec",
                             style = MaterialTheme.typography.bodyMedium,
@@ -508,6 +567,7 @@ fun RecentTestResults(
         }
     }
 }
+
 
 /**
  * Composable function for displaying the flashcard mode selection sheet.
