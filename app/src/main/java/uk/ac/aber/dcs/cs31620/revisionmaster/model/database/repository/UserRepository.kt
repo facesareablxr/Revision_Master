@@ -45,24 +45,6 @@ object UserRepository {
     }
 
     /**
-     * Check for username availability
-     */
-    suspend fun checkUsernameAvailability(username: String): Boolean {
-        return try {
-            val database = FirebaseDatabase.getInstance()
-            val usersReference = database.getReference("users")
-            // Check for existing username
-            val dataSnapshot = usersReference.orderByChild("username").equalTo(username).get().await()
-            dataSnapshot.childrenCount == 0L
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking username availability: ${e.message}")
-            false
-        }
-    }
-
-
-
-    /**
      * Gets a user from the database using their ID.
      */
     suspend fun getUserById(userId: String): User? {

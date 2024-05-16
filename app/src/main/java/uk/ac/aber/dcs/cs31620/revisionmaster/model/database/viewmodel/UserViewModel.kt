@@ -58,16 +58,6 @@ class UserViewModel : ViewModel() {
     }
 
     /**
-     * Checks if there the username is available
-     */
-    fun checkUsernameAvailability(username: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val isAvailable = userRepository.checkUsernameAvailability(username)
-            callback(isAvailable)
-        }
-    }
-
-    /**
      * Fetches the user's data based on the current user's ID.
      */
     fun getUserData() {
