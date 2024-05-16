@@ -89,7 +89,6 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore-ktx:25.0.0")
     implementation("com.google.firebase:firebase-ml-vision:24.1.0")
     implementation("com.google.firebase:firebase-storage-ktx:21.0.0")
-    implementation("com.google.firebase:firebase-messaging-ktx")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
     implementation("com.google.firebase:firebase-firestore:25.0.0")
 

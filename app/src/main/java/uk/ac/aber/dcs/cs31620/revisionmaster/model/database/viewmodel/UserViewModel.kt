@@ -48,9 +48,9 @@ class UserViewModel : ViewModel() {
     /**
      * Adds the user to the database
      */
-    fun addUserToDB(user: User) = viewModelScope.launch(Dispatchers.IO) {
+    fun addUserToDB(user: User, uid: String) = viewModelScope.launch(Dispatchers.IO) {
         try {
-            userRepository.addUser(user)
+            userRepository.addUser(user, uid)
         } catch (e: Exception) {
             // Handle error:
             Log.e(TAG, "Error adding user to database: ${e.message}")

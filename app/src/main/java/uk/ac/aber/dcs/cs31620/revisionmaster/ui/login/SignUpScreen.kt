@@ -91,13 +91,11 @@ fun SignUpTopLevel(
             updateUser = { user = it },
             updateConfirmPassword = { confirmPassword = it },
             signupAction = {
-                // Sign up with email and password
-                val auth = FirebaseAuth.getInstance()
-                auth.createUserWithEmailAndPassword(user.email, user.password!!)
+                FirebaseAuth.getInstance().createUserWithEmailAndPassword(user.email, user.password!!)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
                             // Add user to database and navigate to home screen on successful sign-up
-                            userViewModel.addUserToDB(user)
+                            userViewModel.addUserToDB(user, FirebaseAuth.getInstance().currentUser!!.uid)
                             goToHome(navController)
                         } else {
                             // Show toast on sign-up failure

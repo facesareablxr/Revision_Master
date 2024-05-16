@@ -24,19 +24,14 @@ object UserRepository {
     /**
      * Adds a user to the database.
      */
-    suspend fun addUser(user: User): User? {
+    suspend fun addUser(user: User, uid: String): User? {
         try {
             // Checks for existing username and returns null if a duplicate is found
             val existingUser = usersReference.orderByChild("username").equalTo(user.username).get().await().children.firstOrNull()?.getValue(User::class.java)
             if (existingUser != null) {
                 throw Exception("Username already exists")
             }
-            // Sign up with email and password
-            val authResult = FirebaseAuth.getInstance().createUserWithEmailAndPassword(user.email, user.password!!).await()
-            // Gets the current signed-in user
-            val currentUser = authResult.user ?: throw Exception("User not signed in")
-            // Stores the user using their unique ID in the "users" node
-            usersReference.child(currentUser.uid).setValue(user).await()
+            usersReference.child(uid).setValue(user).await()
             return user
         } catch (e: Exception) {
             Log.e(TAG, "Error adding user: ${e.message}")
