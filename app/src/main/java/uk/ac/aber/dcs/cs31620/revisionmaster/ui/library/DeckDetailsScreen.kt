@@ -530,7 +530,7 @@ fun RecentTestResults(
             modifier = Modifier.padding(bottom = 8.dp)
         )
         // Display recent test results as cards
-        if (allTestResults != null) {
+        if (allTestResults != null && allTestResults!!.isNotEmpty()) {
             allTestResults!!.take(5).forEach { result ->
                 val totalMatches = result.correct + result.incorrect
                 var accuracy by remember { mutableIntStateOf(0) }
@@ -563,6 +563,10 @@ fun RecentTestResults(
                         )
                     }
                 }
+            }
+        } else {
+            Box(modifier = Modifier.padding(12.dp)){
+                Text(text = stringResource(R.string.noTestResults))
             }
         }
     }

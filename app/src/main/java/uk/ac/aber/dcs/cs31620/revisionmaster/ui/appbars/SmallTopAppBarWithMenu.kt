@@ -64,14 +64,14 @@ fun SmallTopAppBarWithMenu(
                     showMenu = false
                     onEditDeckClick()
                 }) {
-                   stringResource(R.string.editDeck)
+                   Text(text = stringResource(R.string.editDeck))
                 }
                 // Menu item for deleting deck
                 DropdownMenuItem(onClick = {
                     showMenu = false
                     onDeleteClick()
                 }) {
-                    stringResource(R.string.deleteDeck)
+                    Text(text = stringResource(R.string.deleteDeck))
                 }
             }
         }

@@ -109,7 +109,7 @@ fun EditProfileContent(
 
     // State variable for selected university in ButtonSpinner
     var selectedUniversity by remember {
-        mutableStateOf(user.institution ?: "") // Check for existing institution
+        mutableStateOf(user.institution ?: "Institution") // Check for existing institution
     }
 
     // Scaffold for layout structure

@@ -1,11 +1,13 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.library
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Card
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,12 +33,6 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.TestResult
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
 import kotlin.math.roundToInt
 
-/**
- * This composable function represents the Test Results screen.
- *
- * @param navController: NavController to navigate between composables.
- * @param flashcardViewModel: ViewModel for managing flashcard data.
- */
 @Composable
 fun TestResultsScreen(
     deckId: String,
@@ -86,36 +83,59 @@ fun TestResultsScreen(
     )
 }
 
+/**
+ * Composable function to display a test result card with a leading image.
+ *
+ * @param result The test result data to display.
+ */
 @Composable
 fun TestResultCard(result: TestResult) {
+    // Calculate accuracy percentage
+    val totalMatches = result.correct + result.incorrect
+    var accuracy by remember { mutableIntStateOf(0) }
+    accuracy =
+        if (totalMatches > 0) ((result.correct.toFloat() / totalMatches.toFloat()) * 100).roundToInt() else 0
+
+    // Determine image based on accuracy
+    val imageResourceId = when {
+        accuracy >= 75 -> R.drawable.excellent
+        accuracy >= 50 -> R.drawable.awesome
+        accuracy >= 25 -> R.drawable.greatjob
+        else -> R.drawable.goodjob
+    }
+
+    // Card to display test result information
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
-        Column(
+        Row(
             modifier = Modifier.padding(16.dp)
         ) {
-            val totalMatches = result.correct + result.incorrect
-            var accuracy by remember { mutableIntStateOf(0) }
-            accuracy = if (totalMatches > 0) ((result.correct.toFloat() / totalMatches.toFloat()) * 100).roundToInt() else 0
-            // Display accuracy and time
-            Text(
-                text = "Day of test: ${result.date}"
+            // Leading image based on accuracy
+            Image(
+                painter = painterResource(id = imageResourceId),
+                contentDescription = null,
+                modifier = Modifier.size(64.dp)
             )
-            Row {
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                // Display the day of the test
+                Text(
+                    text = "Day of test: ${result.date}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Text(
                     text = "Accuracy: ${accuracy}%",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 val time = result.elapsedTime
                 val minutes = time / 60
                 val seconds = time % 60
                 Text(
                     text = "Time: $minutes min $seconds sec",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

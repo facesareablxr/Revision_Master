@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.tasks.await
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Follows
+import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Response
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.Schedule
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.user.User
+
 /**
  * This object handles all user-related interactions with a Firebase Realtime Database.
  */
@@ -24,18 +26,25 @@ object UserRepository {
     /**
      * Adds a user to the database.
      */
-    suspend fun addUser(user: User, uid: String): User? {
-        try {
-            // Checks for existing username and returns null if a duplicate is found
-            val existingUser = usersReference.orderByChild("username").equalTo(user.username).get().await().children.firstOrNull()?.getValue(User::class.java)
-            if (existingUser != null) {
-                throw Exception("Username already exists")
-            }
-            usersReference.child(uid).setValue(user).await()
-            return user
+    suspend fun addUser(user: User): Response<User> {
+        // Gets the current signed-in user
+        val currentUser = FirebaseAuth.getInstance().currentUser ?: return Response.Failure(
+            Exception("User not signed in")
+        )
+        // Checks for existing username and returns an error if a duplicate is found
+        val existingUser = usersReference.orderByChild("username").equalTo(user.username).get()
+            .await().children.firstOrNull()?.getValue(
+                User::class.java
+            )
+        if (existingUser != null) {
+            return Response.Failure(Exception("Username already exists"))
+        }
+        // Stores the user using their unique ID in the "users" node
+        return try {
+            usersReference.child(currentUser.uid).setValue(user).await()
+            Response.Success(user)
         } catch (e: Exception) {
-            Log.e(TAG, "Error adding user: ${e.message}")
-            return null
+            Response.Failure(e)
         }
     }
 
@@ -314,5 +323,4 @@ object UserRepository {
             Pair(null, null)
         }
     }
-
 }

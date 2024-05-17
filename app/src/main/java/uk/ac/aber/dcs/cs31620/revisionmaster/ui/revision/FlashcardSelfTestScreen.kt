@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
@@ -28,9 +28,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Difficulty
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Flashcard
@@ -79,42 +81,49 @@ fun FlashcardSelfTestScreen(
         },
         content = { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)) {
-                // Display the test in progress
-                TestInProgress(
-                    currentIndex = currentIndex,
-                    flashcards = flashcards,
-                    correctMatches = correctMatches,
-                    incorrectMatches = incorrectMatches,
-                    isFrontShowing = isFrontShowing,
-                    onCorrectMatch = {
-                        // Handle correct match
-                        correctMatches++
-                        if (currentIndex + 1 < flashcards!!.size) {
-                            currentIndex++
-                            isFrontShowing = true // Reset to front-facing
-                        } else {
-                            isTestComplete = true
-                        }
-                    },
-                    onIncorrectMatch = {
-                        // Handle incorrect match
-                        incorrectMatches++
-                        if (currentIndex + 1 < flashcards!!.size) {
-                            currentIndex++
-                            isFrontShowing = true // Reset to front-facing
-                        } else {
-                            isTestComplete = true
-                        }
-                    },
-                    spacedRepetition = spacedRepetition,
-                    flashcardViewModel = flashcardViewModel,
-                    deckId = deckId,
-                    onFlip = { isFrontShowing = !isFrontShowing }
-                )
+                // Check if flashcards are loaded
+                if (flashcards.isNullOrEmpty()) {
+                    // No flashcards message
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = stringResource(id = R.string.noFlashcards))
+                    }
+                } else {
+                    // Display the test in progress
+                    TestInProgress(
+                        currentIndex = currentIndex,
+                        flashcards = flashcards,
+                        correctMatches = correctMatches,
+                        incorrectMatches = incorrectMatches,
+                        isFrontShowing = isFrontShowing,
+                        onCorrectMatch = {
+                            // Handle correct match
+                            correctMatches++
+                            if (currentIndex + 1 < flashcards!!.size) {
+                                currentIndex++
+                                isFrontShowing = true // Reset to front-facing
+                            } else {
+                                isTestComplete = true
+                            }
+                        },
+                        onIncorrectMatch = {
+                            // Handle incorrect match
+                            incorrectMatches++
+                            if (currentIndex + 1 < flashcards!!.size) {
+                                currentIndex++
+                                isFrontShowing = true // Reset to front-facing
+                            } else {
+                                isTestComplete = true
+                            }
+                        },
+                        spacedRepetition = spacedRepetition,
+                        flashcardViewModel = flashcardViewModel,
+                        deckId = deckId,
+                        onFlip = { isFrontShowing = !isFrontShowing }
+                    )
+                }
             }
         }
     )
-
     // Navigate to summary screen when the test is complete
     if (isTestComplete) {
         val endTime = System.currentTimeMillis()
@@ -166,7 +175,8 @@ fun TestInProgress(
         if (currentFlashcard != null) {
             Box(
                 modifier = Modifier
-                    .size(300.dp, 200.dp)
+                    .wrapContentHeight()
+                    .padding(16.dp)
                     .clip(RoundedCornerShape(16.dp))
                     .clickable { onFlip() }
                     .align(Alignment.CenterHorizontally),

@@ -93,6 +93,7 @@ fun MainPageTopAppBar(
                         if (currentStreak != null) {
                             StreakCounter(currentStreak)
                         }
+                        Spacer(modifier = Modifier.width(4.dp))
                         // Showing profile circle
                         ProfileCircle(navController = navController, user!!)
                         Spacer(modifier = Modifier.width(4.dp))

@@ -69,21 +69,21 @@ fun ConfirmationDialog(onKeepGoing: () -> Unit, onQuit: () -> Unit) {
     AlertDialog(
         onDismissRequest = onKeepGoing, // Callback invoked when dialog is dismissed
         title = {
-            stringResource(R.string.confirmTitle)
+            Text(text = stringResource(R.string.confirmTitle))
         },
         text = {
-            stringResource(R.string.confirmMessage)
+            Text(text =  stringResource(R.string.confirmMessage))
         },
         confirmButton = {
             // "Keep Going" button
             TextButton(onKeepGoing) {
-                stringResource(R.string.keepGoing)
+                Text(text = stringResource(R.string.keepGoing))
             }
         },
         dismissButton = {
             // "Quit" button
             TextButton(onQuit) {
-                stringResource(R.string.quit)
+                Text(text =  stringResource(R.string.quit))
             }
         }
     )

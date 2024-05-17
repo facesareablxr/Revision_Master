@@ -195,12 +195,14 @@ fun SearchResultList(
                     userViewModel = userViewModel,
                     navController = navController
                 )
+
                 SearchType.DECKS -> DeckCard(
                     deck = item as? Deck ?: return@items,
                     navController = navController,
                     currentUserId = currentUserId
                 )
             }
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
@@ -262,7 +264,8 @@ fun DeckCard(
                 // Display deck subject and average difficulty if available
                 Row(
                     modifier = Modifier.padding(2.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
                 ) {
                     // Display deck subject
                     OutlinedButton(onClick = {}) {
@@ -325,35 +328,44 @@ fun UserCard(
                 .clickable { navController.navigate(Screen.PreviewUser.route + "/${user.username}") }
         ) {
             Row(
-                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Display user profile picture if available
-                if (user.profilePictureUrl != null) {
+                Column (modifier = Modifier.padding(4.dp)){
+                    // Display user profile picture if available
                     Box(
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(64.dp)
-                            .padding(4.dp)
                     ) {
-                        GlideImage(
-                            model = Uri.parse(user.profilePictureUrl),
-                            contentDescription = null,
-                            modifier = Modifier.wrapContentSize(),
-                            contentScale = ContentScale.Crop
-                        )
+                        if (user.profilePictureUrl != null) {
+                            GlideImage(
+                                model = Uri.parse(user.profilePictureUrl),
+                                contentDescription = null,
+                                modifier = Modifier.wrapContentSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            GlideImage(
+                                model = R.drawable.profile_image_placeholder,
+                                contentDescription = null,
+                                modifier = Modifier.wrapContentSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        }
                     }
                 }
                 // Display user information
                 Column(
                     modifier = Modifier
                         .padding(8.dp)
-                        .wrapContentSize()
+                        .weight(1f) // Added weight to expand this column
                 ) {
                     // Display username
                     Text(
                         text = user.username,
-                        style = MaterialTheme.typography.headlineSmall,
+                        style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.SemiBold
                     )
                     // Display user full name
@@ -378,10 +390,10 @@ fun UserCard(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                // Button for following/unfollowing the user
+                // Display follow button
                 Button(
-                    modifier = Modifier.size(112.dp, 48.dp),
+                    modifier = Modifier.height(48.dp)
+                        .padding(4.dp),
                     onClick = {
                         isFollowing = if (isFollowing) {
                             userViewModel.unfollowUser(user.username)

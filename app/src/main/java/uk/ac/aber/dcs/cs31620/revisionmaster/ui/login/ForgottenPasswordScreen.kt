@@ -1,6 +1,5 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.login
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -37,7 +36,6 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
  *
  * @param navController: Navigation controller for managing navigation within the app.
  */
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ForgotPassScreenTopLevel(
     navController: NavController
@@ -60,12 +58,12 @@ fun ForgotPassScreenTopLevel(
             // Top app bar for navigation
             SmallTopAppBar(navController, stringResource(R.string.forgot_password))
         },
-        content = {
+        content = { innerPadding ->
             // Main content of the screen
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp)
+                    .padding(innerPadding)
                     .verticalScroll(rememberScrollState()),
             ) {
                 // Container for the content
@@ -130,7 +128,7 @@ private fun ForgotPasswordContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp),
+            .padding(8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -141,13 +139,15 @@ private fun ForgotPasswordContent(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             onValueChange = updateEmail,
             modifier = Modifier.fillMaxWidth()
+                .padding(8.dp)
         )
         // Spacer for layout
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
         // Button to trigger password retrieval
         Button(
             onClick = getPasswordAction,
             modifier = Modifier.fillMaxWidth()
+                .padding(horizontal = 32.dp)
         ) {
             Text(stringResource(R.string.get_password))
         }

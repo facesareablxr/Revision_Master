@@ -164,4 +164,9 @@
     <string name="logout">Logout</string>
     <string name="TTS">Text to Speech</string>
     <string name="noReview">No flashcards are due for review at the moment.</string>
+    <string name="noImage">No image.</string>
+    <string name="noTestResults">You have no results to show! Maybe take a test?</string>
+    <string name="review">Review Flashcards</string>
+    <string name="nolashcards">No cards available to revise! Make some?</string>
+    <string name="noFlashcards">No flashcards available for testing! Make some?</string>
 </resources>

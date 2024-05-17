@@ -1,6 +1,8 @@
 package uk.ac.aber.dcs.cs31620.revisionmaster.ui.explore
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,12 +10,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,19 +33,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.bumptech.glide.integration.compose.GlideImage
 import uk.ac.aber.dcs.cs31620.revisionmaster.R
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.FlashcardViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.database.viewmodel.UserViewModel
 import uk.ac.aber.dcs.cs31620.revisionmaster.model.dataclasses.deck.Deck
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.appbars.SmallTopAppBar
-import uk.ac.aber.dcs.cs31620.revisionmaster.ui.library.DeckItem
+import uk.ac.aber.dcs.cs31620.revisionmaster.ui.navigation.Screen
 import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ProfilePicture
+import java.util.Locale
 
 /**
  * @param username Username of the user to preview
@@ -46,6 +58,7 @@ import uk.ac.aber.dcs.cs31620.revisionmaster.ui.util.ProfilePicture
  * @param userViewModel View model for user-related data
  * @param flashcardViewModel View model for flashcard-related data
  */
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserPreviewScreen(
     username: String,
@@ -88,7 +101,27 @@ fun UserPreviewScreen(
                 ){
                     user?.let { user ->
                         // Display profile picture
-                        ProfilePicture(user.profilePictureUrl)
+                        if (user.profilePictureUrl != null){
+                            ProfilePicture(user.profilePictureUrl)
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(120.dp)
+                                        .clip(CircleShape)
+                                ) {
+                                    GlideImage(
+                                        model = R.drawable.profile_image_placeholder,
+                                        contentDescription = null,
+                                        modifier = Modifier.wrapContentSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
+                            }
+                        }
+
                         Spacer(modifier = Modifier.width(16.dp))
                         // Display username and full name
                         Text(
@@ -122,7 +155,8 @@ fun UserPreviewScreen(
                         )
                     }
                 }
-                Divider() // Divider between sections
+
+                Divider(modifier = Modifier.padding(8.dp)) // Divider between sections
                 Column(
                     horizontalAlignment = Alignment.Start
                 ) {
@@ -154,7 +188,7 @@ private fun PublicDecksColumn(decks: List<Deck>, navController: NavController) {
     if (decks.isNotEmpty()) {
         Column {
             decks.forEach { deck ->
-                DeckItem(deck = deck, navController = navController) // Display each deck item
+                DeckCard(deck = deck, navController = navController) // Display each deck item
             }
         }
     } else {
@@ -190,3 +224,85 @@ fun Institution(institution: String) {
         )
     }
 }
+
+/**
+ * Composable function for displaying a deck card.
+ *
+ * @param currentUserId: ID of the current user.
+ * @param deck: Deck object representing the data for a particular deck.
+ * @param navController: NavController for navigating to deck details screen.
+ */
+@SuppressLint("DefaultLocale")
+@Composable
+fun DeckCard(
+    deck: Deck,
+    navController: NavController
+) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp, horizontal = 16.dp),
+            shape = MaterialTheme.shapes.large
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        // Display deck name
+                        Text(
+                            text = deck.name,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier
+                                .wrapContentWidth()
+                                .padding(bottom = 4.dp)
+                        )
+                        // Display deck description
+                        Text(
+                            text = deck.description,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    // Button for previewing the deck
+                    Button(
+                        onClick = { navController.navigate(Screen.PreviewDeck.route + "/${deck.id}") },
+                        modifier = Modifier.size(100.dp, 48.dp)
+                    ) {
+                        Text(text = stringResource(R.string.previewDeck))
+                    }
+                }
+                // Display deck subject and average difficulty if available
+                Row(
+                    modifier = Modifier.padding(2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    // Display deck subject
+                    OutlinedButton(onClick = {}) {
+                        Text(
+                            text = deck.subject,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+                    // Display average difficulty if available
+                    if (deck.averageDifficulty != null) {
+                        OutlinedButton(onClick = { }) {
+                            Text(
+                                text = deck.averageDifficulty.toString().lowercase()
+                                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() },
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.padding(8.dp))
+                }
+            }
+        }
+    }
+

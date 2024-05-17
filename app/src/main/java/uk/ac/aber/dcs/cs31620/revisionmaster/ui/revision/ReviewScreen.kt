@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,7 +57,7 @@ fun ReviewScreen(
         topBar = {
             ConfirmationAppBar(
                 navController = navController,
-                title = "Flashcard Self Test",
+                title = stringResource(R.string.review),
             )
         },
         content = { innerPadding ->
@@ -101,7 +102,7 @@ fun ReviewScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        stringResource(R.string.noReview)
+                        Text(text = stringResource(R.string.noReview))
                     }
                 }
             }

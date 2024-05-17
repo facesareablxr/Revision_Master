@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -77,8 +77,15 @@ fun FlashcardViewerTopLevel(
     Scaffold(
         topBar = { SmallTopAppBar(navController = navController, title = "Flashcard Viewer") },
     ) {
-        // Display the flashcards when they are loaded
-        flashcardsState?.let { FlashcardViewer(it) }
+        if (flashcardsState.isNullOrEmpty()) {
+            // No flashcards message
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = stringResource(id = R.string.noFlashcards))
+            }
+        } else {
+            // Display flashcards
+            FlashcardViewer(flashcardsState!!)
+        }
     }
 }
 
@@ -202,7 +209,7 @@ fun FlashcardWithImage(
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(0.8f)
+            .fillMaxWidth()
             .wrapContentHeight()
             .clickable { onFlip() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -259,7 +266,6 @@ fun Flashcard(
         modifier = Modifier
             .fillMaxWidth(0.8f)
             .wrapContentHeight()
-            .height(500.dp)
             .clickable { onFlip() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(4.dp)
@@ -289,6 +295,7 @@ fun Flashcard(
             ) { showFront ->
                 Text(text = if (showFront) front else back)
             }
+            Spacer(modifier = Modifier.padding(20.dp))
         }
     }
 }

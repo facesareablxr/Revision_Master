@@ -64,7 +64,7 @@ fun SmallTopAppBarWithDelete(
                     showMenu = false // Hide the menu
                     onDeleteClick() // Execute the delete action
                 }) {
-                    stringResource(id = R.string.deleteSession)
+                    Text(text = stringResource(id = R.string.deleteSession))
                 }
             }
         }

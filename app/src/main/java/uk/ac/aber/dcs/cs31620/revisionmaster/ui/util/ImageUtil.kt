@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -125,10 +124,8 @@ fun uploadImageToFirebaseStorage(imageUri: Uri, onSuccess: (String) -> Unit, onF
  */
 @Composable
 fun ProfileImageSelector(
-    imageUrl: String?,  // The URL of the image to display
-    onImageSelected: (String) -> Unit,  // Callback function to handle the selected image
-    modifier: Modifier = Modifier,  // Modifier for styling
-    shape: Shape = CircleShape  // Shape of the clickable area
+    imageUrl: String?,
+    onImageSelected: (String) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -147,21 +144,38 @@ fun ProfileImageSelector(
         }
     }
 
-    // Box composable to display the circular area and handle click events
+    // Box composable to display the image or placeholder icon and handle click events
     Box(
-        modifier = modifier
+        modifier = Modifier
             .size(240.dp)
-            .clip(shape)
-            .clickable {
-                launcher.launch("image/*")  // Launch image selection on click
-            }
+            .clickable { launcher.launch("image/*") }  // Launch image selection on click
+            .border(BorderStroke(1.dp, Color.Gray), shape = CircleShape)
+            .clip(CircleShape),
+        contentAlignment = Alignment.Center
     ) {
-        val painter = rememberAsyncImagePainter(imageUrl)  // Asynchronously load the image
-        Image(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
+        if (imageUrl != null) {
+            val painter = rememberAsyncImagePainter(imageUrl)  // Asynchronously load the image
+            Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            // Display placeholder icon and background if no image URI is provided
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(8.dp),
+                tint = Color.Gray
+            )
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(Color.LightGray.copy(alpha = 0.4f))
+            )
+        }
     }
 }
